@@ -18,6 +18,7 @@
     edxapp_use_custom_theme: true
     edxapp_theme_name: 'lagunita'
     edxapp_theme_source_repo: 'https://github.com/Stanford-Online/lagunita-theme.git'
+    ECOMMERCE_DJANGO_SETTINGS_MODULE: "ecommerce.settings.devstack"
   roles:
     - edx_ansible
     - mysql
