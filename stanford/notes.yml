@@ -1,0 +1,12 @@
+- name: Deploy edX Notes API
+  hosts: tag_role_notes_api:&tag_environment_{{ env }}
+  sudo: True
+  gather_facts: True
+  vars:
+    secure_dir: '../../configuration-secure/ansible'
+  roles:
+    - role: nginx
+      nginx_sites:
+        - edx_notes_api
+    - aws
+    - edx_notes_api
