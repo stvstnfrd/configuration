@@ -17,7 +17,7 @@
         "VPC": {
             "Type" : "AWS::EC2::VPC",
             "Properties" : {
-                "CidrBlock" : { "Fn::FindInMap" : [ "SubnetConfig", "vpc", "cidr" ] },
+                "CidrBlock" : { "Fn::FindInMap" : [ "SubnetConfig", "VPC", "cidr" ] },
                 "Tags" : [
                     {"Key" : "Name", "Value" : "sandbox"},
                     {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} }
