@@ -1,0 +1,22 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+    "Description": "Sandbox Setup",
+    "Parameters": {
+    },
+    "Mappings": {
+    },
+    "Resources": {
+        "vpc": {
+            "Type" : "AWS::EC2::VPC",
+            "Properties" : {
+                "CidrBlock" : "10.4.0.0/16",
+                "Tags" : [
+                    {"Key" : "Name", "Value" : "vpc-sandbox"},
+                    {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} }
+                ]
+            }
+        }
+    },
+    "Outputs": {
+    }
+}
