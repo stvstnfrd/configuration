@@ -16,7 +16,7 @@
             "Properties" : {
                 "CidrBlock" : { "Fn::FindInMap" : [ "SubnetConfig", "vpc", "cidr" ] },
                 "Tags" : [
-                    {"Key" : "Name", "Value" : "vpc-sandbox"},
+                    {"Key" : "Name", "Value" : "sandbox"},
                     {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} }
                 ]
             }
