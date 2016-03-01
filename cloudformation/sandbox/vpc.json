@@ -34,6 +34,22 @@
                     {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} }
                 ]
             }
+        },
+        "InternetGateway" : {
+            "Type" : "AWS::EC2::InternetGateway",
+            "Properties" : {
+                "Tags" : [
+                    {"Key" : "Name", "Value" : "sandbox-internet"},
+                    {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} }
+                ]
+            }
+        },
+        "InternetGatewayAttachment" : {
+            "Type" : "AWS::EC2::VPCGatewayAttachment",
+            "Properties" : {
+                "VpcId" : { "Ref" : "VPC" },
+                "InternetGatewayId" : { "Ref" : "InternetGateway" }
+            }
         }
     },
     "Outputs": {
