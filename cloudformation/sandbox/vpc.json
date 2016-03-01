@@ -7,6 +7,9 @@
         "SubnetConfig": {
             "vpc": {
                 "cidr": "10.4.0.0/16"
+            },
+            "subnet": {
+                "cidr": "10.4.0.0/24"
             }
         }
     },
@@ -17,6 +20,17 @@
                 "CidrBlock" : { "Fn::FindInMap" : [ "SubnetConfig", "vpc", "cidr" ] },
                 "Tags" : [
                     {"Key" : "Name", "Value" : "sandbox"},
+                    {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} }
+                ]
+            }
+        },
+        "subnet" : {
+            "Type" : "AWS::EC2::Subnet",
+            "Properties" : {
+                "VpcId" : { "Ref" : "vpc" },
+                "CidrBlock" : { "Fn::FindInMap" : [ "SubnetConfig", "subnet", "cidr" ] },
+                "Tags" : [
+                    {"Key" : "Name", "Value" : "sandbox-public"},
                     {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} }
                 ]
             }
