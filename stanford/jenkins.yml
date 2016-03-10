@@ -1,0 +1,19 @@
+- name: Configure sandbox
+  # hosts: tag_role_jenkins:&tag_environment_sandbox
+  # hosts: tag_Name_jenkins_sandbox
+  hosts: jenkins
+  sudo: True
+  gather_facts: True
+  vars:
+    # Set to false if deployed behind another proxy/load balancer.
+    NGINX_SET_X_FORWARDED_HEADERS: True
+    jenkins_server_name: 'jenkins.sandbox.class.stanford.edu'
+    jenkins_port: 8080
+    secure_dir: '../../configuration-secure/ansible'
+  vars_files:
+    - "{{ secure_dir }}/vars/lagunita/users.yml"
+  roles:
+    - role: user
+      tags: users
+    - role: jenkins_master
+      tags: jenkins
