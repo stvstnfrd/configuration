@@ -1,0 +1,5 @@
+---
+- name: Provision the sandbox jenkins
+  hosts: localhost
+  roles:
+    - jenkins

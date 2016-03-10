@@ -1,0 +1,5 @@
+---
+- name: Provision the sandbox VPC
+  hosts: localhost
+  roles:
+    - vpc
