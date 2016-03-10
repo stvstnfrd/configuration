@@ -1,0 +1,41 @@
+---
+CIDR_PUBLIC: 0.0.0.0/0
+CIDR_SUBNET: 10.3.0.0/24
+
+NAME_SUBNET: public
+NAME_INTERNET_GATEWAY: gateway-sandbox-public
+NAME_ROUTE_TABLE: route-sandbox-public
+
+SECURITY_GROUP_NAME: public-sandbox-openedx
+SECURITY_GROUP_DESCRIPTION: A public sandbox for the OpenEdX platform
+
+PORT_SSH: 22
+PORT_LMS: 80
+PORT_CMS: 18010
+
+route53_zone: sandbox.class.stanford.edu
+route53_zone_comment: Blah blah blah
+
+# vpc_aws_profile: TODO
+vpc_tags:
+  Name: sandbox
+vpc_cidr: 10.3.0.0/16
+vpc_aws_region: us-west-1
+vpc_state: present
+vpc_public_route_table:
+  - dest: "{{ CIDR_PUBLIC }}"
+    gateway_id: "{{ igw.gateway_id }}"
+vpc_public_subnets:
+  - name: public
+    cidr: "{{ CIDR_SUBNET }}"
+    az: "{{ vpc_aws_region }}a"
+vpc_public_acl:
+  name: public-acl
+  rules:
+    - number:
+      protocol: tcp
+      rule_action: ALLOW
+      cidr_block: "{{ CIDR_PUBLIC }}"
+      from_port: 80
+      to_port: 80
+      # type: egress
