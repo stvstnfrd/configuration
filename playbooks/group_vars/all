@@ -1,1 +1,2 @@
 env: stage
+secure_dir: '../../configuration-secure/ansible'
