@@ -211,54 +211,6 @@ def lookup_security_group(vpc_id, name, description):
         security_group = None
     return security_group
 
-def create_network_acl(vpc_id, subnet_id):
-    # TODO: set default acl to DENY all
-    network_acl = connection_vpc.create_network_acl(vpc_id)
-    network_acl.add_tag('Name', NAME_NETWORK_ACL)
-    network_acl.add_tag('environment', ENVIRONMENT)
-    rule_number = 100
-    for cidr, permission, port, egress in PORTS:
-        port_range = {
-            'port_range_from': 0,
-            'port_range_to': 0,
-        }
-        if port:
-            port_range = {
-                'port_range_from': port,
-                'port_range_to': port,
-            }
-        success = connection_vpc.create_network_acl_entry(
-            network_acl.id,
-            rule_number,
-            6,  # 'tcp',
-            permission,
-            cidr,
-            egress=egress,
-            **port_range
-        )
-        print('created', success)
-        rule_number += 1
-    association_id = connection_vpc.associate_network_acl(
-        network_acl.id,
-        subnet_id,
-    )
-    return network_acl
-
-def lookup_network_acl(vpc_id, subnet_id):
-    network_acls = connection_vpc.get_all_network_acls(
-        filters={
-            'vpc-id': vpc_id,
-            'association.subnet-id': subnet_id,
-            'tag:environment': ENVIRONMENT,
-        },
-    )
-    assert len(network_acls) <= 1
-    if len(network_acls) == 1:
-        network_acl = network_acls[0]
-    else:
-        network_acl = None
-    return network_acl
-
 
 def lookup_hosted_zone(name):
     connection_route53 = Route53Connection()

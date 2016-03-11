@@ -17,8 +17,6 @@ def describe(arguments):
     print(security_group)
     route_table = lookup_route_table(vpc.id, gateway.id, subnet.id, NAME_ROUTE_TABLE, PUBLIC_CIDR_BLOCK)
     print(route_table)
-    # network_acl = lookup_network_acl(vpc.id, subnet.id)
-    # print(network_acl)
 
 
 def create(arguments):
@@ -38,9 +36,6 @@ def create(arguments):
     route_table = lookup_route_table(vpc.id, gateway.id, subnet.id, NAME_ROUTE_TABLE, PUBLIC_CIDR_BLOCK)
     route_table = route_table or create_route_table(vpc.id, gateway.id, subnet.id, NAME_ROUTE_TABLE, PUBLIC_CIDR_BLOCK)
     print(route_table)
-    # network_acl = lookup_network_acl(vpc.id, subnet.id)
-    # network_acl = network_acl or create_network_acl(vpc.id, subnet.id)
-    # print(network_acl)
 
 def destroy(arguments):
     vpc_name = arguments.vpc_name
@@ -49,10 +44,6 @@ def destroy(arguments):
     subnet = lookup_subnet(vpc.id, NAME_SUBNET, SUBNET_CIDR_BLOCK)
     security_group = lookup_security_group(vpc.id, NAME_SECURITY_GROUP, DESCRIPTION_SECURITY_GROUP)
     route_table = lookup_route_table(vpc.id, gateway.id, subnet.id, NAME_ROUTE_TABLE, PUBLIC_CIDR_BLOCK)
-    # network_acl = lookup_network_acl(vpc.id, subnet.id)
-
-    # association_id = connection_vpc.disassociate_network_acl(subnet.id, vpc.id)
-    # connection_vpc.delete_network_acl(network_acl.id)
 
     for association in route_table.associations:
         success = connection_vpc.disassociate_route_table(association.id)
