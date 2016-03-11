@@ -1,0 +1,52 @@
+#!/usr/bin/env python
+import argparse
+import time
+
+from boto.exception import EC2ResponseError
+
+from lib import *
+
+
+def set_up(arguments):
+    vpc = lookup_vpc(ENVIRONMENT, NAME_VPC, VPC_CIDR_BLOCK)
+    # vpc = vpc or create_vpc(ENVIRONMENT, NAME_VPC, VPC_CIDR_BLOCK)
+    print(vpc)
+    gateway = lookup_gateway(vpc.id, NAME_GATEWAY)
+    # gateway = gateway or create_gateway(vpc.id, NAME_GATEWAY)
+    print(gateway)
+    subnet = lookup_subnet(vpc.id, NAME_SUBNET, SUBNET_CIDR_BLOCK)
+    # subnet = subnet or create_subnet(vpc.id, NAME_SUBNET, SUBNET_CIDR_BLOCK)
+    print(subnet)
+    security_group = lookup_security_group(vpc.id, NAME_SECURITY_GROUP, DESCRIPTION_SECURITY_GROUP)
+    # security_group = security_group or create_security_group(vpc.id, NAME_SECURITY_GROUP, DESCRIPTION_SECURITY_GROUP)
+    print(security_group)
+    route_table = lookup_route_table(vpc.id, gateway.id, subnet.id, NAME_ROUTE_TABLE, PUBLIC_CIDR_BLOCK)
+    # route_table = route_table or create_route_table(vpc.id, gateway.id, subnet.id, NAME_ROUTE_TABLE, PUBLIC_CIDR_BLOCK)
+    print(route_table)
+    network_acl = lookup_network_acl(vpc.id, subnet.id)
+    # network_acl = network_acl or create_network_acl(vpc.id, subnet.id)
+    print(network_acl)
+    instance = create_instance(arguments.instance_name, security_group.id, subnet.id)
+    print(instance)
+    print(dir(instance))
+    while instance.state == 'pending':
+        print(instance.state, instance)
+        time.sleep(5)
+        instance.update()
+    print(instance.ip_address)
+    print(instance.public_dns_name)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description='Whatever, man',
+    )
+    parser.add_argument(
+        '-n',
+        '--instance-name',
+        help='breath life with a name',
+        required=True,
+    )
+    arguments = parser.parse_args()
+    print(arguments)
+    set_up(arguments)
