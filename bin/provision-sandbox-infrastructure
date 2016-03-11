@@ -5,6 +5,7 @@ from boto.exception import EC2ResponseError
 
 from openedx_configuration.lib import *
 
+DESCRIPTION_SECURITY_GROUP = 'TODO: something smart here'
 
 def describe(arguments):
     environment = arguments.environment
@@ -18,7 +19,7 @@ def describe(arguments):
     name_gateway = generate_name_gateway(vpc)
     gateway = lookup_gateway(vpc.id, name_gateway)
     print(gateway)
-    subnet = lookup_subnet(vpc.id, environment, generate_name_subnet(vpc), subnet_cidr_block)
+    subnet = lookup_subnet(vpc, environment, generate_name_subnet(vpc), subnet_cidr_block)
     print(subnet)
     name_security_group = generate_name_security_group(vpc)
     security_group = lookup_security_group(vpc, name_security_group, DESCRIPTION_SECURITY_GROUP)
@@ -39,7 +40,7 @@ def create(arguments):
     gateway = lookup_gateway(vpc.id, name_gateway)
     gateway = gateway or create_gateway(vpc, name_gateway)
     print(gateway)
-    subnet = lookup_subnet(vpc.id, environment, generate_name_subnet(vpc), subnet_cidr_block)
+    subnet = lookup_subnet(vpc, environment, generate_name_subnet(vpc), subnet_cidr_block)
     subnet = subnet or create_subnet(vpc, generate_name_subnet(vpc), subnet_cidr_block)
     print(subnet)
     name_security_group = generate_name_security_group(vpc)
@@ -59,7 +60,7 @@ def destroy(arguments):
     vpc = lookup_vpc(environment, vpc_cidr_block)
     name_gateway = generate_name_gateway(vpc)
     gateway = lookup_gateway(vpc.id, name_gateway)
-    subnet = lookup_subnet(vpc.id, environment, generate_name_subnet(vpc), subnet_cidr_block)
+    subnet = lookup_subnet(vpc, environment, generate_name_subnet(vpc), subnet_cidr_block)
     name_security_group = generate_name_security_group(vpc)
     security_group = lookup_security_group(vpc, name_security_group, DESCRIPTION_SECURITY_GROUP)
     name_route_table = generate_name_route_table(vpc)
@@ -87,9 +88,15 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '-V',
-        '--vpc-name',
-        help='breath life with a name',
-        default='sandbox'
+        '--vpc-cidr-block',
+        # help='breath life with a name',
+        default='10.4.0.0/16'
+    )
+    parser.add_argument(
+        '-s',
+        '--subnet-cidr-block',
+        # help='breath life with a name',
+        default='10.4.0.0/24'
     )
     parser.add_argument(
         '-a',

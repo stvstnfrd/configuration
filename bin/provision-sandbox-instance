@@ -44,7 +44,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '-n',
-        '--name',
+        '--instance-name',
         help='breath life with a name',
         required=True,
     )
@@ -79,5 +79,5 @@ if __name__ == '__main__':
         default=16,
     )
     arguments = parser.parse_args()
-    print(arguments)
-    # create(arguments)
+    # print(arguments)
+    create(arguments)
