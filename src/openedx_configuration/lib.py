@@ -251,9 +251,10 @@ def create_hosted_zone(name):
 
 
 def get_block_device_map(size=16, device_path='/dev/sda1'):
-    device = BlockDeviceType()
-    print('device-type', dir(device))
-    device.size = size
+    device = BlockDeviceType(
+        delete_on_termination=True,
+        size=size,
+    )
     device_map = BlockDeviceMapping()
     device_map[device_path] = device
     return device_map
