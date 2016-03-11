@@ -3,7 +3,7 @@ import argparse
 
 from boto.exception import EC2ResponseError
 
-from lib import *
+from openedx_configuration.lib import *
 
 
 def describe(arguments):
