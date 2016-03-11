@@ -4,7 +4,7 @@ import time
 
 from boto.exception import EC2ResponseError
 
-from lib import *
+from openedx_configuration.lib import *
 
 
 DESCRIPTION_SECURITY_GROUP = 'Blah blah blah'
