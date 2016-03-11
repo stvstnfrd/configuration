@@ -80,7 +80,7 @@
 
 - name: copy the private gpg signing key
   copy: >
-    src={{ secure_dir }}/{{ CERTS_LOCAL_PRIVATE_KEY }}
+    src={{ CERTS_LOCAL_PRIVATE_KEY }}
     dest={{ certs_app_dir }}/{{ CERTS_LOCAL_PRIVATE_KEY|basename }}
     owner={{ common_web_user }}
     mode=0600

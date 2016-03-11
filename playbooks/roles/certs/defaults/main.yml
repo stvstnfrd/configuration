@@ -31,7 +31,7 @@ CERTS_KEY_ID: "FEF8D954"
 CERTS_GIT_IDENTITY: "none"
 # Path to public and private gpg key for signing
 # the edX certificate. Default is a dummy key
-CERTS_LOCAL_PRIVATE_KEY: "example-private-key.txt"
+CERTS_LOCAL_PRIVATE_KEY: "files/example-private-key.txt"
 
 # This defaults to the public certificates repo which is
 # used for open-edx
