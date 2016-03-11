@@ -1,0 +1,96 @@
+#!/usr/bin/env python
+import argparse
+
+from boto.exception import EC2ResponseError
+
+from lib import *
+
+def describe(arguments):
+    vpc_name = arguments.vpc_name
+    vpc = lookup_vpc(ENVIRONMENT, vpc_name, VPC_CIDR_BLOCK)
+    print(vpc)
+    gateway = lookup_gateway(vpc.id, NAME_GATEWAY)
+    print(gateway)
+    subnet = lookup_subnet(vpc.id, NAME_SUBNET, SUBNET_CIDR_BLOCK)
+    print(subnet)
+    security_group = lookup_security_group(vpc.id, NAME_SECURITY_GROUP, DESCRIPTION_SECURITY_GROUP)
+    print(security_group)
+    route_table = lookup_route_table(vpc.id, gateway.id, subnet.id, NAME_ROUTE_TABLE, PUBLIC_CIDR_BLOCK)
+    print(route_table)
+    # network_acl = lookup_network_acl(vpc.id, subnet.id)
+    # print(network_acl)
+
+
+def create(arguments):
+    vpc_name = arguments.vpc_name
+    vpc = lookup_vpc(ENVIRONMENT, vpc_name, VPC_CIDR_BLOCK)
+    vpc = vpc or create_vpc(ENVIRONMENT, vpc_name, VPC_CIDR_BLOCK)
+    print(vpc)
+    gateway = lookup_gateway(vpc.id, NAME_GATEWAY)
+    gateway = gateway or create_gateway(vpc.id, NAME_GATEWAY)
+    print(gateway)
+    subnet = lookup_subnet(vpc.id, NAME_SUBNET, SUBNET_CIDR_BLOCK)
+    subnet = subnet or create_subnet(vpc.id, NAME_SUBNET, SUBNET_CIDR_BLOCK)
+    print(subnet)
+    security_group = lookup_security_group(vpc.id, NAME_SECURITY_GROUP, DESCRIPTION_SECURITY_GROUP)
+    security_group = security_group or create_security_group(vpc.id, NAME_SECURITY_GROUP, DESCRIPTION_SECURITY_GROUP)
+    print(security_group)
+    route_table = lookup_route_table(vpc.id, gateway.id, subnet.id, NAME_ROUTE_TABLE, PUBLIC_CIDR_BLOCK)
+    route_table = route_table or create_route_table(vpc.id, gateway.id, subnet.id, NAME_ROUTE_TABLE, PUBLIC_CIDR_BLOCK)
+    print(route_table)
+    # network_acl = lookup_network_acl(vpc.id, subnet.id)
+    # network_acl = network_acl or create_network_acl(vpc.id, subnet.id)
+    # print(network_acl)
+
+def destroy(arguments):
+    vpc_name = arguments.vpc_name
+    vpc = lookup_vpc(ENVIRONMENT, vpc_name, VPC_CIDR_BLOCK)
+    gateway = lookup_gateway(vpc.id, NAME_GATEWAY)
+    subnet = lookup_subnet(vpc.id, NAME_SUBNET, SUBNET_CIDR_BLOCK)
+    security_group = lookup_security_group(vpc.id, NAME_SECURITY_GROUP, DESCRIPTION_SECURITY_GROUP)
+    route_table = lookup_route_table(vpc.id, gateway.id, subnet.id, NAME_ROUTE_TABLE, PUBLIC_CIDR_BLOCK)
+    # network_acl = lookup_network_acl(vpc.id, subnet.id)
+
+    # association_id = connection_vpc.disassociate_network_acl(subnet.id, vpc.id)
+    # connection_vpc.delete_network_acl(network_acl.id)
+
+    for association in route_table.associations:
+        success = connection_vpc.disassociate_route_table(association.id)
+    try:
+        success = connection_vpc.delete_route(route_table.id, PUBLIC_CIDR_BLOCK)
+    except EC2ResponseError:
+        pass
+    success = connection_vpc.delete_route_table(route_table.id)
+
+    success = connection_ec2.delete_security_group(group_id=security_group.id)
+    success = connection_vpc.delete_subnet(subnet.id)
+    success = connection_vpc.detach_internet_gateway(gateway.id, vpc.id)
+    success = connection_vpc.delete_internet_gateway(gateway.id)
+    success = connection_vpc.delete_vpc(vpc.id)
+    print('done')
+    return
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description='Whatever, man',
+    )
+    parser.add_argument(
+        '-V',
+        '--vpc-name',
+        help='breath life with a name',
+        default='sandbox'
+    )
+    parser.add_argument(
+        '-a',
+        '--action',
+        help='create/describe/destroy',
+        default='describe'
+    )
+    arguments = parser.parse_args()
+    print(arguments)
+    if arguments.action == 'describe':
+        describe(arguments)
+    elif arguments.action == 'create':
+        create(arguments)
+    elif arguments.action == 'destroy':
+        destroy(arguments)
