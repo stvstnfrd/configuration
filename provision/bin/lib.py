@@ -1,56 +1,64 @@
 #!/usr/bin/env python
-from boto.vpc import VPCConnection
+# TODO: add tags to network_acl
+from boto.ec2.blockdevicemapping import BlockDeviceMapping
+from boto.ec2.blockdevicemapping import BlockDeviceType
 from boto.ec2.connection import EC2Connection
 from boto.ec2.networkinterface import NetworkInterfaceCollection
 from boto.ec2.networkinterface import NetworkInterfaceSpecification
 from boto.route53.connection import Route53Connection
+from boto.vpc import VPCConnection
+
+
+PUBLIC_CIDR_BLOCK = '0.0.0.0/0'
+PORTS = [
+    # cidr_block, permission, port, egress
+    (PUBLIC_CIDR_BLOCK, 'allow', 22, False),
+    (PUBLIC_CIDR_BLOCK, 'allow', 80, False),
+    (PUBLIC_CIDR_BLOCK, 'allow', 18010, False),
+]
+
 
 # sandbox
-NAME_VPC = 'sandbox'
-ENVIRONMENT = NAME_VPC
-# sandbox-internet
-NAME_GATEWAY = "{vpc}-internet".format(
-    vpc=NAME_VPC,
-)
-# sandbox-public
-NAME_SUBNET = "{vpc}-public".format(
-    vpc=NAME_VPC,
-)
+def generate_name_subnet(vpc):
+    name = "{vpc}-public".format(
+        vpc=vpc.tags['Name'],
+    )
+    return name
+
+
 # sandbox-public-openedx
-NAME_SECURITY_GROUP = "{subnet}-openedx".format(
-    vpc=NAME_VPC,
-    subnet=NAME_SUBNET,
-)
-NAME_SECURITY_GROUP = 'public-sandbox-openedx'
+def generate_name_security_group(vpc):
+    name = "{subnet}-openedx".format(
+        vpc=vpc.tags['Name'],
+        subnet=generate_name_subnet(vpc),
+    )
+    name = 'public-sandbox-openedx'
+    return name
+
+
+# sandbox-internet
+def generate_name_gateway(vpc):
+    name = "{vpc}-internet".format(
+        vpc=vpc.tags['Name'],
+    )
+    return name
+
+
 # sandbox-internet-sandbox-public
-NAME_ROUTE_TABLE = "{gateway}-{subnet}".format(
-    gateway=NAME_GATEWAY,
-    subnet=NAME_SUBNET,
-)
-# TODO:
-NAME_ROUTE_TABLE = 'sandbox-routes'
-NAME_NETWORK_ACL = NAME_SECURITY_GROUP
-NAME_ZONE = 'sandbox.class.stanford.edu'
+# sandbox-internet-route
+def generate_name_route_table(vpc):
+    name = "{gateway}-{subnet}".format(
+        gateway=generate_name_gateway(vpc),
+        subnet=generate_name_subnet(vpc),
+    )
+    name = 'sandbox-routes'
+    return name
 
-VPC_CIDR_BLOCK = '10.4.0.0/16'
-SUBNET_CIDR_BLOCK = '10.4.0.0/24'
-PUBLIC_CIDR_BLOCK = '0.0.0.0/0'
-DESCRIPTION_SECURITY_GROUP = 'Blah blah blah'
-
-PORTS = [
-    # # cidr_block, permission, port, egress
-    # (PUBLIC_CIDR_BLOCK, 'allow', 80, False),
-    # (PUBLIC_CIDR_BLOCK, 'allow', 18010, False),
-    (PUBLIC_CIDR_BLOCK, 'allow', 22, False),
-    (PUBLIC_CIDR_BLOCK, 'allow', 22, True),
-    # # (PUBLIC_CIDR_BLOCK, 'deny', None, False),
-    # (PUBLIC_CIDR_BLOCK, 'allow', None, True),
-]
 
 connection_vpc = VPCConnection()
 connection_ec2 = EC2Connection()
 
-def create_instance(name, security_group_id, subnet_id):
+def create_instance(name, environment, role, security_group_id, subnet_id, disk_size):
     interface = NetworkInterfaceSpecification(
         associate_public_ip_address=True,
         subnet_id=subnet_id,
@@ -59,35 +67,40 @@ def create_instance(name, security_group_id, subnet_id):
         ],
     )
     interfaces = NetworkInterfaceCollection(interface)
+    block_device_map = get_block_device_map(size=disk_size)
     reservation = connection_ec2.run_instances(
-        'ami-b06717d0',  # image_id=TEMP-sandbox-dcadams
-        # 'ami-2b2f594b',  # image_id=ubuntu-precise-12.04-amd64-server-20160201
+        # TEMP-sandbox-dcadams
+        # 'ami-b06717d0',
+        # ubuntu-precise-12.04-amd64-server-20160201
+        'ami-2b2f594b',
         key_name='deployment',
         instance_type='t2.large',
         network_interfaces=interfaces,
+        block_device_map=block_device_map,
     )
     instance = reservation.instances[0]
     instance.add_tag('Name', name)
-    instance.add_tag('environment', ENVIRONMENT)
+    instance.add_tag('environment', environment)
+    instance.add_tag('role', role)
     instance.update()
     return instance
 
 
-def create_vpc(environment, name, cidr_block):
+def create_vpc(environment, cidr_block):
     vpc = connection_vpc.create_vpc(cidr_block)
     connection_vpc.modify_vpc_attribute(vpc.id, enable_dns_support=True)
     connection_vpc.modify_vpc_attribute(vpc.id, enable_dns_hostnames=True)
-    success = vpc.add_tag('Name', name)
-    success = vpc.add_tag('environment', ENVIRONMENT)
+    success = vpc.add_tag('Name', environment)
+    success = vpc.add_tag('environment', environment)
     return vpc
 
 
-def lookup_vpc(environment, name, cidr_block):
+def lookup_vpc(environment, cidr_block):
     vpcs = connection_vpc.get_all_vpcs(
         filters={
             'cidrBlock': cidr_block,
-            'tag:Name': name,
-            'tag:environment': ENVIRONMENT,
+            'tag:Name': environment,
+            'tag:environment': environment,
         },
     )
     assert len(vpcs) <= 1
@@ -98,10 +111,12 @@ def lookup_vpc(environment, name, cidr_block):
     return vpc
 
 
-def create_gateway(vpc_id, name):
+def create_gateway(vpc, name):
+    vpc_id = vpc.id
+    environment = vpc.tags['environment']
     gateway = connection_vpc.create_internet_gateway()
     success = gateway.add_tag('Name', name)
-    success = gateway.add_tag('environment', ENVIRONMENT)
+    success = gateway.add_tag('environment', environment)
     success = connection_vpc.attach_internet_gateway(gateway.id, vpc_id)
     return gateway
 
@@ -120,20 +135,22 @@ def lookup_gateway(vpc_id, name):
     return gateway
 
 
-def create_subnet(vpc_id, name, cidr_block):
-    subnet = connection_vpc.create_subnet(vpc_id, cidr_block)
+def create_subnet(vpc, name, cidr_block):
+    environment = vpc.tags['environment']
+    subnet = connection_vpc.create_subnet(vpc.id, cidr_block)
     success = subnet.add_tag('Name', name)
-    success = subnet.add_tag('environment', ENVIRONMENT)
+    success = subnet.add_tag('environment', environment)
     return subnet
 
 
-def lookup_subnet(vpc_id, name, cidr_block):
+def lookup_subnet(vpc, environment, name, cidr_block):
+    vpc_id = vpc.id
     subnets = connection_vpc.get_all_subnets(
         filters={
-            'cidrBlock': SUBNET_CIDR_BLOCK,
+            'cidrBlock': cidr_block,
             'vpcId': vpc_id,
             'tag:Name': name,
-            'tag:environment': ENVIRONMENT,
+            'tag:environment': environment,
         },
     )
     assert len(subnets) <= 1
@@ -144,10 +161,12 @@ def lookup_subnet(vpc_id, name, cidr_block):
     return subnet
 
 
-def create_route_table(vpc_id, gateway_id, subnet_id, name, cidr_block):
+def create_route_table(vpc, gateway_id, subnet_id, name, cidr_block):
+    vpc_id = vpc.id
+    environment = vpc.tags['environment']
     route_table = connection_vpc.create_route_table(vpc_id)
     route_table.add_tag('Name', name)
-    success = route_table.add_tag('environment', ENVIRONMENT)
+    success = route_table.add_tag('environment', environment)
     success = connection_vpc.create_route(
         route_table.id,
         cidr_block,
@@ -157,12 +176,14 @@ def create_route_table(vpc_id, gateway_id, subnet_id, name, cidr_block):
     return route_table
 
 
-def lookup_route_table(vpc_id, gateway_id, subnet_id, name, cidr_block):
+def lookup_route_table(vpc, gateway_id, subnet_id, name, cidr_block):
+    vpc_id = vpc.id
+    environment = vpc.tags['environment']
     route_tables = connection_vpc.get_all_route_tables(
         filters={
             # 'association.subnet-id': subnet_id,
             'tag:Name': name,
-            'tag:environment': ENVIRONMENT,
+            'tag:environment': environment,
             'vpc-id': vpc_id,
         },
     )
@@ -174,16 +195,18 @@ def lookup_route_table(vpc_id, gateway_id, subnet_id, name, cidr_block):
     return route_table
 
 
-def create_security_group(vpc_id, name, desciption):
+def create_security_group(vpc, name, desciption):
+    vpc_id = vpc.id
+    environment = vpc.tags['environment']
     security_group = connection_ec2.create_security_group(
         name,
         desciption,
         vpc_id=vpc_id,
     )
     success = security_group.add_tag('Name', name)
-    success = security_group.add_tag('environment', ENVIRONMENT)
+    success = security_group.add_tag('environment', environment)
     for cidr, permission, port, egress in PORTS:
-        if not cidr or not port or permission != 'allow' or egress:
+        if not cidr or not port or permission != 'allow':
             continue
         success = connection_ec2.authorize_security_group(
             group_id=security_group.id,
@@ -195,13 +218,15 @@ def create_security_group(vpc_id, name, desciption):
     return security_group
 
 
-def lookup_security_group(vpc_id, name, description):
+def lookup_security_group(vpc, name, description):
+    vpc_id = vpc.id
+    environment = vpc.tags['environment']
     security_groups = connection_ec2.get_all_security_groups(
         filters={
             # 'group-name': name,
             'vpc-id': vpc_id,
             # 'tag:Name': name,
-            'tag:environment': ENVIRONMENT,
+            'tag:environment': environment,
         },
     )
     assert len(security_groups) <= 1
@@ -217,8 +242,18 @@ def lookup_hosted_zone(name):
     zone = connection_route53.get_zone(name)
     return zone
 
+
 def create_hosted_zone(name):
     connection_route53 = Route53Connection()
     name = name + '.'
     zone = connection_route53.create_zone(name)
     return zone
+
+
+def get_block_device_map(size=16, device_path='/dev/sda1'):
+    device = BlockDeviceType()
+    print('device-type', dir(device))
+    device.size = size
+    device_map = BlockDeviceMapping()
+    device_map[device_path] = device
+    return device_map
