@@ -1,4 +1,6 @@
 ansible.log
+.cache/
+*.egg-info/
 *.swp
 *.pyc
 .idea/
