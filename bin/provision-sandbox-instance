@@ -10,6 +10,29 @@ from openedx_configuration.lib import *
 DESCRIPTION_SECURITY_GROUP = 'Blah blah blah'
 
 
+def destroy(arguments):
+    environment = arguments.environment
+    name = arguments.instance_name
+    instance = lookup_instance(
+        environment,
+        name
+    )
+    print('instance', instance)
+    destroy_instance(instance.id)
+
+
+
+def describe(arguments):
+    environment = arguments.environment
+    name = arguments.instance_name
+    instance = lookup_instance(
+        environment,
+        name
+    )
+    print('instance', instance)
+    print('state', instance.state)
+
+
 def create(arguments):
     environment = arguments.environment
     vpc_cidr_block = arguments.vpc_cidr_block
@@ -78,6 +101,17 @@ if __name__ == '__main__':
         help='what size EBS volume',
         default=16,
     )
+    parser.add_argument(
+        '-a',
+        '--action',
+        help='create/describe/destroy',
+        default='describe'
+    )
     arguments = parser.parse_args()
     # print(arguments)
-    create(arguments)
+    if arguments.action == 'describe':
+        describe(arguments)
+    elif arguments.action == 'create':
+        create(arguments)
+    elif arguments.action == 'destroy':
+        destroy(arguments)

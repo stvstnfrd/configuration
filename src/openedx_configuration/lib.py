@@ -58,6 +58,33 @@ def generate_name_route_table(vpc):
 connection_vpc = VPCConnection()
 connection_ec2 = EC2Connection()
 
+
+def destroy_instance(instance_id):
+    deleted_ids = connection_ec2.terminate_instances(
+        instance_ids=[
+            instance_id,
+        ],
+    )
+    return len(deleted_ids) == 1
+
+
+def lookup_instance(environment, name, state='running'):
+    instances = connection_ec2.get_only_instances(
+        filters={
+            'tag:Name': name,
+            'tag:environment': environment,
+            'instance-state-name': state,
+        },
+    )
+    instance = None
+    number_of_instances = len(instances)
+    if number_of_instances == 1:
+        instance = instances[0]
+    elif number_of_instances > 1:
+        pass  # warn to STDERR
+    return instance
+
+
 def create_instance(name, environment, role, security_group_id, subnet_id, disk_size):
     interface = NetworkInterfaceSpecification(
         associate_public_ip_address=True,
