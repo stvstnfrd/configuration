@@ -38,6 +38,7 @@ CERTS_LOCAL_PRIVATE_KEY: "files/example-private-key.txt"
 CERTS_REPO: "https://github.com/Stanford-Online/openedx-certificates.git"
 CERTS_NGINX_PORT: 18090
 CERTS_WEB_ROOT: "{{ certs_data_dir }}/www-data"
+CERTS_TMP_DIR: '/tmp/tmp_cert-'
 CERTS_URL: "http://localhost:{{ CERTS_NGINX_PORT }}"
 CERTS_DOWNLOAD_URL: "http://localhost:{{ CERTS_NGINX_PORT }}"
 CERTS_VERIFY_URL: "http://localhost:{{ CERTS_NGINX_PORT }}"
@@ -79,8 +80,11 @@ certs_git_identity: "{{ certs_app_dir }}/certs-git-identity"
 certs_requirements_file: "{{ certs_code_dir }}/requirements.txt"
 certs_version: 'rc'
 certs_templates_version : 'rc'
+# certs_templates_repo: ''  # Set this to a private git repository of certificate templates
+certs_templates_repo: 'https://github.com/Stanford-Online/openedx-certificates.git'
 certs_gpg_dir: "{{ certs_app_dir }}/gnupg"
 certs_template_dir: "{{ certs_app_dir }}/templates"
+certs_template_dir: "{{ certs_code_dir }}"
 certs_env_config:
   # CERTS_DATA is legacy, not used
   CERT_DATA: {}
