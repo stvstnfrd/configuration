@@ -95,6 +95,47 @@ def create_vpc(environment, cidr_block):
     return vpc
 
 
+def lookup_all_vpcs():
+    vpcs = connection_vpc.get_all_vpcs()
+    print('Host *')
+    print('    ForwardAgent yes')
+    print('    User GITHUB_USERNAME_GOES_HERE')
+    for vpc in vpcs:
+        vpc_name = vpc.tags.get('Name', '')
+        if vpc_name.endswith('-vpc'):
+            vpc_name = vpc_name[:-4]
+        print('')
+        instances = connection_ec2.get_only_instances(
+            filters={
+                'vpc-id': vpc.id,
+            },
+        )
+        jumpbox = [
+            instance
+            for instance in instances
+            if instance.tags.get('Name', '').startswith('jumpbox.')
+        ]
+        if len(jumpbox):
+            jumpbox = jumpbox[0]
+        for instance in instances:
+            name = instance.tags.get('Name', '')
+            if not name:
+                continue
+            if jumpbox and jumpbox.id != instance.id:
+                jumpbox_name = 'jump.' + vpc_name
+                print('Host ' + name)
+                print('    ProxyCommand ssh -W ' + instance.private_ip_address + ':%p ' + jumpbox_name)
+            elif jumpbox:
+                name = 'jump.' + vpc_name
+                print('Host ' + name)
+                print('    HostName ' + jumpbox.ip_address)
+            else:
+                print('Host ' + name)
+                print('    HostName ' + instance.ip_address)
+            # if jumpbox:
+            #     pass
+            # print(name, instance, instance.tags)
+
 def lookup_vpc(environment, cidr_block):
     vpcs = connection_vpc.get_all_vpcs(
         filters={
