@@ -3,8 +3,6 @@
 from boto.ec2.blockdevicemapping import BlockDeviceMapping
 from boto.ec2.blockdevicemapping import BlockDeviceType
 from boto.ec2.connection import EC2Connection
-from boto.ec2.networkinterface import NetworkInterfaceCollection
-from boto.ec2.networkinterface import NetworkInterfaceSpecification
 from boto.route53.connection import Route53Connection
 from boto.vpc import VPCConnection
 
@@ -57,60 +55,6 @@ def generate_name_route_table(vpc):
 
 connection_vpc = VPCConnection()
 connection_ec2 = EC2Connection()
-
-
-def destroy_instance(instance_id):
-    deleted_ids = connection_ec2.terminate_instances(
-        instance_ids=[
-            instance_id,
-        ],
-    )
-    return len(deleted_ids) == 1
-
-
-def lookup_instance(environment, name, state='running'):
-    instances = connection_ec2.get_only_instances(
-        filters={
-            'tag:Name': name,
-            'tag:environment': environment,
-            'instance-state-name': state,
-        },
-    )
-    instance = None
-    number_of_instances = len(instances)
-    if number_of_instances == 1:
-        instance = instances[0]
-    elif number_of_instances > 1:
-        pass  # warn to STDERR
-    return instance
-
-
-def create_instance(name, environment, role, security_group_id, subnet_id, disk_size):
-    interface = NetworkInterfaceSpecification(
-        associate_public_ip_address=True,
-        subnet_id=subnet_id,
-        groups=[
-            security_group_id,
-        ],
-    )
-    interfaces = NetworkInterfaceCollection(interface)
-    block_device_map = get_block_device_map(size=disk_size)
-    reservation = connection_ec2.run_instances(
-        # TEMP-sandbox-dcadams
-        # 'ami-b06717d0',
-        # ubuntu-precise-12.04-amd64-server-20160201
-        'ami-2b2f594b',
-        key_name='deployment',
-        instance_type='t2.large',
-        network_interfaces=interfaces,
-        block_device_map=block_device_map,
-    )
-    instance = reservation.instances[0]
-    instance.add_tag('Name', name)
-    instance.add_tag('environment', environment)
-    instance.add_tag('role', role)
-    instance.update()
-    return instance
 
 
 def create_vpc(environment, cidr_block):
@@ -316,13 +260,3 @@ def create_hosted_zone(name):
     name = name + '.'
     zone = connection_route53.create_zone(name)
     return zone
-
-
-def get_block_device_map(size=16, device_path='/dev/sda1'):
-    device = BlockDeviceType(
-        delete_on_termination=True,
-        size=size,
-    )
-    device_map = BlockDeviceMapping()
-    device_map[device_path] = device
-    return device_map
