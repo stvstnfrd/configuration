@@ -1,15 +1,4 @@
-#### edx-stage VPC 
-
-Host 54.241.183.3
-#Host vpc-jumpbox
-    HostName 54.241.183.3
-    User ubuntu
-    ForwardAgent yes
-
-Host *.us-west-1.compute.internal
-    User ubuntu
-    ForwardAgent yes
-    ProxyCommand ssh -W %h:%p ubuntu@54.241.183.3
+#### edx-stage VPC
 
 Host *
     ForwardAgent yes
@@ -17,4 +6,6 @@ Host *
     HashKnownHosts yes
     GSSAPIAuthentication yes
     GSSAPIDelegateCredentials no
-
+    User ubuntu
+    ForwardAgent yes
+    ProxyCommand ssh -W %h:%p ubuntu@54.241.183.3
