@@ -2,7 +2,7 @@
 import argparse
 
 from openedx_configuration.lib import *
-from openedx_configuration.models.ec2 import Instance
+from openedx_configuration.models.ec2.instance import Instance
 
 
 if __name__ == '__main__':
