@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 # TODO: add tags to network_acl
-from boto.ec2.blockdevicemapping import BlockDeviceMapping
-from boto.ec2.blockdevicemapping import BlockDeviceType
 from boto.ec2.connection import EC2Connection
 from boto.route53.connection import Route53Connection
 from boto.vpc import VPCConnection

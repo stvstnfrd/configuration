@@ -1,22 +1,66 @@
+import time
+
 import boto.ec2.instance
+from boto.ec2.blockdevicemapping import BlockDeviceMapping
+from boto.ec2.blockdevicemapping import BlockDeviceType
 from boto.ec2.connection import EC2Connection
 from boto.ec2.networkinterface import NetworkInterfaceCollection
 from boto.ec2.networkinterface import NetworkInterfaceSpecification
-connection_ec2 = EC2Connection()
 
-class Instance(boto.ec2.instance.Instance):
-    def __init__(self, environment, name, state='running', connection=None):
-        super(Instance, self).__init__(connection)
+class Instance(object):
+    def __init__(self, environment, name, connection=None):
+        super(Instance, self).__init__()
         self.environment = environment
         self.name = name
-        self.state = running
+        self.connection = connection or EC2Connection()
+        self._instance = self.lookup()
 
-    def lookup(self):
-        instances = connection_ec2.get_only_instances(
+
+    @property
+    def ip_address(self):
+        address = getattr(self._instance, 'ip_address', None)
+        return address
+
+    @property
+    def public_dns_name(self):
+        dns_name = getattr(self._instance, 'public_dns_name', None)
+        return dns_name
+
+    def __repr__(self):
+        exists = False
+        state = None
+        if self._instance is not None:
+            exists = True
+            state = self._instance.state
+        string = (
+            'Instance('
+                'environment="{environment}", '
+                'name="{name}", '
+                'state="{state}", '
+                'exists={exists}, '
+            ')'
+        ).format(
+            environment=self.environment,
+            name=self.name,
+            state=state,
+            exists=exists,
+        )
+        return string
+
+    def wait_until_ready(self):
+        if not self._instance:
+            return
+        while self._instance.state == 'pending':
+            print(self._instance.state, self)
+            time.sleep(5)
+            self._instance.update()
+
+    def lookup(self, state='running'):
+        instances = self.connection.get_only_instances(
             filters={
                 'tag:Name': self.name,
                 'tag:environment': self.environment,
-                'instance-state-name': self.state,
+                'instance-state-name': state,
             },
         )
         instance = None
@@ -25,6 +69,7 @@ class Instance(boto.ec2.instance.Instance):
             instance = instances[0]
         elif number_of_instances > 1:
             pass  # warn to STDERR
+        self._instance = instance
         return instance
 
     def create(self, role, security_group_id, subnet_id, disk_size):
@@ -37,7 +82,7 @@ class Instance(boto.ec2.instance.Instance):
         )
         interfaces = NetworkInterfaceCollection(interface)
         block_device_map = get_block_device_map(size=disk_size)
-        reservation = connection_ec2.run_instances(
+        reservation = self.connection.run_instances(
             # TEMP-sandbox-dcadams
             # 'ami-b06717d0',
             # ubuntu-precise-12.04-amd64-server-20160201
@@ -52,11 +97,12 @@ class Instance(boto.ec2.instance.Instance):
         instance.add_tag('environment', self.environment)
         instance.add_tag('role', role)
         instance.update()
+        self._instance = instance
         return instance
 
     def destroy(self):
-        instance_id = self.id
-        deleted_ids = connection_ec2.terminate_instances(
+        instance_id = self._instance.id
+        deleted_ids = self.connection.terminate_instances(
             instance_ids=[
                 instance_id,
             ],

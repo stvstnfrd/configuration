@@ -1,64 +1,8 @@
 #!/usr/bin/env python
 import argparse
-import time
-
-from boto.exception import EC2ResponseError
 
 from openedx_configuration.lib import *
-
-
-DESCRIPTION_SECURITY_GROUP = 'Blah blah blah'
-
-
-def destroy(arguments):
-    environment = arguments.environment
-    name = arguments.instance_name
-    instance = lookup_instance(
-        environment,
-        name
-    )
-    print('instance', instance)
-    destroy_instance(instance.id)
-
-
-
-def describe(arguments):
-    environment = arguments.environment
-    name = arguments.instance_name
-    instance = lookup_instance(
-        environment,
-        name
-    )
-    print('instance', instance)
-    print('state', instance.state)
-
-
-def create(arguments):
-    environment = arguments.environment
-    vpc_cidr_block = arguments.vpc_cidr_block
-    vpc = lookup_vpc(
-        environment,
-        vpc_cidr_block,
-    )
-    vpc_id = vpc.id
-    subnet = lookup_subnet(vpc, environment, generate_name_subnet(vpc), arguments.subnet_cidr_block)
-    name_security_group = generate_name_security_group(vpc)
-    security_group = lookup_security_group(vpc, name_security_group, DESCRIPTION_SECURITY_GROUP)
-    print(vpc_id, subnet, security_group)
-    instance = create_instance(
-        arguments.instance_name,
-        arguments.environment,
-        arguments.role,
-        security_group.id,
-        subnet.id,
-        disk_size=arguments.disk_size,
-    )
-    while instance.state == 'pending':
-        print(instance.state, instance)
-        time.sleep(5)
-        instance.update()
-    print(instance.ip_address)
-    print(instance.public_dns_name)
+from openedx_configuration.models.ec2 import Instance
 
 
 if __name__ == '__main__':
@@ -108,10 +52,30 @@ if __name__ == '__main__':
         default='describe'
     )
     arguments = parser.parse_args()
-    # print(arguments)
-    if arguments.action == 'describe':
-        describe(arguments)
-    elif arguments.action == 'create':
-        create(arguments)
+    environment = arguments.environment
+    name = arguments.instance_name
+    vpc_cidr_block = arguments.vpc_cidr_block
+    instance = Instance(environment, name)
+    instance.lookup()
+    print(instance)
+    if arguments.action == 'create':
+        vpc = lookup_vpc(
+            environment,
+            vpc_cidr_block,
+        )
+        vpc_id = vpc.id
+        subnet = lookup_subnet(vpc, environment, generate_name_subnet(vpc), arguments.subnet_cidr_block)
+        name_security_group = generate_name_security_group(vpc)
+        DESCRIPTION_SECURITY_GROUP = 'Blah blah blah'
+        security_group = lookup_security_group(vpc, name_security_group, DESCRIPTION_SECURITY_GROUP)
+        instance.create(
+            arguments.role,
+            security_group.id,
+            subnet.id,
+            disk_size=arguments.disk_size,
+        )
+        instance.wait_until_ready()
+        print(instance.ip_address)
+        print(instance.public_dns_name)
     elif arguments.action == 'destroy':
-        destroy(arguments)
+        instance.destroy()
