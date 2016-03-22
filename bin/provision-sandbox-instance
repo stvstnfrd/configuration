@@ -58,6 +58,7 @@ if __name__ == '__main__':
     instance = Instance(environment, name)
     instance.lookup()
     print(instance)
+    import sys; sys.exit()
     if arguments.action == 'create':
         vpc = lookup_vpc(
             environment,

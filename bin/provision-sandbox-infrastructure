@@ -4,6 +4,8 @@ import argparse
 from boto.exception import EC2ResponseError
 
 from openedx_configuration.lib import *
+from openedx_configuration.models.vpc.vpc import Vpc
+from openedx_configuration.models.vpc.gateway import Gateway
 
 
 DESCRIPTION_SECURITY_GROUP = 'TODO: something smart here'
@@ -13,14 +15,16 @@ def describe(arguments):
     environment = arguments.environment
     vpc_cidr_block = arguments.vpc_cidr_block
     subnet_cidr_block = arguments.subnet_cidr_block
-    vpc = lookup_vpc(environment, vpc_cidr_block)
-    if not vpc:
+    vpc = Vpc(environment, vpc_cidr_block)
+    if not vpc.exists:
         print('no such vpc')
         return
+    gateway = Gateway(vpc)
+    if not gateway.exists:
+        print('womp')
     print(vpc)
-    name_gateway = generate_name_gateway(vpc)
-    gateway = lookup_gateway(vpc.id, name_gateway)
     print(gateway)
+    return False
     subnet = lookup_subnet(vpc, environment, generate_name_subnet(vpc), subnet_cidr_block)
     print(subnet)
     name_security_group = generate_name_security_group(vpc)

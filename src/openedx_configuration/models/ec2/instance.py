@@ -9,58 +9,37 @@ from boto.ec2.connection import EC2Connection
 from boto.ec2.networkinterface import NetworkInterfaceCollection
 from boto.ec2.networkinterface import NetworkInterfaceSpecification
 
-class Instance(object):
+from openedx_configuration.models.model import Model
+
+class Instance(Model):
     def __init__(self, environment, name, connection=None):
-        super(Instance, self).__init__()
-        self.environment = environment
-        self.name = name
+        self_.name = name
         self.connection = connection or EC2Connection()
-        self._instance = self.lookup()
+        super(Instance, self).__init__(environment)
 
 
     @property
     def ip_address(self):
-        address = getattr(self._instance, 'ip_address', None)
+        address = getattr(self.model, 'ip_address', None)
         return address
 
     @property
     def public_dns_name(self):
-        dns_name = getattr(self._instance, 'public_dns_name', None)
+        dns_name = getattr(self.model, 'public_dns_name', None)
         return dns_name
 
-    def __repr__(self):
-        exists = False
-        state = None
-        if self._instance is not None:
-            exists = True
-            state = self._instance.state
-        string = (
-            'Instance('
-                'environment="{environment}", '
-                'name="{name}", '
-                'state="{state}", '
-                'exists={exists}, '
-            ')'
-        ).format(
-            environment=self.environment,
-            name=self.name,
-            state=state,
-            exists=exists,
-        )
-        return string
-
     def wait_until_ready(self):
-        if not self._instance:
+        if not self.exists:
             return
-        while self._instance.state == 'pending':
-            print(self._instance.state, self)
+        while self.model.state == 'pending':
+            print(self.model.state, self)
             time.sleep(5)
-            self._instance.update()
+            self.model.update()
 
     def lookup(self, state='running'):
         instances = self.connection.get_only_instances(
             filters={
-                'tag:Name': self.name,
+                'tag:Name': self._name,
                 'tag:environment': self.environment,
                 'instance-state-name': state,
             },
@@ -71,7 +50,7 @@ class Instance(object):
             instance = instances[0]
         elif number_of_instances > 1:
             pass  # warn to STDERR
-        self._instance = instance
+        self._model = instance
         return instance
 
     def create(self, role, security_group_id, subnet_id, disk_size):
@@ -95,15 +74,15 @@ class Instance(object):
             block_device_map=block_device_map,
         )
         instance = reservation.instances[0]
-        instance.add_tag('Name', self.name)
+        instance.add_tag('Name', self._name)
         instance.add_tag('environment', self.environment)
         instance.add_tag('role', role)
         instance.update()
-        self._instance = instance
+        self._model = instance
         return instance
 
     def destroy(self):
-        instance_id = self._instance.id
+        instance_id = self._model.id
         deleted_ids = self.connection.terminate_instances(
             instance_ids=[
                 instance_id,

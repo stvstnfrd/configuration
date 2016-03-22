@@ -32,14 +32,6 @@ def generate_name_security_group(vpc):
     return name
 
 
-# sandbox-internet
-def generate_name_gateway(vpc):
-    name = "{vpc}-internet".format(
-        vpc=vpc.tags['Name'],
-    )
-    return name
-
-
 # sandbox-internet-sandbox-public
 # sandbox-internet-route
 def generate_name_route_table(vpc):
@@ -53,15 +45,6 @@ def generate_name_route_table(vpc):
 
 connection_vpc = VPCConnection()
 connection_ec2 = EC2Connection()
-
-
-def create_vpc(environment, cidr_block):
-    vpc = connection_vpc.create_vpc(cidr_block)
-    connection_vpc.modify_vpc_attribute(vpc.id, enable_dns_support=True)
-    connection_vpc.modify_vpc_attribute(vpc.id, enable_dns_hostnames=True)
-    success = vpc.add_tag('Name', environment)
-    success = vpc.add_tag('environment', environment)
-    return vpc
 
 
 def lookup_all_vpcs():
@@ -104,45 +87,6 @@ def lookup_all_vpcs():
             # if jumpbox:
             #     pass
             # print(name, instance, instance.tags)
-
-def lookup_vpc(environment, cidr_block):
-    vpcs = connection_vpc.get_all_vpcs(
-        filters={
-            'cidrBlock': cidr_block,
-            'tag:Name': environment,
-            'tag:environment': environment,
-        },
-    )
-    assert len(vpcs) <= 1
-    if len(vpcs) == 1:
-        vpc = vpcs[0]
-    else:
-        vpc = None
-    return vpc
-
-
-def create_gateway(vpc, name):
-    vpc_id = vpc.id
-    environment = vpc.tags['environment']
-    gateway = connection_vpc.create_internet_gateway()
-    success = gateway.add_tag('Name', name)
-    success = gateway.add_tag('environment', environment)
-    success = connection_vpc.attach_internet_gateway(gateway.id, vpc_id)
-    return gateway
-
-
-def lookup_gateway(vpc_id, name):
-    gateways = connection_vpc.get_all_internet_gateways(
-        filters={
-            'attachment.vpc-id': vpc_id,
-        },
-    )
-    assert len(gateways) <= 1
-    if len(gateways) == 1:
-        gateway = gateways[0]
-    else:
-        gateway = None
-    return gateway
 
 
 def create_subnet(vpc, name, cidr_block):

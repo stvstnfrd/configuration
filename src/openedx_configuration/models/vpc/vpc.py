@@ -2,47 +2,41 @@
 # -*- coding: utf-8 -*-
 from boto.vpc import VPCConnection
 
+from openedx_configuration.models.model import Model
 
-class Vpc(object):
-    def __init__(self, environment, cidr_block, api_connection):
-        self.environment = environment
+
+class Vpc(Model):
+    def __init__(self, environment, cidr_block, api_connection=None):
         self.cidr_block = cidr_block
         self.api = api_connection or VPCConnection()
-        self.__model = None
+        super(Vpc, self).__init__(environment)
 
-    def all(self):
-        pass
-
-    def __repr__(self):
-        return unicode(self._model)
-
-    def create(cidr_block):
-        environment = self.environment
-        cidr_block = self.cidr_block
+    def create(self):
+        if self.exists:
+            print('VPC already exists')
+            return False
         api = self.api
+        cidr_block = self.cidr_block
+        environment = self.environment
         vpc = api.create_vpc(cidr_block)
         api.modify_vpc_attribute(vpc.id, enable_dns_support=True)
         api.modify_vpc_attribute(vpc.id, enable_dns_hostnames=True)
-        success = vpc.add_tag('Name', environment)
-        success = vpc.add_tag('environment', environment)
-        return vpc
-
+        vpc.add_tag('Name', environment)
+        vpc.add_tag('environment', environment)
+        self._model = vpc
+        return True
 
     def destroy(self):
-        model = self._model
-        vpc_id = model.id
-        api = self.api
-        success = api.delete_vpc(vpc_id)
+        vpc = self._model
+        vpc_id = vpc.id
+        success = self.api.delete_vpc(vpc_id)
+        self._model = False
         return success
 
-    def _model(self):
-        model = self._update()
-        self.__model = model
-        return model
-
-    def _update(self):
+    def fetch(self):
         environment = self.environment
         api = self.api
+        cidr_block = self.cidr_block
         vpcs = api.get_all_vpcs(
             filters={
                 'cidrBlock': cidr_block,
@@ -57,4 +51,5 @@ class Vpc(object):
             vpc = None
             if len_vpcs > 1:
                 print('Found muliple matches!')
-        return vpc
+        self._model = vpc
+        return self
