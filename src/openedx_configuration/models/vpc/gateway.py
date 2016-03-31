@@ -1,35 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from boto.vpc import VPCConnection
-
 from openedx_configuration.models.model import Model
-from openedx_configuration.models.vpc.vpc import Vpc
 
 class Gateway(Model):
-    def __init__(self, environment, name, vpc=None, model=None, api=None, **kwargs):
-        super(Gateway, self).__init__(environment, name, model)
-        self.vpc = vpc or Vpc(environment)
-        self.api = api or VPCConnection()
+    def __init__(self, environment, name, vpc, **kwargs):
+        super(Gateway, self).__init__(environment, name, **kwargs)
+        self.vpc = vpc
 
     @staticmethod
-    def from_boto(gateway):
-        return Gateway(environment=None, name=None, model=gateway)
+    def from_boto(gateway, vpc):
+        return Gateway(environment=None, name=None, vpc=vpc, model=gateway)
 
-    @staticmethod
-    def all(vpc):
-        api = VPCConnection()
-        gateways = api.get_all_internet_gateways(
-            filters={
-                'attachment.vpc-id': vpc.id,
-            },
-        )
-        gateways = [
-            Gateway.from_boto(gateway)
-            for gateway in gateways
-        ]
-        return gateways
-
-    def _create(self):
+    def _create(self, *args, **kwargs):
         gateway = self.api.create_internet_gateway()
         gateway.add_tag('Name', self.name)
         gateway.add_tag('environment', self.environment)
@@ -39,7 +21,29 @@ class Gateway(Model):
         )
         return gateway
 
-    def _lookup(self):
+    def _destroy(self, *args, **kwargs):
+        self.api.detach_internet_gateway(
+            self.id,
+            self.vpc.id
+        )
+        self.api.delete_internet_gateway(self.id)
+
+    @classmethod
+    def get_all(cls, vpc):
+        api = cls.type_api()
+        gateways = api.get_all_internet_gateways(
+            filters={
+                'attachment.vpc-id': vpc.id,
+                'tag:environment': vpc.environment,
+            },
+        )
+        gateways = [
+            Gateway.from_boto(gateway, vpc)
+            for gateway in gateways
+        ]
+        return gateways
+
+    def _get_one(self):
         gateways = self.api.get_all_internet_gateways(
             filters={
                 'attachment.vpc-id': self.vpc.id,
@@ -53,10 +57,3 @@ class Gateway(Model):
         else:
             gateway = None
         return gateway
-
-    def _destroy(self):
-        self.api.detach_internet_gateway(
-            self.id,
-            self.vpc.id
-        )
-        self.api.delete_internet_gateway(self.id)

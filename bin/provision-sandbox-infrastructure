@@ -12,23 +12,6 @@ from openedx_configuration.models.ec2.security_group import SecurityGroup
 DESCRIPTION_SECURITY_GROUP = 'TODO: something smart here'
 
 
-class Stack(object):
-    def __init__(self, vpc):
-        self.vpc = vpc
-
-    def destroy(self):
-        vpc = self.vpc
-        print('wtf', RouteTable.all(vpc))
-        for route_table in RouteTable.all(vpc):
-            route_table.destroy()
-        for security_group in SecurityGroup.all(vpc):
-            security_group.destroy()
-        for subnet in Subnet.all(vpc):
-            subnet.destroy()
-        for gateway in Gateway.all(vpc):
-            gateway.destroy()
-        vpc.destroy()
-
 def _get_all(arguments):
     api_vpc = VPCConnection()
     api_ec2 = EC2Connection()
@@ -39,17 +22,20 @@ def _get_all(arguments):
     vpc = Vpc(environment, vpc_name, api=api_vpc)
     gateway = Gateway(
         environment,
-        'sandbox-internet',
+        name='sandbox-internet',
         vpc=vpc,
         api=api_vpc,
     )
     subnet = Subnet(
         environment,
         name='sandbox-public',
+        vpc=vpc,
+        api=api_vpc,
     )
     security_group = SecurityGroup(
         environment,
         name='public-sandbox-openedx',
+        vpc=vpc,
         api=api_ec2,
     )
     route_table = RouteTable(
@@ -68,30 +54,33 @@ def _get_all(arguments):
 
 
 def describe(arguments):
-    (vpc, gateway, subnet, security_group, route_table) = _get_all(arguments)
-    for item in _get_all(arguments):
-        print(item.exists, item.name, item.environment, item)
-        print
-    return False
+    items = _get_all(arguments)
+    for item in items:
+        if item.exists:
+            print(item)
 
 
 def create(arguments):
+    dry_run = not arguments.go
     (vpc, gateway, subnet, security_group, route_table) = _get_all(arguments)
-    vpc.create(cidr_block=arguments.vpc_cidr_block)
-    gateway.create()
-    print('create subnet', arguments.subnet_cidr_block)
-    subnet.create(arguments.subnet_cidr_block)
-    security_group.create(DESCRIPTION_SECURITY_GROUP)
-    route_table.create(gateway.id, PUBLIC_CIDR_BLOCK)
+    vpc.create(cidr_block=arguments.vpc_cidr_block, dry_run=dry_run)
+    gateway.create(dry_run=dry_run)
+    subnet.create(cidr_block=arguments.subnet_cidr_block, dry_run=dry_run)
+    route_table.create(gateway_id=gateway.id, cidr_block=PUBLIC_CIDR_BLOCK, dry_run=dry_run)
+    security_group.create(description=DESCRIPTION_SECURITY_GROUP, dry_run=dry_run)
+
 
 def destroy(arguments):
-    _all = _get_all(arguments)
-    vpc = _all[0]
-    stack = Stack(vpc)
-    stack.destroy()
-    print(stack)
+    dry_run = not arguments.go
+    (vpc, gateway, subnet, security_group, route_table) = _get_all(arguments)
+    route_table.destroy(dry_run=dry_run)
+    security_group.destroy(dry_run=dry_run)
+    subnet.destroy(dry_run=dry_run)
+    gateway.destroy(dry_run=dry_run)
+    vpc.destroy(dry_run=dry_run)
 
-if __name__ == '__main__':
+
+def parse_arguments():
     parser = argparse.ArgumentParser(
         description='Whatever, man',
     )
@@ -125,12 +114,27 @@ if __name__ == '__main__':
         help='?',
         default='sandbox',
     )
+    parser.add_argument(
+        '-g',
+        '--go',
+        action='store_true',
+        help='?',
+        default=False,
+    )
     arguments = parser.parse_args()
+    return arguments
+
+
+def main(arguments):
     if not arguments.vpc_name:
         arguments.vpc_name = arguments.environment
-    if arguments.action == 'describe':
-        describe(arguments)
-    elif arguments.action == 'create':
+    if arguments.action == 'create':
         create(arguments)
     elif arguments.action == 'destroy':
         destroy(arguments)
+    else:
+        describe(arguments)
+
+if __name__ == '__main__':
+    arguments = parse_arguments()
+    main(arguments)

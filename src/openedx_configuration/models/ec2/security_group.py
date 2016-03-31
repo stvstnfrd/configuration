@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 from boto.ec2.connection import EC2Connection
 
-from openedx_configuration.lib import *
 from openedx_configuration.models.model import Model
-from openedx_configuration.models.vpc.vpc import Vpc
+
+PUBLIC_CIDR_BLOCK = '0.0.0.0/0'
 
 PORTS = [
     # cidr_block, permission, port, egress
@@ -15,34 +15,32 @@ PORTS = [
 
 
 class SecurityGroup(Model):
-    def __init__(self, environment, name, vpc=None, model=None, api=None):
-        super(SecurityGroup, self).__init__(
-            environment,
-            name,
-            model,
-        )
-        self.api = api or EC2Connection()
-        self.vpc = vpc or Vpc(environment)
+    type_api = EC2Connection
+
+    def __init__(self, environment, name, vpc, **kwargs):
+        super(SecurityGroup, self).__init__(environment, name, **kwargs)
+        self.vpc = vpc
 
     @staticmethod
-    def from_boto(security_group):
-        return SecurityGroup(environment=None, name=None, model=security_group)
+    def from_boto(security_group, vpc):
+        return SecurityGroup(environment=None, name=None, vpc=vpc, model=security_group)
 
-    @staticmethod
-    def all(vpc):
-        api = EC2Connection()
+    @classmethod
+    def get_all(cls, vpc):
+        api = cls.type_api()
         security_groups = api.get_all_security_groups(
             filters={
                 'vpc-id': vpc.id,
+                'tag:environment': vpc.environment,
             },
         )
         security_groups = [
-            SecurityGroup.from_boto(security_group)
+            SecurityGroup.from_boto(security_group, vpc)
             for security_group in security_groups
         ]
         return security_groups
 
-    def _lookup(self):
+    def _get_one(self):
         security_groups = self.api.get_all_security_groups(
             filters={
                 'group-name': self.name,
@@ -58,8 +56,8 @@ class SecurityGroup(Model):
             security_group = None
         return security_group
 
-    def _create(self, desciption):
-        security_group = connection_ec2.create_security_group(
+    def _create(self, desciption=None, **kwargs):
+        security_group = self.api.create_security_group(
             self.name,
             desciption,
             vpc_id=self.vpc.id,
@@ -78,7 +76,7 @@ class SecurityGroup(Model):
             )
         return security_group
 
-    def _destroy(self):
+    def _destroy(self, *args, **kwargs):
         self.api.delete_security_group(
             group_id=self.id,
         )

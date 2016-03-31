@@ -1,7 +1,8 @@
+/edx/src/configuration-secure/ansible/vars/common/platform/defaults.yaml
 - hosts: localhost
   sudo: True
   vars:
-    secure_dir: '../../configuration-secure/ansible'
+    secure_dir: '/edx/etc/secure/ansible'
     playbook_dir: '../../configuration/playbooks'
   vars_files:
     - "{{ playbook_dir }}/roles/common/defaults/main.yml"

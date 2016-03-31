@@ -1,28 +1,31 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from boto.exception import EC2ResponseError
-from boto.vpc import VPCConnection
 
 from openedx_configuration.models.model import Model
 
 
 class RouteTable(Model):
-    def __init__(self, environment, name, subnet, model=None, api=None):
-        super(RouteTable, self).__init__(environment, name, model)
-        self.api = api or VPCConnection()
+    def __init__(self, environment, name, subnet, **kwargs):
+        super(RouteTable, self).__init__(environment, name, **kwargs)
         self.subnet = subnet
 
     @staticmethod
     def from_boto(route_table):
         return RouteTable(environment=None, name=None, subnet=None, model=route_table)
 
-    @staticmethod
-    def all(vpc):
-        api = VPCConnection()
+    @classmethod
+    def get_all(cls, vpc=None, subnet=None):
+        api = cls.type_api()
+        filters = {}
+        if vpc:
+            filters['vpc-id'] = vpc.id
+            filters['tag:environment'] = vpc.environment
+        if subnet:
+            filters['association.subnet-id'] = subnet.id
+            filters['tag:environment'] = subnet.environment
         route_tables = api.get_all_route_tables(
-            filters={
-                'vpc-id': vpc.id,
-            },
+            filters=filters,
         )
         route_tables = [
             RouteTable.from_boto(route_table)
@@ -30,14 +33,14 @@ class RouteTable(Model):
         ]
         return route_tables
 
-    def _lookup(self):
+    def _get_one(self):
         environment = self.environment
         route_tables = self.api.get_all_route_tables(
             filters={
                 # 'association.subnet-id': self.subnet.id,
                 'tag:Name': self.name,
                 'tag:environment': environment,
-                'vpc-id': self.subnet.vpc.id,
+                # 'vpc-id': self.subnet.vpc.id,
             },
         )
         assert len(route_tables) <= 1
@@ -47,7 +50,7 @@ class RouteTable(Model):
             route_table = None
         return route_table
 
-    def _create(self, gateway_id, cidr_block):
+    def _create(self, gateway_id, cidr_block, *args, **kwargs):
         subnet_id = self.subnet.model.id
         vpc = self.subnet.vpc.model
         environment = vpc.tags['environment']
@@ -63,7 +66,7 @@ class RouteTable(Model):
         association_id = self.api.associate_route_table(route_table.id, subnet_id)
         return route_table
 
-    def _destroy(self):
+    def _destroy(self, *args, **kwargs):
         route_table = self.model
         for association in route_table.associations:
             self.api.disassociate_route_table(association.id)

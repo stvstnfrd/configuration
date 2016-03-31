@@ -1,17 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from boto.vpc import VPCConnection
+
+
 class Model(object):
     _model = False
     name = None
     environment = None
+    type_api = VPCConnection
 
-    def __init__(self, environment, name, model=False, **kwargs):
+    def __init__(self, environment, name, model=False, api=None, **kwargs):
         if model:
-            name = model.tags.get('Name')
-            environment = model.tags.get('environment')
+            name = model.tags.get('Name', name)
+            environment = model.tags.get('environment', environment)
         self.name = name
         self.environment = environment
         self._model = model
+        self.api = api or self.type_api()
 
     @property
     def exists(self):
@@ -19,7 +24,7 @@ class Model(object):
 
     @property
     def model(self):
-        if self._model is False:
+        if not self._model:
             self.lookup()
         return self._model
 
@@ -47,19 +52,32 @@ class Model(object):
         return string
 
     def lookup(self):
-        model = self._lookup()
+        model = self._get_one()
         self._model = model
 
-    def destroy(self, *args, **kwargs):
-        if self.exists:
-            self._destroy(*args, **kwargs)
-            self._model = False
-
-    def create(self, *args, **kwargs):
-        print('kwargs', kwargs, self)
+    def destroy(self, dry_run=False, **kwargs):
+        print('check if exists', self)
         if not self.exists:
-            model = self._create(*args, **kwargs)
-            self._model = model
+            print('cannot destroy what does not exist', self)
+            return False
+        print('try destroy', self)
+        if dry_run:
+            print('opting not to destroy', self)
+            return
+        self._destroy(**kwargs)
+        self._model = False
+
+    def create(self, dry_run=False, **kwargs):
+        print('check if exists', self)
+        if self.exists:
+            print('cowwardly refusing to recreate', self)
+            return False
+        print('try create', self)
+        if dry_run:
+            print('opting not to create', self)
+            return
+        model = self._create(**kwargs)
+        self._model = model
 
     @property
     def id(self):
