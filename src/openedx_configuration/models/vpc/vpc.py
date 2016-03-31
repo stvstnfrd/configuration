@@ -6,42 +6,55 @@ from openedx_configuration.models.model import Model
 
 
 class Vpc(Model):
-    def __init__(self, environment, cidr_block, api_connection=None):
-        self.cidr_block = cidr_block
-        self.api = api_connection or VPCConnection()
-        super(Vpc, self).__init__(environment)
+    _all = None
+    def __init__(self, environment, name=None, api=None, model=None, **kwargs):
+        name = name or environment
+        super(Vpc, self).__init__(environment, name, model=model)
+        self.api = api or VPCConnection()
 
-    def create(self):
+    @staticmethod
+    def from_boto(vpc):
+        return Vpc(environment=None, model=vpc)
+
+    @staticmethod
+    def all():
+        api = VPCConnection()
+        vpcs = api.get_all_vpcs()
+        vpcs = [
+            Vpc.from_boto(vpc)
+            for vpc in vpcs
+        ]
+        return vpcs
+
+    def _create(
+            self,
+            cidr_block,
+            enable_dns_support=True,
+            enable_dns_hostnames=True,
+            **kwargs
+    ):
         if self.exists:
             print('VPC already exists')
             return False
-        api = self.api
-        cidr_block = self.cidr_block
-        environment = self.environment
-        vpc = api.create_vpc(cidr_block)
-        api.modify_vpc_attribute(vpc.id, enable_dns_support=True)
-        api.modify_vpc_attribute(vpc.id, enable_dns_hostnames=True)
-        vpc.add_tag('Name', environment)
-        vpc.add_tag('environment', environment)
-        self._model = vpc
-        return True
+        vpc = self.api.create_vpc(cidr_block)
+        self.api.modify_vpc_attribute(
+            vpc.id,
+            enable_dns_support=enable_dns_support,
+        )
+        self.api.modify_vpc_attribute(
+            vpc.id,
+            enable_dns_hostnames=enable_dns_hostnames,
+        )
+        vpc.add_tag('Name', self.name)
+        vpc.add_tag('environment', self.environment)
+        return vpc
 
-    def destroy(self):
-        vpc = self._model
-        vpc_id = vpc.id
-        success = self.api.delete_vpc(vpc_id)
-        self._model = False
-        return success
-
-    def fetch(self):
-        environment = self.environment
-        api = self.api
-        cidr_block = self.cidr_block
-        vpcs = api.get_all_vpcs(
+    def _lookup(self, **kwargs):
+        print('hi')
+        vpcs = self.api.get_all_vpcs(
             filters={
-                'cidrBlock': cidr_block,
-                'tag:Name': environment,
-                'tag:environment': environment,
+                'tag:Name': self.name,
+                'tag:environment': self.environment,
             },
         )
         len_vpcs = len(vpcs)
@@ -51,5 +64,7 @@ class Vpc(Model):
             vpc = None
             if len_vpcs > 1:
                 print('Found muliple matches!')
-        self._model = vpc
-        return self
+        return vpc
+
+    def _destroy(self, **kwargs):
+        self.api.delete_vpc(self.id)

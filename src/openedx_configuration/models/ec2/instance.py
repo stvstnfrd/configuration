@@ -13,7 +13,7 @@ from openedx_configuration.models.model import Model
 
 class Instance(Model):
     def __init__(self, environment, name, connection=None):
-        self_.name = name
+        self._name = name
         self.connection = connection or EC2Connection()
         super(Instance, self).__init__(environment)
 

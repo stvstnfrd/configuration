@@ -3,38 +3,48 @@
 from boto.vpc import VPCConnection
 
 from openedx_configuration.models.model import Model
+from openedx_configuration.models.vpc.vpc import Vpc
 
 class Gateway(Model):
-    def __init__(self, vpc, name=None, api_connection=None):
-        self.api = api_connection or VPCConnection()
-        self.vpc = vpc
-        self._name = name or self._generate_name()
-        environment = vpc.tags.get('environment')
-        super(Gateway, self).__init__(environment)
+    def __init__(self, environment, name, vpc=None, model=None, api=None, **kwargs):
+        super(Gateway, self).__init__(environment, name, model)
+        self.vpc = vpc or Vpc(environment)
+        self.api = api or VPCConnection()
 
-    def create(self):
-        vpc = self.vpc.model
-        vpc_id = vpc.id
-        name = self._name
-        environment = vpc.tags['environment']
-        gateway = self.api.create_internet_gateway()
-        success = gateway.add_tag('Name', name)
-        success = gateway.add_tag('environment', environment)
-        success = self.api.attach_internet_gateway(
-            gateway.id,
-            vpc_id
+    @staticmethod
+    def from_boto(gateway):
+        return Gateway(environment=None, name=None, model=gateway)
+
+    @staticmethod
+    def all(vpc):
+        api = VPCConnection()
+        gateways = api.get_all_internet_gateways(
+            filters={
+                'attachment.vpc-id': vpc.id,
+            },
         )
-        self._model = gateway
+        gateways = [
+            Gateway.from_boto(gateway)
+            for gateway in gateways
+        ]
+        return gateways
+
+    def _create(self):
+        gateway = self.api.create_internet_gateway()
+        gateway.add_tag('Name', self.name)
+        gateway.add_tag('environment', self.environment)
+        self.api.attach_internet_gateway(
+            gateway.id,
+            self.vpc.id
+        )
         return gateway
 
-    def destroy(self):
-        print('noop')
-
-    def fetch(self):
-        vpc_id = self.vpc.model.id
+    def _lookup(self):
         gateways = self.api.get_all_internet_gateways(
             filters={
-                'attachment.vpc-id': vpc_id,
+                'attachment.vpc-id': self.vpc.id,
+                'tag:Name': self.name,
+                'tag:environment': self.environment,
             },
         )
         assert len(gateways) <= 1
@@ -42,13 +52,11 @@ class Gateway(Model):
             gateway = gateways[0]
         else:
             gateway = None
-        self._model = gateway
-        return self
+        return gateway
 
-    # sandbox-internet
-    def _generate_name(self):
-        name_vpc = self.vpc.name
-        name = "{vpc}-internet".format(
-            vpc=name_vpc,
+    def _destroy(self):
+        self.api.detach_internet_gateway(
+            self.id,
+            self.vpc.id
         )
-        return name
+        self.api.delete_internet_gateway(self.id)
