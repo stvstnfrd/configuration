@@ -3,8 +3,8 @@
 """
 Manage an AWS Virtual Private Cloud
 """
-from openedx_configuration.models.model import Model
 from openedx_configuration.models.ec2.security_group import SecurityGroup
+from openedx_configuration.models.model import Model
 from openedx_configuration.models.vpc.gateway import Gateway
 from openedx_configuration.models.vpc.route_table import RouteTable
 from openedx_configuration.models.vpc.subnet import Subnet

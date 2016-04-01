@@ -1,17 +1,32 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+Manage an AWS Internet Gateway
+"""
 from openedx_configuration.models.model import Model
 
 class Gateway(Model):
+    """
+    Represent an AWS Internet Gateway
+    """
     def __init__(self, environment, name, vpc, **kwargs):
+        """
+        Initialize a gateway
+        """
         super(Gateway, self).__init__(environment, name, **kwargs)
         self.vpc = vpc
 
     @staticmethod
     def from_boto(gateway, vpc):
+        """
+        Initialize a gateway from a Boto object
+        """
         return Gateway(environment=None, name=None, vpc=vpc, model=gateway)
 
     def _create(self, *args, **kwargs):
+        """
+        Create a new gateway and attach it to the VPC
+        """
         gateway = self.api.create_internet_gateway()
         gateway.add_tag('Name', self.name)
         gateway.add_tag('environment', self.environment)
@@ -22,6 +37,9 @@ class Gateway(Model):
         return gateway
 
     def _destroy(self, *args, **kwargs):
+        """
+        Detach from the VPC and delete the gateway
+        """
         self.api.detach_internet_gateway(
             self.id,
             self.vpc.id
@@ -30,11 +48,13 @@ class Gateway(Model):
 
     @classmethod
     def get_all(cls, vpc):
+        """
+        Fetch all gateways associated with the VPC
+        """
         api = cls.type_api()
         gateways = api.get_all_internet_gateways(
             filters={
                 'attachment.vpc-id': vpc.id,
-                'tag:environment': vpc.environment,
             },
         )
         gateways = [
@@ -44,6 +64,9 @@ class Gateway(Model):
         return gateways
 
     def _get_one(self):
+        """
+        Fetch exactly one Gateway via name/environment/vpc
+        """
         gateways = self.api.get_all_internet_gateways(
             filters={
                 'attachment.vpc-id': self.vpc.id,
