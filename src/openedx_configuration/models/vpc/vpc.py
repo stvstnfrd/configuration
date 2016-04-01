@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Manage an AWS Virtual Private Cloud
+Manage AWS Virtual Private Clouds
 """
 from openedx_configuration.models.ec2.security_group import SecurityGroup
 from openedx_configuration.models.model import Model

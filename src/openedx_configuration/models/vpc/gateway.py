@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Manage an AWS Internet Gateway
+Manage AWS Internet Gateways
 """
 from openedx_configuration.models.model import Model
 
