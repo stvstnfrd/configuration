@@ -91,7 +91,7 @@ class Instance(Model):
             # ubuntu-precise-12.04-amd64-server-20160201
             'ami-2b2f594b',
             key_name='deployment',
-            instance_type='t2.small',
+            instance_type='t2.large',
             network_interfaces=interfaces,
             block_device_map=block_device_map,
         )
