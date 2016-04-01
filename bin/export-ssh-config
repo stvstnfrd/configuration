@@ -10,6 +10,8 @@ import argparse
 
 from boto.ec2 import EC2Connection
 
+from openedx_configuration.models.vpc.vpc import Vpc
+
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
