@@ -5,12 +5,11 @@ Provision a sandbox infrastructure
 """
 import argparse
 
-from openedx_configuration.lib import *
-from openedx_configuration.models.vpc.vpc import Vpc
+from openedx_configuration.models.ec2.security_group import SecurityGroup
 from openedx_configuration.models.vpc.gateway import Gateway
 from openedx_configuration.models.vpc.route_table import RouteTable
 from openedx_configuration.models.vpc.subnet import Subnet
-from openedx_configuration.models.ec2.security_group import SecurityGroup
+from openedx_configuration.models.vpc.vpc import Vpc
 
 DESCRIPTION_SECURITY_GROUP = 'TODO: something smart here'
 NAME_ENVIRONMENT = 'sandbox'

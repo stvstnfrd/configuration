@@ -5,7 +5,6 @@ Provision an EC2 instance for use as an OpenEdX sandbox
 """
 import argparse
 
-from openedx_configuration.lib import *
 from openedx_configuration.models.ec2.instance import Instance
 from openedx_configuration.models.ec2.security_group import SecurityGroup
 from openedx_configuration.models.vpc.subnet import Subnet

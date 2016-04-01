@@ -8,13 +8,6 @@ forward connections through it.
 """
 import argparse
 
-from boto.exception import EC2ResponseError
-
-from openedx_configuration.lib import *
-
-
-DESCRIPTION_SECURITY_GROUP = 'TODO: something smart here'
-
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
