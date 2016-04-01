@@ -23,13 +23,10 @@ class RouteTable(Model):
         """
         Create a new route table for the gateway/subnet
         """
-        subnet_id = self.subnet.model.id
         vpc = self.subnet.vpc.model
-        environment = vpc.tags['environment']
-        environment = self.environment
         route_table = self.api.create_route_table(vpc.id)
         route_table.add_tag('Name', self.name)
-        route_table.add_tag('environment', environment)
+        route_table.add_tag('environment', self.environment)
         self.api.create_route(
             route_table.id,
             cidr_block,
@@ -37,7 +34,7 @@ class RouteTable(Model):
         )
         association_id = self.api.associate_route_table(
             route_table.id,
-            subnet_id
+            self.subnet.id
         )
         return route_table
 
