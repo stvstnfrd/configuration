@@ -10,7 +10,27 @@ from openedx_configuration.lib import *
 DESCRIPTION_SECURITY_GROUP = 'TODO: something smart here'
 
 
-def lookup_all_vpcs(arguments):
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        description='Whatever, man',
+    )
+    parser.add_argument(
+        '-e',
+        '--environment',
+        help='?',
+        default=None,
+    )
+    parser.add_argument(
+        '-u',
+        '--username',
+        help='probably your Github username',
+        required=True,
+    )
+    arguments = parser.parse_args()
+    return arguments
+
+
+def main(arguments):
     connection_vpc = VPCConnection()
     connection_ec2 = EC2Connection()
     if arguments.environment:
@@ -70,20 +90,5 @@ def create_hosted_zone(name):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description='Whatever, man',
-    )
-    parser.add_argument(
-        '-e',
-        '--environment',
-        help='?',
-        default=None,
-    )
-    parser.add_argument(
-        '-u',
-        '--username',
-        help='probably your Github username',
-        required=True,
-    )
-    arguments = parser.parse_args()
-    lookup_all_vpcs(arguments)
+    arguments = parse_arguments()
+    main(arguments)
