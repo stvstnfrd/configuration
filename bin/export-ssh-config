@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Generate an ~/.ssh/config file for a VPC environment
+Generate an ~/.ssh/config file for a VPC environment.
 
-If a jumpbox exists at `jump.*` in the VPC,
+If a jumpbox exists at `jump.${environment}` in the VPC,
 forward connections through it.
 """
 import argparse
@@ -23,7 +23,10 @@ def parse_arguments():
     parser.add_argument(
         '-e',
         '--environment',
-        help='?',
+        help=(
+            'one of [sandbox, stage, lagunita, suclass, cme, etc], '
+            'defaults to all'
+        ),
         default=None,
     )
     parser.add_argument(
