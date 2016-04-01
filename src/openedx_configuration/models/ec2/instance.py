@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+Manage EC2 Instances
+"""
 import time
 
 import boto.ec2.instance
@@ -13,20 +16,35 @@ from openedx_configuration.models.model import Model
 
 
 class Instance(Model):
+    """
+    Represent an EC2 Instance
+    """
     def __init__(self, environment, name, **kwargs):
+        """
+        Initialize an EC2 Instance
+        """
         super(Instance, self).__init__(environment, name, **kwargs)
 
     @property
     def ip_address(self):
+        """
+        Mirror the internal object's IP address
+        """
         address = getattr(self.model, 'ip_address', None)
         return address
 
     @property
     def public_dns_name(self):
+        """
+        Mirror the internal object's public DNS name
+        """
         dns_name = getattr(self.model, 'public_dns_name', None)
         return dns_name
 
     def wait_until_ready(self):
+        """
+        Block while instance is `pending`
+        """
         if not self.exists:
             return
         while self.model.state == 'pending':
@@ -35,6 +53,9 @@ class Instance(Model):
             self.model.update()
 
     def _get_one(self):
+        """
+        Fetch exactly one running instance via name/environment
+        """
         state = 'running'
         instances = self.api.get_only_instances(
             filters={
@@ -52,6 +73,9 @@ class Instance(Model):
         return instance
 
     def _create(self, role, security_group, subnet, disk_size, **kwargs):
+        """
+        Create a new EC2 instance
+        """
         interface = NetworkInterfaceSpecification(
             associate_public_ip_address=True,
             subnet_id=subnet.id,
@@ -79,6 +103,9 @@ class Instance(Model):
         return instance
 
     def _destroy(self, *args, **kwargs):
+        """
+        Terminate an EC2 instance
+        """
         deleted_ids = self.api.terminate_instances(
             instance_ids=[
                 self.id,
@@ -88,6 +115,9 @@ class Instance(Model):
 
 
 def get_block_device_map(size=16, device_path='/dev/sda1'):
+    """
+    Generate a standard EBS device
+    """
     device = BlockDeviceType(
         delete_on_termination=True,
         size=size,
