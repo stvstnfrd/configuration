@@ -7,5 +7,4 @@ Host *
     GSSAPIAuthentication yes
     GSSAPIDelegateCredentials no
     User ubuntu
-    ForwardAgent yes
     ProxyCommand ssh -W %h:%p ubuntu@54.241.183.3
