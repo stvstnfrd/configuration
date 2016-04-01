@@ -27,31 +27,6 @@ class Model(object):
         self._model = model
         self.api = api or self.type_api()
 
-    @property
-    def exists(self):
-        """
-        Check if the model exists in AWS
-        """
-        return self.model is not None
-
-    @property
-    def model(self):
-        """
-        Load the model lazily
-        """
-        self._model = self._model or self._get_one()
-        return self._model
-
-    @property
-    def tags(self):
-        """
-        Mirror the tags of the underlying model
-        """
-        data = {}
-        if self.exists:
-            data = self.model.tags
-        return data
-
     def __repr__(self):
         """
         Represent the object as a string
@@ -71,21 +46,6 @@ class Model(object):
         )
         return string
 
-    def destroy(self, dry_run=False, **kwargs):
-        """
-        Delegate deletion to the subclass, if it does exist
-        """
-        print('check if exists', self)
-        if not self.exists:
-            print('cannot destroy what does not exist', self)
-            return False
-        print('try destroy', self)
-        if dry_run:
-            print('opting not to destroy', self)
-            return
-        self._destroy(**kwargs)
-        self._model = False
-
     def create(self, dry_run=False, **kwargs):
         """
         Delegate creation to the subclass, if it doesn't exist
@@ -100,6 +60,30 @@ class Model(object):
             return
         model = self._create(**kwargs)
         self._model = model
+        print('created', self)
+
+    def destroy(self, dry_run=False, **kwargs):
+        """
+        Delegate deletion to the subclass, if it does exist
+        """
+        print('check if exists', self)
+        if not self.exists:
+            print('cannot destroy what does not exist', self)
+            return False
+        print('try destroy', self)
+        if dry_run:
+            print('opting not to destroy', self)
+            return
+        self._destroy(**kwargs)
+        self._model = False
+        print('destroyed', self)
+
+    @property
+    def exists(self):
+        """
+        Check if the model exists in AWS
+        """
+        return self.model is not None
 
     @property
     def id(self):
@@ -107,3 +91,21 @@ class Model(object):
         Mirror the ID of the underlying model
         """
         return getattr(self.model, 'id', None)
+
+    @property
+    def model(self):
+        """
+        Load the model lazily
+        """
+        self._model = self._model or self._get_one()
+        return self._model
+
+    @property
+    def tags(self):
+        """
+        Mirror the tags of the underlying model
+        """
+        data = {}
+        if self.exists:
+            data = self.model.tags
+        return data
