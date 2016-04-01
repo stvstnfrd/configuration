@@ -49,7 +49,7 @@ class Gateway(Model):
     @classmethod
     def get_all(cls, vpc):
         """
-        Fetch all gateways associated with the VPC
+        Find all gateways associated with the VPC
         """
         api = cls.type_api()
         gateways = api.get_all_internet_gateways(
@@ -65,7 +65,7 @@ class Gateway(Model):
 
     def _get_one(self):
         """
-        Fetch exactly one Gateway via name/environment/vpc
+        Find exactly one Gateway via name/environment/vpc
         """
         gateways = self.api.get_all_internet_gateways(
             filters={

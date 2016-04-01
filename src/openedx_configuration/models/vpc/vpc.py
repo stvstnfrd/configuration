@@ -62,7 +62,7 @@ class Vpc(Model):
     @classmethod
     def get_all(cls):
         """
-        Fetch all VPCs associated with this account
+        Find all VPCs associated with this account
         """
         api = cls.type_api()
         vpcs = api.get_all_vpcs()
@@ -74,35 +74,35 @@ class Vpc(Model):
 
     def get_all_gateways(self):
         """
-        Get a list of of gateways attached to this VPC
+        Find all gateways attached to this VPC
         """
         gateways = Gateway.get_all(self)
         return gateways
 
     def get_all_route_tables(self):
         """
-        Fetch all route tables in this VPC
+        Find all route tables in this VPC
         """
         route_tables = RouteTable.get_all(self)
         return route_tables
 
     def get_all_security_groups(self):
         """
-        Fetch all security groups in this VPC
+        Find all security groups in this VPC
         """
         security_groups = SecurityGroup.get_all(self)
         return security_groups
 
     def get_all_subnets(self):
         """
-        Fetch all subnets in this VPC
+        Find all subnets in this VPC
         """
         subnets = Subnet.get_all(self)
         return subnets
 
     def _get_one(self, *args, **kwargs):
         """
-        Fetch exactly one VPC via name/environment
+        Find exactly one VPC via name/environment
         """
         vpcs = self.api.get_all_vpcs(
             filters={
