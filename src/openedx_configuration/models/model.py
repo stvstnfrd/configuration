@@ -1,15 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+Define base behavior for AWS models
+"""
 from boto.vpc import VPCConnection
 
 
 class Model(object):
+    """
+    Represent a base AWS object model
+    """
     _model = False
     name = None
     environment = None
     type_api = VPCConnection
 
     def __init__(self, environment, name, model=False, api=None, **kwargs):
+        """
+        Initialize a base AWS object, set common values
+        """
         if model:
             name = model.tags.get('Name', name)
             environment = model.tags.get('environment', environment)
@@ -20,22 +29,33 @@ class Model(object):
 
     @property
     def exists(self):
+        """
+        Check if the model exists in AWS
+        """
         return self.model is not None
 
     @property
     def model(self):
-        if not self._model:
-            self.lookup()
+        """
+        Load the model lazily
+        """
+        self._model = self._model or self._get_one()
         return self._model
 
     @property
     def tags(self):
+        """
+        Mirror the tags of the underlying model
+        """
         data = {}
         if self.exists:
             data = self.model.tags
         return data
 
     def __repr__(self):
+        """
+        Represent the object as a string
+        """
         data = {
             'name': self.name,
             'environment': self.environment,
@@ -45,17 +65,16 @@ class Model(object):
             data['vpc_id'] = self.vpc.id
         if hasattr(self, 'subnet') and self.subnet:
             data['subnet_id'] = self.subnet.id
-        string = "{klass}({kwargs})".format(
+        string = u"{klass}({kwargs})".format(
             klass=self.__class__.__name__,
             kwargs=unicode(data),
         )
         return string
 
-    def lookup(self):
-        model = self._get_one()
-        self._model = model
-
     def destroy(self, dry_run=False, **kwargs):
+        """
+        Delegate deletion to the subclass, if it does exist
+        """
         print('check if exists', self)
         if not self.exists:
             print('cannot destroy what does not exist', self)
@@ -68,6 +87,9 @@ class Model(object):
         self._model = False
 
     def create(self, dry_run=False, **kwargs):
+        """
+        Delegate creation to the subclass, if it doesn't exist
+        """
         print('check if exists', self)
         if self.exists:
             print('cowwardly refusing to recreate', self)
@@ -81,4 +103,7 @@ class Model(object):
 
     @property
     def id(self):
+        """
+        Mirror the ID of the underlying model
+        """
         return getattr(self.model, 'id', None)
