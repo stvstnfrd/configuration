@@ -75,6 +75,14 @@ class Instance(Model):
     def _create(self, role, security_group, subnet, disk_size, **kwargs):
         """
         Create a new EC2 instance
+
+        Base Ubuntu Image:
+        - ubuntu-precise-12.04-amd64-server-20160201
+        - ami-2b2f594b
+
+        Latest Sandbox Image
+        - TEMP-sandbox-dcadams
+        - ami-b06717d0
         """
         interface = NetworkInterfaceSpecification(
             associate_public_ip_address=True,
@@ -86,9 +94,6 @@ class Instance(Model):
         interfaces = NetworkInterfaceCollection(interface)
         block_device_map = get_block_device_map(size=disk_size)
         reservation = self.api.run_instances(
-            # TEMP-sandbox-dcadams
-            # 'ami-b06717d0',
-            # ubuntu-precise-12.04-amd64-server-20160201
             'ami-2b2f594b',
             key_name='deployment',
             instance_type='t2.large',
