@@ -11,6 +11,10 @@ from openedx_configuration.models.ec2.security_group import SecurityGroup
 from openedx_configuration.models.vpc.subnet import Subnet
 from openedx_configuration.models.vpc.vpc import Vpc
 
+NAME_ENVIRONMENT = 'sandbox'
+NAME_SECURITY_GROUP = 'public-sandbox-openedx'
+NAME_SUBNET = 'sandbox-public'
+
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -20,18 +24,6 @@ def parse_arguments():
         '-n',
         '--instance-name',
         required=True,
-    )
-    parser.add_argument(
-        '-e',
-        '--environment',
-        default='sandbox',
-        help='one of [sandbox, stage, lagunita, suclass, cme, etc]',
-    )
-    parser.add_argument(
-        '-r',
-        '--role',
-        help='one of [sandbox, edxapp, xqueue, certs, etc]',
-        default='sandbox',
     )
     parser.add_argument(
         '-d',
@@ -58,28 +50,27 @@ def parse_arguments():
 
 if __name__ == '__main__':
     arguments = parse_arguments()
-    environment = arguments.environment
     name = arguments.instance_name
-    instance = Instance(environment, name)
+    instance = Instance(NAME_ENVIRONMENT, name)
     api_vpc = VPCConnection()
     api_ec2 = EC2Connection()
-    vpc = Vpc(environment)
+    vpc = Vpc(NAME_ENVIRONMENT)
     subnet = Subnet(
-        environment,
-        name='sandbox-public',
+        NAME_ENVIRONMENT,
+        name=NAME_SUBNET,
         vpc=vpc,
         api=api_vpc,
     )
     security_group = SecurityGroup(
-        environment,
-        name='public-sandbox-openedx',
+        NAME_ENVIRONMENT,
+        name=NAME_SECURITY_GROUP,
         vpc=vpc,
         api=api_ec2,
     )
     dry_run = not arguments.go
     if arguments.action == 'create':
         instance.create(
-            arguments.role,
+            'sandbox',  # role
             security_group,
             subnet,
             disk_size=arguments.disk_size,
