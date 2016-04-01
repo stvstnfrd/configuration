@@ -16,13 +16,6 @@ class Gateway(Model):
         super(Gateway, self).__init__(environment, name, **kwargs)
         self.vpc = vpc
 
-    @staticmethod
-    def from_boto(gateway, vpc):
-        """
-        Initialize a gateway from a Boto object
-        """
-        return Gateway(environment=None, name=None, vpc=vpc, model=gateway)
-
     def _create(self, *args, **kwargs):
         """
         Create a new gateway and attach it to the VPC
@@ -45,6 +38,13 @@ class Gateway(Model):
             self.vpc.id
         )
         self.api.delete_internet_gateway(self.id)
+
+    @staticmethod
+    def from_boto(gateway, vpc):
+        """
+        Initialize a gateway from a Boto object
+        """
+        return Gateway(environment=None, name=None, vpc=vpc, model=gateway)
 
     @classmethod
     def get_all(cls, vpc):
