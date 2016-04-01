@@ -48,9 +48,10 @@ class Instance(Model):
         if not self.exists:
             return
         while self.model.state == 'pending':
-            print(self.model.state, self)
+            print(self.state, self)
             time.sleep(5)
             self.model.update()
+        print(self.state, self)
 
     def _get_one(self):
         """
@@ -61,7 +62,7 @@ class Instance(Model):
             filters={
                 'tag:Name': self.name,
                 'tag:environment': self.environment,
-                'instance-state-name': state,
+                # 'instance-state-name': state,
             },
         )
         instance = None
@@ -115,6 +116,27 @@ class Instance(Model):
         )
         return len(deleted_ids) == 1
 
+    def start(self, dry_run=True):
+        instance_ids = self.api.start_instances(
+            instance_ids=[
+                self.id,
+            ],
+            dry_run=dry_run,
+        )
+        return len(instance_ids) == 1
+
+    def stop(self, dry_run=True):
+        instance_ids = self.api.stop_instances(
+            instance_ids=[
+                self.id,
+            ],
+            dry_run=dry_run,
+        )
+        return len(instance_ids) == 1
+
+    @property
+    def state(self):
+        return self.model.state
 
 def get_block_device_map(size=16, device_path='/dev/sda1'):
     """

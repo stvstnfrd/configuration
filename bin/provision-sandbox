@@ -112,6 +112,10 @@ def main(arguments):
         create(arguments, instance, security_group, subnet, dry_run)
     elif arguments.action == 'destroy':
         destroy(instance, dry_run)
+    elif arguments.action == 'start':
+        instance.start(dry_run=dry_run)
+    elif arguments.action == 'stop':
+        instance.stop(dry_run=dry_run)
     else:
         describe(arguments, instance, security_group, subnet)
 

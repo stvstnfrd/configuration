@@ -40,6 +40,8 @@ class Model(object):
             data['vpc_id'] = self.vpc.id
         if hasattr(self, 'subnet') and self.subnet:
             data['subnet_id'] = self.subnet.id
+        if hasattr(self, 'state') and self.state:
+            data['state'] = self.state
         string = u"{klass}({kwargs})".format(
             klass=self.__class__.__name__,
             kwargs=unicode(data),
