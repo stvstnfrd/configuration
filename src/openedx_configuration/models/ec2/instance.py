@@ -72,18 +72,15 @@ class Instance(Model):
             pass  # warn to STDERR
         return instance
 
-    def _create(self, role, security_group, subnet, disk_size, **kwargs):
+    def _create(self, role, security_group, subnet, disk_size, ami=None, **kwargs):
         """
         Create a new EC2 instance
 
         Base Ubuntu Image:
         - ubuntu-precise-12.04-amd64-server-20160201
         - ami-2b2f594b
-
-        Latest Sandbox Image
-        - TEMP-sandbox-dcadams
-        - ami-b06717d0
         """
+        ami = ami or 'ami-2b2f594b'
         interface = NetworkInterfaceSpecification(
             associate_public_ip_address=True,
             subnet_id=subnet.id,
@@ -94,7 +91,7 @@ class Instance(Model):
         interfaces = NetworkInterfaceCollection(interface)
         block_device_map = get_block_device_map(size=disk_size)
         reservation = self.api.run_instances(
-            'ami-2b2f594b',
+            ami,
             key_name='deployment',
             instance_type='t2.large',
             network_interfaces=interfaces,

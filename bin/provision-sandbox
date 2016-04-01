@@ -46,16 +46,30 @@ def parse_arguments():
         help='should we actually take action?',
         default=False,
     )
+    parser.add_argument(
+        '-A',
+        '--ami',
+        help='which base AMI image to use?',
+        default='ami-b06717d0',
+    )
     arguments = parser.parse_args()
     return arguments
 
 
 def create(arguments, instance, security_group, subnet, dry_run):
+    """
+    Provision a new instance
+
+    Latest Sandbox Image
+    - TEMP-sandbox-dcadams
+    - ami-b06717d0
+    """
     instance.create(
         'sandbox',  # role
         security_group,
         subnet,
         disk_size=arguments.disk_size,
+        ami=arguments.ami,
         dry_run=dry_run,
     )
     instance.wait_until_ready()
