@@ -60,5 +60,6 @@ setup(
     scripts=[
         'bin/provision-sandbox-infrastructure',
         'bin/provision-sandbox',
+        'bin/export-ssh-config',
     ],
 )
