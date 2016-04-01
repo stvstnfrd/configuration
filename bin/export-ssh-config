@@ -9,116 +9,86 @@ from openedx_configuration.lib import *
 DESCRIPTION_SECURITY_GROUP = 'TODO: something smart here'
 
 
-def describe(arguments):
-    environment = arguments.environment
-    vpc_cidr_block = arguments.vpc_cidr_block
-    subnet_cidr_block = arguments.subnet_cidr_block
-    vpc = lookup_vpc(environment, vpc_cidr_block)
-    if not vpc:
-        print('no such vpc')
-        return
-    print(vpc)
-    name_gateway = generate_name_gateway(vpc)
-    gateway = lookup_gateway(vpc.id, name_gateway)
-    print(gateway)
-    subnet = lookup_subnet(vpc, environment, generate_name_subnet(vpc), subnet_cidr_block)
-    print(subnet)
-    name_security_group = generate_name_security_group(vpc)
-    security_group = lookup_security_group(vpc, name_security_group, DESCRIPTION_SECURITY_GROUP)
-    print(security_group)
-    name_route_table = generate_name_route_table(vpc)
-    route_table = lookup_route_table(vpc, gateway.id, subnet.id, name_route_table, PUBLIC_CIDR_BLOCK)
-    print(route_table)
+def lookup_all_vpcs(arguments):
+    connection_vpc = VPCConnection()
+    connection_ec2 = EC2Connection()
+    if arguments.environment:
+        vpcs = [
+            Vpc(arguments.environment)
+        ]
+    else:
+        vpcs = Vpc.get_all()
+    print(vpcs)
+    print('Host *')
+    print('    ForwardAgent yes')
+    print('    User {username}'.format(username=arguments.username))
+    for vpc in vpcs:
+        vpc_name = vpc.name
+        if vpc_name.endswith('-vpc'):
+            vpc_name = vpc_name[:-4]
+        print('')
+        instances = connection_ec2.get_only_instances(
+            filters={
+                'vpc-id': vpc.id,
+            },
+        )
+        jumpbox = [
+            instance
+            for instance in instances
+            if instance.tags.get('Name', '').startswith('jumpbox.')
+        ]
+        if len(jumpbox):
+            jumpbox = jumpbox[0]
+        for instance in instances:
+            name = instance.tags.get('Name', '')
+            if not name:
+                continue
+            if jumpbox and jumpbox.id != instance.id:
+                jumpbox_name = 'jump.' + vpc_name
+                print('Host ' + name)
+                print('    ProxyCommand ssh -W ' + instance.private_ip_address + ':%p ' + jumpbox_name)
+            elif jumpbox:
+                name = 'jump.' + vpc_name
+                print('Host ' + name)
+                print('    HostName ' + jumpbox.ip_address)
+            else:
+                print('Host ' + name)
+                print('    HostName ' + instance.ip_address)
+            # if jumpbox:
+            #     pass
+            # print(name, instance, instance.tags)
 
 
-def create(arguments):
-    environment = arguments.environment
-    vpc_cidr_block = arguments.vpc_cidr_block
-    subnet_cidr_block = arguments.subnet_cidr_block
-    vpc = lookup_vpc(environment, vpc_cidr_block)
-    vpc = vpc or create_vpc(environment, vpc_cidr_block)
-    print(vpc)
-    name_gateway = generate_name_gateway(vpc)
-    gateway = lookup_gateway(vpc.id, name_gateway)
-    gateway = gateway or create_gateway(vpc, name_gateway)
-    print(gateway)
-    subnet = lookup_subnet(vpc, environment, generate_name_subnet(vpc), subnet_cidr_block)
-    subnet = subnet or create_subnet(vpc, generate_name_subnet(vpc), subnet_cidr_block)
-    print(subnet)
-    name_security_group = generate_name_security_group(vpc)
-    security_group = lookup_security_group(vpc, name_security_group, DESCRIPTION_SECURITY_GROUP)
-    security_group = security_group or create_security_group(vpc, name_security_group, DESCRIPTION_SECURITY_GROUP)
-    print(security_group)
-    name_route_table = generate_name_route_table(vpc)
-    route_table = lookup_route_table(vpc, gateway.id, subnet.id,
-    name_route_table, PUBLIC_CIDR_BLOCK)
-    route_table = route_table or create_route_table(vpc, gateway.id, subnet.id, name_route_table, PUBLIC_CIDR_BLOCK)
-    print(route_table)
+def lookup_hosted_zone(name):
+    connection_route53 = Route53Connection()
+    zone = connection_route53.get_zone(name)
+    return zone
 
-def destroy(arguments):
-    environment = arguments.environment
-    vpc_cidr_block = arguments.vpc_cidr_block
-    subnet_cidr_block = arguments.subnet_cidr_block
-    vpc = lookup_vpc(environment, vpc_cidr_block)
-    name_gateway = generate_name_gateway(vpc)
-    gateway = lookup_gateway(vpc.id, name_gateway)
-    subnet = lookup_subnet(vpc, environment, generate_name_subnet(vpc), subnet_cidr_block)
-    name_security_group = generate_name_security_group(vpc)
-    security_group = lookup_security_group(vpc, name_security_group, DESCRIPTION_SECURITY_GROUP)
-    name_route_table = generate_name_route_table(vpc)
-    route_table = lookup_route_table(vpc, gateway.id, subnet.id, name_route_table, PUBLIC_CIDR_BLOCK)
 
-    for association in route_table.associations:
-        success = connection_vpc.disassociate_route_table(association.id)
-    try:
-        success = connection_vpc.delete_route(route_table.id, PUBLIC_CIDR_BLOCK)
-    except EC2ResponseError:
-        pass
-    success = connection_vpc.delete_route_table(route_table.id)
+def create_hosted_zone(name):
+    connection_route53 = Route53Connection()
+    name = name + '.'
+    zone = connection_route53.create_zone(name)
+    return zone
 
-    success = connection_ec2.delete_security_group(group_id=security_group.id)
-    success = connection_vpc.delete_subnet(subnet.id)
-    success = connection_vpc.detach_internet_gateway(gateway.id, vpc.id)
-    success = connection_vpc.delete_internet_gateway(gateway.id)
-    success = connection_vpc.delete_vpc(vpc.id)
-    print('done')
-    return
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Whatever, man',
     )
     parser.add_argument(
-        '-V',
-        '--vpc-cidr-block',
-        # help='breath life with a name',
-        default='10.4.0.0/16'
-    )
-    parser.add_argument(
-        '-s',
-        '--subnet-cidr-block',
-        # help='breath life with a name',
-        default='10.4.0.0/24'
-    )
-    parser.add_argument(
-        '-a',
-        '--action',
-        help='create/describe/destroy',
-        default='describe'
-    )
-    parser.add_argument(
         '-e',
         '--environment',
         help='?',
-        default='sandbox',
+        default=None,
+    )
+    parser.add_argument(
+        '-u',
+        '--username',
+        help='probably your Github username',
+        required=True,
     )
     arguments = parser.parse_args()
-    # print(arguments)
-    lookup_all_vpcs()
+    print(arguments)
+    lookup_all_vpcs(arguments)
 
-    # if arguments.action == 'describe':
-    #     describe(arguments)
-    # elif arguments.action == 'create':
-    #     create(arguments)
-    # elif arguments.action == 'destroy':
-    #     destroy(arguments)
