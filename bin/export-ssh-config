@@ -54,9 +54,6 @@ def lookup_all_vpcs(arguments):
             else:
                 print('Host ' + name)
                 print('    HostName ' + instance.ip_address)
-            # if jumpbox:
-            #     pass
-            # print(name, instance, instance.tags)
 
 
 def lookup_hosted_zone(name):
@@ -91,4 +88,3 @@ if __name__ == '__main__':
     arguments = parser.parse_args()
     print(arguments)
     lookup_all_vpcs(arguments)
-
