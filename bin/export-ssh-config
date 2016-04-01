@@ -8,6 +8,8 @@ forward connections through it.
 """
 import argparse
 
+from boto.ec2 import EC2Connection
+
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -33,7 +35,6 @@ def parse_arguments():
 
 
 def main(arguments):
-    connection_vpc = VPCConnection()
     connection_ec2 = EC2Connection()
     if arguments.environment:
         vpcs = [

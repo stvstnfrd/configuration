@@ -5,6 +5,9 @@ Provision an EC2 instance for use as an OpenEdX sandbox
 """
 import argparse
 
+from boto.ec2 import EC2Connection
+from boto.vpc import VPCConnection
+
 from openedx_configuration.models.ec2.instance import Instance
 from openedx_configuration.models.ec2.security_group import SecurityGroup
 from openedx_configuration.models.vpc.subnet import Subnet
@@ -47,8 +50,32 @@ def parse_arguments():
     return arguments
 
 
-if __name__ == '__main__':
-    arguments = parse_arguments()
+def create(arguments, instance, security_group, subnet, dry_run):
+    instance.create(
+        'sandbox',  # role
+        security_group,
+        subnet,
+        disk_size=arguments.disk_size,
+        dry_run=dry_run,
+    )
+    instance.wait_until_ready()
+    print(instance.ip_address)
+    print(instance.public_dns_name)
+
+
+def destroy(instance, dry_run):
+    instance.destroy(dry_run=dry_run)
+
+
+def describe(arguments, instance, security_group, subnet):
+    print(subnet.exists, subnet)
+    print(security_group.exists, security_group)
+    print(instance.exists, instance)
+    print(instance.ip_address)
+    print(instance.public_dns_name)
+
+
+def main(arguments):
     name = arguments.instance_name
     instance = Instance(NAME_ENVIRONMENT, name)
     api_vpc = VPCConnection()
@@ -68,21 +95,12 @@ if __name__ == '__main__':
     )
     dry_run = not arguments.go
     if arguments.action == 'create':
-        instance.create(
-            'sandbox',  # role
-            security_group,
-            subnet,
-            disk_size=arguments.disk_size,
-            dry_run=dry_run,
-        )
-        instance.wait_until_ready()
-        print(instance.ip_address)
-        print(instance.public_dns_name)
+        create(arguments, instance, security_group, subnet, dry_run)
     elif arguments.action == 'destroy':
-        instance.destroy(dry_run=dry_run)
+        destroy(instance, dry_run)
     else:
-        print(subnet.exists, subnet)
-        print(security_group.exists, security_group)
-        print(instance.exists, instance)
-        print(instance.ip_address)
-        print(instance.public_dns_name)
+        describe(arguments, instance, security_group, subnet)
+
+if __name__ == '__main__':
+    arguments = parse_arguments()
+    main(arguments)
