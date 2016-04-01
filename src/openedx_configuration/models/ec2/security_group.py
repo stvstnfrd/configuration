@@ -7,15 +7,6 @@ from boto.ec2.connection import EC2Connection
 
 from openedx_configuration.models.model import Model
 
-PUBLIC_CIDR_BLOCK = '0.0.0.0/0'
-
-PORTS = [
-    # cidr_block, permission, port, egress
-    (PUBLIC_CIDR_BLOCK, 'allow', 22, False),
-    (PUBLIC_CIDR_BLOCK, 'allow', 80, False),
-    (PUBLIC_CIDR_BLOCK, 'allow', 18010, False),
-]
-
 
 class SecurityGroup(Model):
     """
@@ -30,10 +21,11 @@ class SecurityGroup(Model):
         super(SecurityGroup, self).__init__(environment, name, **kwargs)
         self.vpc = vpc
 
-    def _create(self, desciption=None, **kwargs):
+    def _create(self, permissions=None, desciption=None, **kwargs):
         """
         Create a new security_group with permissions
         """
+        permissions = permissions or []
         security_group = self.api.create_security_group(
             self.name,
             desciption,
@@ -41,7 +33,7 @@ class SecurityGroup(Model):
         )
         security_group.add_tag('Name', self.name)
         security_group.add_tag('environment', self.environment)
-        for cidr, permission, port, egress in PORTS:
+        for cidr, permission, port, egress in permissions:
             if not cidr or not port or permission != 'allow':
                 continue
             self.api.authorize_security_group(
