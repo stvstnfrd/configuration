@@ -65,7 +65,7 @@ def main(arguments):
         if len(jumpbox):
             jumpbox = jumpbox[0]
         for instance in instances:
-            name = instance.tags.get('Name', '')
+            name = instance.tags.get('Name')
             if not name:
                 continue
             if jumpbox and jumpbox.id != instance.id:
