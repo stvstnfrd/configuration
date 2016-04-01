@@ -58,8 +58,8 @@ setup(
         # 'test': Tox,
     },
     scripts=[
-        'bin/provision-sandbox-infrastructure',
-        'bin/provision-sandbox',
         'bin/export-ssh-config',
+        'bin/provision-sandbox',
+        'bin/provision-sandbox-infrastructure',
     ],
 )
