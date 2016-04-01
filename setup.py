@@ -61,6 +61,6 @@ setup(
     },
     scripts=[
         'bin/provision-sandbox-infrastructure',
-        'bin/provision-sandbox-instance',
+        'bin/provision-sandbox',
     ],
 )

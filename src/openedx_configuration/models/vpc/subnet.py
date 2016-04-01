@@ -6,6 +6,7 @@ Manage AWS Subnets
 from openedx_configuration.models.model import Model
 from openedx_configuration.models.vpc.route_table import RouteTable
 
+
 class Subnet(Model):
     """
     Represent an AWS Subnet

@@ -5,6 +5,7 @@ Manage AWS Internet Gateways
 """
 from openedx_configuration.models.model import Model
 
+
 class Gateway(Model):
     """
     Represent an AWS Internet Gateway

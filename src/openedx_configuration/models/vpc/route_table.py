@@ -35,7 +35,10 @@ class RouteTable(Model):
             cidr_block,
             gateway_id=gateway_id,
         )
-        association_id = self.api.associate_route_table(route_table.id, subnet_id)
+        association_id = self.api.associate_route_table(
+            route_table.id,
+            subnet_id
+        )
         return route_table
 
     def _destroy(self, *args, **kwargs):
@@ -60,7 +63,12 @@ class RouteTable(Model):
         """
         Initialize a route table from a Boto object
         """
-        return RouteTable(environment=None, name=None, subnet=None, model=route_table)
+        return RouteTable(
+            environment=None,
+            name=None,
+            subnet=None,
+            model=route_table,
+        )
 
     @classmethod
     def get_all(cls, vpc=None, subnet=None):

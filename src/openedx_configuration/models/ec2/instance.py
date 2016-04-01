@@ -11,6 +11,7 @@ from boto.ec2.networkinterface import NetworkInterfaceSpecification
 
 from openedx_configuration.models.model import Model
 
+
 class Instance(Model):
     def __init__(self, environment, name, **kwargs):
         super(Instance, self).__init__(environment, name, **kwargs)

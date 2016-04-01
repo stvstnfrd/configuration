@@ -58,7 +58,12 @@ class SecurityGroup(Model):
         """
         Initialize a SecurityGroup from a Boto object
         """
-        return SecurityGroup(environment=None, name=None, vpc=vpc, model=security_group)
+        return SecurityGroup(
+            environment=None,
+            name=None,
+            vpc=vpc,
+            model=security_group,
+        )
 
     @classmethod
     def get_all(cls, vpc):
