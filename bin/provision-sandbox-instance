@@ -4,9 +4,12 @@ import argparse
 
 from openedx_configuration.lib import *
 from openedx_configuration.models.ec2.instance import Instance
+from openedx_configuration.models.ec2.security_group import SecurityGroup
+from openedx_configuration.models.vpc.subnet import Subnet
+from openedx_configuration.models.vpc.vpc import Vpc
 
 
-if __name__ == '__main__':
+def parse_arguments():
     parser = argparse.ArgumentParser(
         description='Whatever, man',
     )
@@ -52,32 +55,55 @@ if __name__ == '__main__':
         help='create/describe/destroy',
         default='describe'
     )
+    parser.add_argument(
+        '-g',
+        '--go',
+        action='store_true',
+        help='?',
+        default=False,
+    )
     arguments = parser.parse_args()
+    return arguments
+
+
+if __name__ == '__main__':
+    arguments = parse_arguments()
     environment = arguments.environment
     name = arguments.instance_name
     vpc_cidr_block = arguments.vpc_cidr_block
     instance = Instance(environment, name)
-    instance.lookup()
-    print(instance)
-    import sys; sys.exit()
+    api_vpc = VPCConnection()
+    api_ec2 = EC2Connection()
+    vpc = Vpc(environment)
+    subnet = Subnet(
+        environment,
+        name='sandbox-public',
+        vpc=vpc,
+        api=api_vpc,
+    )
+    security_group = SecurityGroup(
+        environment,
+        name='public-sandbox-openedx',
+        vpc=vpc,
+        api=api_ec2,
+    )
+    dry_run = not arguments.go
     if arguments.action == 'create':
-        vpc = lookup_vpc(
-            environment,
-            vpc_cidr_block,
-        )
-        vpc_id = vpc.id
-        subnet = lookup_subnet(vpc, environment, generate_name_subnet(vpc), arguments.subnet_cidr_block)
-        name_security_group = generate_name_security_group(vpc)
-        DESCRIPTION_SECURITY_GROUP = 'Blah blah blah'
-        security_group = lookup_security_group(vpc, name_security_group, DESCRIPTION_SECURITY_GROUP)
         instance.create(
             arguments.role,
-            security_group.id,
-            subnet.id,
+            security_group,
+            subnet,
             disk_size=arguments.disk_size,
+            dry_run=dry_run,
         )
         instance.wait_until_ready()
         print(instance.ip_address)
         print(instance.public_dns_name)
     elif arguments.action == 'destroy':
-        instance.destroy()
+        instance.destroy(dry_run=dry_run)
+    else:
+        print(subnet.exists, subnet)
+        print(security_group.exists, security_group)
+        print(instance.exists, instance)
+        print(instance.ip_address)
+        print(instance.public_dns_name)

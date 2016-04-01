@@ -12,11 +12,8 @@ from boto.ec2.networkinterface import NetworkInterfaceSpecification
 from openedx_configuration.models.model import Model
 
 class Instance(Model):
-    def __init__(self, environment, name, connection=None):
-        self._name = name
-        self.connection = connection or EC2Connection()
-        super(Instance, self).__init__(environment)
-
+    def __init__(self, environment, name, **kwargs):
+        super(Instance, self).__init__(environment, name, **kwargs)
 
     @property
     def ip_address(self):
@@ -36,10 +33,11 @@ class Instance(Model):
             time.sleep(5)
             self.model.update()
 
-    def lookup(self, state='running'):
-        instances = self.connection.get_only_instances(
+    def _get_one(self):
+        state = 'running'
+        instances = self.api.get_only_instances(
             filters={
-                'tag:Name': self._name,
+                'tag:Name': self.name,
                 'tag:environment': self.environment,
                 'instance-state-name': state,
             },
@@ -50,42 +48,39 @@ class Instance(Model):
             instance = instances[0]
         elif number_of_instances > 1:
             pass  # warn to STDERR
-        self._model = instance
         return instance
 
-    def create(self, role, security_group_id, subnet_id, disk_size):
+    def _create(self, role, security_group, subnet, disk_size, **kwargs):
         interface = NetworkInterfaceSpecification(
             associate_public_ip_address=True,
-            subnet_id=subnet_id,
+            subnet_id=subnet.id,
             groups=[
-                security_group_id,
+                security_group.id,
             ],
         )
         interfaces = NetworkInterfaceCollection(interface)
         block_device_map = get_block_device_map(size=disk_size)
-        reservation = self.connection.run_instances(
+        reservation = self.api.run_instances(
             # TEMP-sandbox-dcadams
             # 'ami-b06717d0',
             # ubuntu-precise-12.04-amd64-server-20160201
             'ami-2b2f594b',
             key_name='deployment',
-            instance_type='t2.large',
+            instance_type='t2.small',
             network_interfaces=interfaces,
             block_device_map=block_device_map,
         )
         instance = reservation.instances[0]
-        instance.add_tag('Name', self._name)
+        instance.add_tag('Name', self.name)
         instance.add_tag('environment', self.environment)
         instance.add_tag('role', role)
         instance.update()
-        self._model = instance
         return instance
 
-    def destroy(self):
-        instance_id = self._model.id
-        deleted_ids = self.connection.terminate_instances(
+    def _destroy(self, *args, **kwargs):
+        deleted_ids = self.api.terminate_instances(
             instance_ids=[
-                instance_id,
+                self.id,
             ],
         )
         return len(deleted_ids) == 1

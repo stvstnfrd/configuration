@@ -46,7 +46,7 @@ class Model(object):
         )
         return string
 
-    def create(self, dry_run=False, **kwargs):
+    def create(self, *args, **kwargs):
         """
         Delegate creation to the subclass, if it doesn't exist
         """
@@ -55,14 +55,14 @@ class Model(object):
             print('cowwardly refusing to recreate', self)
             return False
         print('try create', self)
-        if dry_run:
+        if kwargs.get('dry_run'):
             print('opting not to create', self)
             return
-        model = self._create(**kwargs)
+        model = self._create(*args, **kwargs)
         self._model = model
         print('created', self)
 
-    def destroy(self, dry_run=False, **kwargs):
+    def destroy(self, *args, **kwargs):
         """
         Delegate deletion to the subclass, if it does exist
         """
@@ -71,7 +71,7 @@ class Model(object):
             print('cannot destroy what does not exist', self)
             return False
         print('try destroy', self)
-        if dry_run:
+        if kwargs.get('dry_run'):
             print('opting not to destroy', self)
             return
         self._destroy(**kwargs)
