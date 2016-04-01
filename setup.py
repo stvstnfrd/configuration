@@ -34,7 +34,6 @@ setup(
         'openedx_configuration': 'src/openedx_configuration',
     },
     dependency_links=[
-        # 'git+https://github.com/edx/ansible.git@stable-1.9.3-rc1-edx#egg=ansible-1',
         'http://github.com/edx/ansible/tarball/stable-1.9.3-rc1-edx#egg=ansible-1.9.3-edx',
     ],
     install_requires=[
