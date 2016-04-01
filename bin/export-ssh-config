@@ -76,19 +76,6 @@ def main(arguments):
                 print('    HostName ' + instance.ip_address)
 
 
-def lookup_hosted_zone(name):
-    connection_route53 = Route53Connection()
-    zone = connection_route53.get_zone(name)
-    return zone
-
-
-def create_hosted_zone(name):
-    connection_route53 = Route53Connection()
-    name = name + '.'
-    zone = connection_route53.create_zone(name)
-    return zone
-
-
 if __name__ == '__main__':
     arguments = parse_arguments()
     main(arguments)
