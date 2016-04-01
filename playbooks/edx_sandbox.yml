@@ -1,39 +1,42 @@
 ---
-
-# Example sandbox configuration
-# for single server community
-# installs
-
-- name: Configure instance(s)
-  hosts: all
+- name: Configure sandbox
+  hosts: tag_role_sandbox:&tag_environment_sandbox:&tag_Name_base
   sudo: True
   gather_facts: True
   vars:
-    migrate_db: "yes"
+    migrate_db: 'yes'
     openid_workaround: True
     EDXAPP_LMS_NGINX_PORT: '80'
-    edx_platform_version: 'master'
+    # SANDBOX_GITHUB_USERNAME: 'dcadams'
+    # edx_platform_version: 'dcadams/merge_upstream_hotfix-2015-11-10_2'
     # Set to false if deployed behind another proxy/load balancer.
     NGINX_SET_X_FORWARDED_HEADERS: True
-    # These should stay false for the public AMI
-    COMMON_ENABLE_DATADOG: False
-    COMMON_ENABLE_SPLUNKFORWARDER: False
-    ENABLE_LEGACY_ORA: !!null
+    edx_platform_version: 'master'
+    edxapp_theme_version: 'master'
+    edxapp_use_custom_theme: true
+    edxapp_theme_name: 'lagunita'
+    edxapp_theme_source_repo: 'https://github.com/Stanford-Online/lagunita-theme.git'
+    # user_info:
+    #   - name: "{{ SANDBOX_GITHUB_USERNAME }}"
+    #     github: true
+    #     type: admin
   roles:
+    - role: user
+      tags: users
     - role: nginx
       nginx_sites:
       - certs
       - cms
       - lms
       - forum
-      - ora
       - xqueue
       nginx_default_sites:
       - lms
     - mysql
     - edxlocal
     - mongo
-    - { role: 'edxapp', celery_worker: True }
+    - role: edxapp
+      celery_worker: True
     - edxapp
     - notifier
     - analytics_api
@@ -41,19 +44,14 @@
     - edx_notes_api
     - demo
     - oauth_client_setup
-    - { role: 'rabbitmq', rabbitmq_ip: '127.0.0.1' }
+    - role: rabbitmq
+      rabbitmq_ip: '127.0.0.1'
     - oraclejdk
     - elasticsearch
     - forum
-    - { role: notifier, NOTIFIER_DIGEST_TASK_INTERVAL: "5" }
-    - { role: "xqueue", update_users: True }
-    - role: ora
-      when: ENABLE_LEGACY_ORA
+    - role: notifier
+      NOTIFIER_DIGEST_TASK_INTERVAL: '5'
+    - role: xqueue
+      update_users: True
     - certs
     - edx_ansible
-    - role: datadog
-      when: COMMON_ENABLE_DATADOG
-    - role: splunkforwarder
-      when: COMMON_ENABLE_SPLUNKFORWARDER
-    - role: newrelic
-      when: COMMON_ENABLE_NEWRELIC
