@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+Generate an ~/.ssh/config file for a VPC environment
+
+If a jumpbox exists at `jump.*` in the VPC,
+forward connections through it.
+"""
 import argparse
 
 from boto.exception import EC2ResponseError
@@ -12,7 +18,7 @@ DESCRIPTION_SECURITY_GROUP = 'TODO: something smart here'
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
-        description='Whatever, man',
+        description=__doc__,
     )
     parser.add_argument(
         '-e',

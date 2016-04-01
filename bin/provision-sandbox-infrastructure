@@ -101,24 +101,22 @@ def parse_arguments():
     Parse command line arguments
     """
     parser = argparse.ArgumentParser(
-        description='Whatever, man',
+        description=__doc__,
     )
     parser.add_argument(
         '-V',
         '--vpc-cidr-block',
-        # help='breath life with a name',
         default='10.4.0.0/16'
     )
     parser.add_argument(
         '-s',
         '--subnet-cidr-block',
-        # help='breath life with a name',
         default='10.4.0.0/24'
     )
     parser.add_argument(
         '-a',
         '--action',
-        help='create/describe/destroy',
+        help='one of [create, describe, destroy]',
         default='describe'
     )
     parser.add_argument(
@@ -130,14 +128,14 @@ def parse_arguments():
     parser.add_argument(
         '-e',
         '--environment',
-        help='sandbox, stage, lagunita, suclass, cme, etc',
+        help='one of [sandbox, stage, lagunita, suclass, cme, etc]',
         required=True
     )
     parser.add_argument(
         '-g',
         '--go',
         action='store_true',
-        help='?',
+        help='should we actually take action?',
         default=False,
     )
     arguments = parser.parse_args()
