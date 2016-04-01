@@ -1,6 +1,6 @@
 ---
 - name: Configure sandbox
-  hosts: sandbox
+  hosts: tag_role_sandbox:&tag_environment_sandbox:&tag_Name_base
   sudo: True
   gather_facts: True
   vars:
