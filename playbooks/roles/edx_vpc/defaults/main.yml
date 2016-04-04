@@ -23,3 +23,81 @@ vpc_role_name: vpc
 vpc_debian_pkgs: []
 
 vpc_redhat_pkgs: []
+
+DEPLOYMENT: 'sandbox'
+vpc_name: "{{ DEPLOYMENT }}-vpc"
+vpc_aws_region: 'us-west-1'
+vpc_cidr: '10.4.0.0/16'
+vpc_tags:
+  DEPLOYMENT: "{{ DEPLOYMENT }}"
+  Name: "{{ vpc_name }}"
+name_internet_gateway: "{{ DEPLOYMENT }}-gateway-internet"
+internet_gateway_tags:
+  DEPLOYMENT: "{{ DEPLOYMENT }}"
+  Name: "{{ name_internet_gateway }}"
+vpc_state: 'present'
+vpc_aws_profile:
+vpc_public_acl:
+  name: "{{ DEPLOYMENT }}-acl-public"
+  rules:
+  - type: 'egress'  # egress, ingress
+    protocol: 'ALL'  # TCP, UDP, ALL, ICMP
+    number: 100
+    rule_action: 'ALLOW'
+    cidr_block: '0.0.0.0/0'
+    from_port: 0
+    to_port: 65535
+  - type: 'ingress'
+    protocol: 'ALL'
+    number: 100
+    rule_action: 'ALLOW'
+    cidr_block: '0.0.0.0/0'
+    from_port: 0
+    to_port: 65535
+vpc_private_acl_sandbox:
+  name: "{{ DEPLOYMENT }}-acl-sandbox"
+  rules:
+  - type: 'egress'  # egress, ingress
+    protocol: 'TCP'  # TCP, UDP, ALL, ICMP
+    number: 100
+    rule_action: 'ALLOW'
+    cidr_block: '0.0.0.0/0'
+    from_port: 0
+    to_port: 65535
+  - type: 'ingress'
+    protocol: 'ALL'
+    number: 100
+    rule_action: 'ALLOW'
+    cidr_block: '0.0.0.0/0'
+    from_port: 0
+    to_port: 65535
+
+vpc_public_route_table:
+  name: "{{ DEPLOYMENT }}-routes-public"
+  routes:
+    - gateway: "{{ created_vpc.igw.id }}"
+      cidr: '0.0.0.0/0'
+    # what about local routes?
+
+vpc_private_route_table:
+  name: "{{ DEPLOYMENT }}-routes-private"
+  routes:
+    - instance: "{{ create_eip.ip_address }}"
+      cidr: '0.0.0.0/0'
+    # what about local routes?
+
+vpc_public_subnets:
+  - name: "{{ DEPLOYMENT }}-subnet-public"
+    cidr: '10.4.0.0/24'
+    az: 'us-west-1a'
+
+vpc_private_subnets:
+  - name: "{{ DEPLOYMENT }}-subnet-sandbox"
+    cidr: '10.4.1.0/24'
+    az: 'us-west-1a'
+
+nat_security_group:
+  name:
+  rules:
+  description:
+  rules_egress:

@@ -47,7 +47,7 @@ class Instance(Model):
         """
         if not self.exists:
             return
-        while self.model.state == 'pending':
+        while self.state != 'running':
             print(self.state, self)
             time.sleep(5)
             self.model.update()

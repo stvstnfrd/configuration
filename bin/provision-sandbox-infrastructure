@@ -5,6 +5,9 @@ Provision a sandbox infrastructure
 """
 import argparse
 
+from boto.ec2 import EC2Connection
+from boto.vpc import VPCConnection
+
 from openedx_configuration.models.ec2.security_group import SecurityGroup
 from openedx_configuration.models.vpc.gateway import Gateway
 from openedx_configuration.models.vpc.route_table import RouteTable
