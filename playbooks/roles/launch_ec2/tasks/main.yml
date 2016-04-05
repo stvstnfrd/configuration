@@ -42,7 +42,7 @@
     instance_type: "{{ instance_type }}"
     image: "{{ ami }}"
     vpc_subnet_id: "{{ vpc_subnet_id }}"
-    assign_public_ip: yes
+    # assign_public_ip: yes
     wait: true
     region: "{{ region }}"
     instance_tags: "{{ instance_tags }}"
@@ -53,6 +53,25 @@
     zone: "{{ zone }}"
     instance_profile_name: "{{ instance_profile_name }}"
   register: ec2
+
+- name: Launch ELB
+  local_action:
+    module: ec2_elb_lb
+    name: "{{ launch_ec2_elb_sandbox.name }}"
+    state: present
+    zones:
+      - us-west-1a
+      - us-west-1c
+    listeners:
+      - protocol: http
+        load_balancer_port: 80
+        instance_port: 80
+      - protocol: https
+        load_balancer_port: 443
+        instance_protocol: http
+        instance_port: 80
+        # ssl_certificate_id: TODO: where?
+  register: elb_sandbox
 
 - name: Add DNS name
   local_action:
