@@ -171,6 +171,14 @@ vpc_group_sandbox:
       from_port: 22
       to_port: 22
       group_name: "{{ vpc_group_jump.name }}"
+    - proto: tcp
+      from_port: 80
+      to_port: 80
+      cidr_ip: "{{ vpc_cidr }}"
+    - proto: tcp
+      from_port: 18010
+      to_port: 18010
+      cidr_ip: "{{ vpc_cidr }}"
   rules_egress:
     - proto: tcp
       from_port: 0
