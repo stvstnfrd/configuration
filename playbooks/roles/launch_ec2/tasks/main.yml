@@ -24,15 +24,23 @@
     instance_ids: "{{tag_lookup.instance_ids}}"
   when: terminate_instance == true and tag_lookup.instance_ids|length == 1
 
-- name: deregister instance from an an elb if it was in one
+# - name: deregister instance from an an elb if it was in one
+#   local_action:
+#     module: ec2_elb
+#     region: "{{ region }}"
+#     instance_id: "{{ tag_lookup.instance_ids[0] }}"
+#     ec2_elbs:
+#       - "{{ elb }}"
+#     state: absent
+#   when: terminate_instance == true and elb and tag_lookup.instance_ids|length == 1
+- name: lookup subnet
   local_action:
-    module: ec2_elb
     region: "{{ region }}"
-    instance_id: "{{ tag_lookup.instance_ids[0] }}"
-    ec2_elbs:
-      - "{{ elb }}"
-    state: absent
-  when: terminate_instance == true and elb and tag_lookup.instance_ids|length == 1
+    module: vpc_lookup
+    tags: "{{ vpc_subnet_tags }}"
+  register: subnets
+
+- debug: var=subnets
 
 - name: Launch ec2 instance
   local_action:
@@ -41,7 +49,7 @@
     group: "{{ security_group }}"
     instance_type: "{{ instance_type }}"
     image: "{{ ami }}"
-    vpc_subnet_id: "{{ vpc_subnet_id }}"
+    vpc_subnet_id: "{{ item }}"
     assign_public_ip: yes
     wait: true
     region: "{{ region }}"
@@ -53,6 +61,9 @@
     zone: "{{ zone }}"
     instance_profile_name: "{{ instance_profile_name }}"
   register: ec2
+  with_items: subnets.subnet_ids
+
+- debug: var=ec2
 
 - name: Add DNS name
   local_action:
@@ -64,7 +75,7 @@
     ttl: 300
     record: "{{ dns_name }}.{{ dns_zone }}"
     value: "{{ item.public_dns_name }}"
-  with_items: ec2.instances
+  with_items: ec2.results[0].instances
 
 - name: Add DNS names for services
   local_action:
@@ -77,7 +88,7 @@
     record: "{{ item[1] }}-{{ dns_name }}.{{ dns_zone }}"
     value: "{{ item[0].public_dns_name }}"
   with_nested:
-    - ec2.instances
+    - ec2.results[0].instances
     - ['studio', 'ecommerce', 'preview', 'programs']
 
 
@@ -86,7 +97,7 @@
     module: add_host
     hostname: "{{ item.public_ip }}"
     groups: launched
-  with_items: ec2.instances
+  with_items: ec2.results[0].instances
 
 - name: Wait for SSH to come up
   local_action:
@@ -96,4 +107,4 @@
     port: 22
     delay: 60
     timeout: 320
-  with_items: ec2.instances
+  with_items: ec2.results[0].instances

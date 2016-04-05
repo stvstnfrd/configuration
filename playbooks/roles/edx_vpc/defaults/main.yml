@@ -30,14 +30,13 @@ vpc_aws_profile:
 vpc_aws_region: 'us-west-1'
 
 vpc_class_b: '10.4'
-
+vpc_vpc_cidr: "{{ vpc_class_b }}.0.0/16"
 vpc_vpc_state: 'present'
+vpc_vpc_tags:
+  Deployment: "{{ DEPLOYMENT }}"
+  Name: "{{ DEPLOYMENT }}"
 vpc_vpc:
   name: "{{ DEPLOYMENT }}"
-  cidr: "{{ vpc_class_b }}.0.0/16"
-  tags:
-    Deployment: "{{ DEPLOYMENT }}"
-    Name: "{{ DEPLOYMENT }}"
   internet_gateway:
     create: yes
     tags:
@@ -60,44 +59,6 @@ vpc_acl_public:
     cidr_block: '0.0.0.0/0'
     from_port: 0
     to_port: 65535
-vpc_acl_sandbox:
-  name: "{{ DEPLOYMENT }}-acl-sandbox"
-  rules:
-  - type: 'egress'  # egress, ingress
-    protocol: 'ALL'  # TCP, UDP, ALL, ICMP
-    number: 101
-    rule_action: 'ALLOW'
-    cidr_block: '0.0.0.0/0'
-    from_port: 0
-    to_port: 65535
-  - type: 'ingress'
-    protocol: 'TCP'
-    number: 102
-    rule_action: 'ALLOW'
-    cidr_block: "{{ vpc_vpc.cidr }}"
-    from_port: 22
-    to_port: 22
-  - type: 'ingress'
-    protocol: 'TCP'
-    number: 110
-    rule_action: 'ALLOW'
-    cidr_block: "{{ vpc_vpc.cidr }}"
-    from_port: 80
-    to_port: 80
-  - type: 'ingress'
-    protocol: 'TCP'
-    number: 120
-    rule_action: 'ALLOW'
-    cidr_block: "{{ vpc_vpc.cidr }}"
-    from_port: 18010
-    to_port: 18010
-  - type: 'ingress'
-    protocol: 'ALL'
-    number: 130
-    rule_action: 'ALLOW'
-    cidr_block: "{{ vpc_vpc.cidr }}"
-    from_port: 1024
-    to_port: 65535
 vpc_group_jump:
   name: "{{ DEPLOYMENT }}-group-jump"
   description: 'TODO: Something smart here'
@@ -118,20 +79,20 @@ vpc_group_nat:
     - proto: tcp
       from_port: 80
       to_port: 80
-      cidr_ip: 0.0.0.0/0
+      cidr_ip: '0.0.0.0/0'
     - proto: tcp
       from_port: 443
       to_port: 443
-      cidr_ip: 0.0.0.0/0
+      cidr_ip: '0.0.0.0/0'
   rules_egress:
     - proto: tcp
       from_port: 80
       to_port: 80
-      cidr_ip: 0.0.0.0/0
+      cidr_ip: '0.0.0.0/0'
     - proto: tcp
       from_port: 443
       to_port: 443
-      cidr_ip: 0.0.0.0/0
+      cidr_ip: '0.0.0.0/0'
 vpc_group_sandbox:
   name: "{{ DEPLOYMENT }}-group-sandbox"
   description: 'TODO: Something smart here'
@@ -139,20 +100,21 @@ vpc_group_sandbox:
     - proto: tcp
       from_port: 22
       to_port: 22
-      group_name: "{{ vpc_group_jump.name }}"
+      cidr_ip: '0.0.0.0/0'
     - proto: tcp
       from_port: 80
       to_port: 80
-      cidr_ip: "{{ vpc_vpc.cidr }}"
+      cidr_ip: '0.0.0.0/0'
     - proto: tcp
       from_port: 18010
       to_port: 18010
-      cidr_ip: "{{ vpc_vpc.cidr }}"
+      cidr_ip: '0.0.0.0/0'
   rules_egress:
     - proto: all
       from_port: 0
       to_port: 65535
-      group_name: "{{ vpc_group_nat.name }}"
+      cidr_ip: '0.0.0.0/0'
+      # group_name: "{{ vpc_group_nat.name }}"
 vpc_instance_jump:
   name: "{{ DEPLOYMENT }}-instance-jump"
   key: 'deployment'
