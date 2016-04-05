@@ -29,10 +29,11 @@ DEPLOYMENT: 'sandbox'
 vpc_aws_profile:
 vpc_aws_region: 'us-west-1'
 
+vpc_class_b: '10.4'
 vpc_vpc:
   name: "{{ DEPLOYMENT }}"
   state: 'present'
-  cidr: '10.4.0.0/16'
+  cidr: "{{ vpc_class_b }}.0.0/16"
   tags:
     Deployment: "{{ DEPLOYMENT }}"
     Name: "{{ DEPLOYMENT }}"
@@ -179,9 +180,9 @@ vpc_routes_public:
       cidr: '0.0.0.0/0'
 vpc_subnet_sandbox:
   name: "{{ DEPLOYMENT }}-subnet-sandbox"
-  cidr: '10.4.1.0/24'
+  cidr: '{{ vpc_class_b }}.1.0/24'
   az: 'us-west-1a'
 vpc_public_subnets:
   - name: "{{ DEPLOYMENT }}-subnet-public"
-    cidr: '10.4.0.0/24'
+    cidr: '{{ vpc_class_b }}.0.0/24'
     az: 'us-west-1a'
