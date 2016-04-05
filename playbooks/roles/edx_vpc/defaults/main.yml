@@ -60,40 +60,40 @@ vpc_acl_sandbox:
   name: "{{ DEPLOYMENT }}-acl-sandbox"
   rules:
   - type: 'egress'  # egress, ingress
-    protocol: 'TCP'  # TCP, UDP, ALL, ICMP
-    number: 100
+    protocol: 'ALL'  # TCP, UDP, ALL, ICMP
+    number: 101
     rule_action: 'ALLOW'
     cidr_block: '0.0.0.0/0'
     from_port: 0
     to_port: 65535
   - type: 'ingress'
-    protocol: 'ALL'
-    number: 100
-    rule_action: 'ALLOW'
-    cidr_block: "{{ vpc_cidr }}"
-    from_port: 1024
-    to_port: 65535
-  - type: 'ingress'
-    protocol: 'ALL'
-    number: 110
+    protocol: 'TCP'
+    number: 102
     rule_action: 'ALLOW'
     cidr_block: "{{ vpc_cidr }}"
     from_port: 22
     to_port: 22
   - type: 'ingress'
-    protocol: 'ALL'
-    number: 120
+    protocol: 'TCP'
+    number: 110
     rule_action: 'ALLOW'
     cidr_block: "{{ vpc_cidr }}"
     from_port: 80
     to_port: 80
   - type: 'ingress'
-    protocol: 'ALL'
-    number: 130
+    protocol: 'TCP'
+    number: 120
     rule_action: 'ALLOW'
     cidr_block: "{{ vpc_cidr }}"
     from_port: 18010
     to_port: 18010
+  - type: 'ingress'
+    protocol: 'ALL'
+    number: 130
+    rule_action: 'ALLOW'
+    cidr_block: "{{ vpc_cidr }}"
+    from_port: 1024
+    to_port: 65535
 
 vpc_routes_public:
   name: "{{ DEPLOYMENT }}-routes-public"
@@ -180,15 +180,15 @@ vpc_group_sandbox:
       to_port: 18010
       cidr_ip: "{{ vpc_cidr }}"
   rules_egress:
-    - proto: tcp
+    - proto: all
       from_port: 0
       to_port: 65535
       group_name: "{{ vpc_group_nat.name }}"
 
 vpc_instances_sandbox:
   - key: 'deployment'
-    type: 't2.large'
-    name: "{{ DEPLOYMENT }}-master"
+    type: 't2.medium'
+    name: "{{ DEPLOYMENT }}-instance-master"
     ami: 'ami-b06717d0'
 
 vpc_subnet_sandbox:
