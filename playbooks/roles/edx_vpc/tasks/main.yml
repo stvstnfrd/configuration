@@ -49,17 +49,18 @@
 # A default network acl is created when a vpc is created so each VPC
 # should have one but we create one here that allows access to the
 # outside world using the internet gateway.
-# - name: create public network acl
-#   ec2_acl:
-#     profile: "{{ vpc_aws_profile }}"
-#     name: "{{ vpc_public_acl.name }}"
-#     vpc_id: "{{ created_vpc.vpc_id }}"
-#     state: "present"
-#     region: "{{ vpc_aws_region }}"
-#     rules: "{{ vpc_public_acl.rules }}"
-#     tags:
-#       environment: "{{ environment }}"
-#   register: created_public_acl
+- name: create public network acl
+  ec2_acl:
+    profile: "{{ vpc_aws_profile }}"
+    name: "{{ vpc_acl_public.name }}"
+    vpc_id: "{{ created_vpc.vpc_id }}"
+    state: "present"
+    region: "{{ vpc_aws_region }}"
+    rules: "{{ vpc_acl_public.rules }}"
+    tags:
+      - key: Deployment
+        value: "{{ DEPLOYMENT }}"
+  register: created_public_acl
 
 - name: create public route table
   ec2_rt:
@@ -67,13 +68,13 @@
     vpc_id: "{{ created_vpc.vpc_id }}"
     region: "{{ vpc_aws_region }}"
     state: "present"
-    name: "{{ vpc_public_route_table.name }}"
-    routes: "{{ vpc_public_route_table.routes }}"
+    name: "{{ vpc_routes_public.name }}"
+    routes: "{{ vpc_routes_public.routes }}"
     tags:
-      - key: environment
+      - key: Deployment
         value: "{{ DEPLOYMENT }}"
-      - key: Name
-        value: "{{ vpc_public_route_table.name }}"
+      # - key: Name
+        # value: "{{ vpc_routes_public.name }}"
   register: created_public_rt
 
 - debug:
@@ -89,84 +90,260 @@
     cidr: "{{ item.cidr }}"
     az: "{{ item.az }}"
     route_table_id: "{{ created_public_rt.id }}"
-    # network_acl_id: "{{ created_public_acl.id }}"
-  with_items: vpc_public_subnets
+    network_acl_id: "{{ created_public_acl.id }}"
+    tags:
+      - key: Deployment
+        value: "{{ DEPLOYMENT }}"
+  with_items: vpc_subnets_public
   register: created_public_subnets
 
 - debug:
     var: created_public_subnets
 
-# - name: create NAT security group
-#   ec2_group:
-#     profile: "{{ vpc_aws_profile }}"
-#     vpc_id: "{{ created_vpc.vpc_id }}"
-#     state: "present"
-#     region: "{{ vpc_aws_region }}"
-#     name: "{{ nat_security_group.name }}"
-#     rules: "{{ nat_security_group.rules }}"
-#     description: "{{ nat_security_group.description }}"
-#     rules_egress: "{{ nat_security_group.rules_egress }}"
-#   register: created_nat_security_group
+- name: create NAT security group
+  local_action:
+    module: ec2_group_local
+    profile: "{{ vpc_aws_profile }}"
+    vpc_id: "{{ created_vpc.vpc_id }}"
+    state: "present"
+    region: "{{ vpc_aws_region }}"
+    name: "{{ vpc_group_nat.name }}"
+    rules: "{{ vpc_group_nat.rules }}"
+    description: "{{ vpc_group_nat.description }}"
+    rules_egress: "{{ vpc_group_nat.rules_egress }}"
+    tags:
+      - key: Deployment
+        value: "{{ DEPLOYMENT }}"
+      - key: Name
+        value: "{{ vpc_group_nat.name }}"
+  register: created_nat_security_group
 
-# - name: check to see if we already have a nat instance
-#   local_action:
-#     module: "ec2_lookup"
-#     region: "{{ vpc_aws_region }}"
-#     tags:
-#       - Name: "{{ vpc_name }}-nat-instance"
-#   register: nat_instance
+- debug:
+    var: created_nat_security_group
 
-# - name: create nat instance
-#   local_action:
-#     module: "ec2"
-#     state: "present"
-#     wait: yes
-#     source_dest_check: false
-#     region: "{{ vpc_aws_region }}"
-#     profile: "{{ vpc_aws_profile }}"
-#     group_id: "{{ created_nat_security_group.group_id }}"
-#     key_name: "{{ vpc_keypair }}"
-#     vpc_subnet_id: "{{ created_public_subnets.results[0].subnet_id }}"
-#     instance_type: "{{ vpc_nat_instance_type }}"
-#     instance_tags:
-#       Name: "{{ vpc_name }}-nat-instance"
-#     image: "{{ vpc_nat_ami_id }}"
-#   register: new_nat_instance
-#   when: nat_instance.instances|length == 0
+- name: check to see if we already have a nat instance
+  local_action:
+    module: "ec2_lookup"
+    region: "{{ vpc_aws_region }}"
+    tags:
+      - Name: "{{ vpc_instance_nat.name }}"
+  register: nat_instance
+
+- debug:
+    var: nat_instance
+
+- name: create nat instance
+  local_action:
+    module: "ec2"
+    state: "present"
+    wait: yes
+    source_dest_check: false
+    region: "{{ vpc_aws_region }}"
+    profile: "{{ vpc_aws_profile }}"
+    group_id: "{{ created_nat_security_group.group_id }}"
+    key_name: "{{ vpc_instance_nat.key }}"
+    vpc_subnet_id: "{{ created_public_subnets.results[0].subnet_id }}"
+    instance_type: "{{ vpc_instance_nat.type }}"
+    instance_tags:
+      Name: "{{ vpc_instance_nat.name }}"
+      Deployment: "{{ DEPLOYMENT }}"
+    image: "{{ vpc_instance_nat.ami }}"
+  register: new_nat_instance
+  when: nat_instance.instances|length == 0
+
+- debug:
+    var: new_nat_instance
 
 # We need to do this instead of registering the output of the above
 # command because if the above command get skipped, the output does
 # not contain information about the instance.
-# - name: lookup the created nat_instance
-#   local_action:
-#     module: "ec2_lookup"
-#     region: "{{ vpc_aws_region }}"
-#     tags:
-#       - Name: "{{ vpc_name }}-nat-instance"
-#   register: nat_instance
+- name: lookup the created nat_instance
+  local_action:
+    module: "ec2_lookup"
+    region: "{{ vpc_aws_region }}"
+    tags:
+      - Name: "{{ vpc_instance_nat.name }}"
+  register: nat_instance
 
-# - name: assign eip to nat
-#   ec2_eip:
-#     profile: "{{ vpc_aws_profile }}"
-#     region: "{{ vpc_aws_region }}"
-#     instance_id: "{{ nat_instance.instances[0].id }}"
-#     in_vpc: true
-#     reuse_existing_ip_allowed: true
-#   register: create_eip
-#   when: new_nat_instance.changed
+- debug:
+    var: nat_instance
 
-# - name: create private route table
-#   ec2_rt:
-#     profile: "{{ vpc_aws_profile }}"
-#     vpc_id: "{{ created_vpc.vpc_id }}"
-#     region: "{{ vpc_aws_region }}"
-#     state: "present"
-#     name: "{{ vpc_name }}-private"
-#     routes: "{{ vpc_private_route_table.routes }}"
-#   register: created_private_rt
+- name: assign eip to nat
+  ec2_eip:
+    profile: "{{ vpc_aws_profile }}"
+    region: "{{ vpc_aws_region }}"
+    instance_id: "{{ nat_instance.instances[0].id }}"
+    in_vpc: true
+    reuse_existing_ip_allowed: true
+  register: created_eip
+  when: new_nat_instance.changed
+
+- debug:
+    var: created_eip
+
+- name: create private route table
+  ec2_rt:
+    profile: "{{ vpc_aws_profile }}"
+    vpc_id: "{{ created_vpc.vpc_id }}"
+    region: "{{ vpc_aws_region }}"
+    state: "present"
+    name: "{{ vpc_routes_private.name }}"
+    routes: "{{ vpc_routes_private.routes }}"
+  register: created_private_rt
+
+- debug:
+    var: created_private_rt
 
 # - name: output a vpc_config for using to build services
 #   local_action:
 #     module: template
 #     src: "vpc_config.yml.j2"
 #     dest: "~/{{ e_d }}.yml"
+
+
+- name: create security group for jumpbox
+  local_action:
+    module: ec2_group_local
+    profile: "{{ vpc_aws_profile }}"
+    vpc_id: "{{ created_vpc.vpc_id }}"
+    state: "present"
+    region: "{{ vpc_aws_region }}"
+    name: "{{ vpc_group_jump.name }}"
+    rules: "{{ vpc_group_jump.rules }}"
+    description: "{{ vpc_group_jump.description }}"
+    rules_egress: "{{ vpc_group_jump.rules_egress }}"
+    tags:
+      - key: Deployment
+        value: "{{ DEPLOYMENT }}"
+      - key: Name
+        value: "{{ vpc_group_jump.name }}"
+  register: create_group_jump
+
+- name: check to see if we already have a jump box
+  local_action:
+    module: "ec2_lookup"
+    region: "{{ vpc_aws_region }}"
+    tags:
+      - Name: "{{ vpc_instance_jump.name }}"
+      - Deployment: "{{ DEPLOYMENT }}"
+  register: lookup_instance_jumpbox
+
+- debug:
+    var: lookup_instance_jumpbox
+
+
+
+- name: create instance jump
+  local_action:
+    module: "ec2"
+    state: "present"
+    wait: yes
+    source_dest_check: false
+    region: "{{ vpc_aws_region }}"
+    profile: "{{ vpc_aws_profile }}"
+    group_id: "{{ create_group_jump.group_id }}"
+    key_name: "{{ vpc_instance_jump.key }}"
+    vpc_subnet_id: "{{ created_public_subnets.results[0].subnet_id }}"
+    instance_type: "{{ vpc_instance_jump.type }}"
+    instance_tags:
+      Name: "{{ vpc_instance_jump.name }}"
+      Deployment: "{{ DEPLOYMENT }}"
+    image: "{{ vpc_instance_jump.ami }}"
+  register: create_instance_jump
+  when: lookup_instance_jumpbox.instances|length == 0
+
+- debug:
+    var: create_instance_jump
+
+# We need to do this instead of registering the output of the above
+# command because if the above command get skipped, the output does
+# not contain information about the instance.
+- name: lookup the created nat_instance
+  local_action:
+    module: "ec2_lookup"
+    region: "{{ vpc_aws_region }}"
+    tags:
+      - Name: "{{ vpc_instance_jump.name }}"
+  register: lookup_instance_jumpbox
+
+- debug:
+    var: lookup_instance_jumpbox
+
+- name: assign eip to nat
+  ec2_eip:
+    profile: "{{ vpc_aws_profile }}"
+    region: "{{ vpc_aws_region }}"
+    instance_id: "{{ lookup_instance_jumpbox.instances[0].id }}"
+    in_vpc: true
+    reuse_existing_ip_allowed: true
+  register: create_eip_jump
+  when: create_instance_jump.changed
+
+- debug:
+    var: create_eip_jump
+
+
+
+
+# Sandboxes
+- name: create security group for sandboxes
+  local_action:
+    module: ec2_group_local
+    profile: "{{ vpc_aws_profile }}"
+    vpc_id: "{{ created_vpc.vpc_id }}"
+    state: "present"
+    region: "{{ vpc_aws_region }}"
+    name: "{{ vpc_group_sandbox.name }}"
+    rules: "{{ vpc_group_sandbox.rules }}"
+    description: "{{ vpc_group_sandbox.description }}"
+    rules_egress: "{{ vpc_group_sandbox.rules_egress }}"
+    tags:
+      - key: Deployment
+        value: "{{ DEPLOYMENT }}"
+      - key: Name
+        value: "{{ vpc_group_sandbox.name }}"
+  register: create_group_sandbox
+
+- debug:
+    var: create_group_sandbox
+
+- name: create subnet sandbox
+  ec2_subnet:
+    profile: "{{ vpc_aws_profile }}"
+    vpc_id: "{{ created_vpc.vpc_id }}"
+    region: "{{ vpc_aws_region }}"
+    state: "present"
+    name: "{{ vpc_subnet_sandbox.name }}"
+    cidr: "{{ vpc_subnet_sandbox.cidr }}"
+    az: "{{ vpc_subnet_sandbox.az }}"
+    route_table_id: "{{ created_private_rt.id }}"
+    # network_acl_id: "{{ created_public_acl.id }}"
+    tags:
+      - key: Deployment
+        value: "{{ DEPLOYMENT }}"
+  register: create_subnet_sandbox
+
+- debug:
+    var: create_subnet_sandbox
+
+- name: create instance sandbox
+  local_action:
+    module: "ec2"
+    state: "present"
+    wait: yes
+    source_dest_check: false
+    region: "{{ vpc_aws_region }}"
+    profile: "{{ vpc_aws_profile }}"
+    group_id: "{{ create_group_sandbox.group_id }}"
+    key_name: "{{ item.key }}"
+    vpc_subnet_id: "{{ create_subnet_sandbox.subnet_id }}"
+    instance_type: "{{ item.type }}"
+    instance_tags:
+      Name: "{{ item.name }}"
+      Deployment: "{{ DEPLOYMENT }}"
+    image: "{{ item.ami }}"
+  with_items: "{{ vpc_instances_sandbox }}"
+  register: create_instances_sandbox
+
+- debug:
+    var: create_instance_jump

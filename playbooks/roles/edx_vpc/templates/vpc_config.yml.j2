@@ -13,7 +13,7 @@ aws_region: "{{ vpc_aws_region }}"
 
 
 aws_availability_zones:
-{% for subnet in vpc_public_subnets %}
+{% for subnet in vpc_subnets_public %}
   - {{ subnet.az }}
 {% endfor %}
 
@@ -29,8 +29,8 @@ instance_key_name: "{{ vpc_keypair }}"
 # subject to change #TODO: provide the correct var for the eni
 nat_device: "{{ nat_instance.instances[0].id }}"
 
-public_subnet_1: "{{ vpc_public_subnets[0].cidr }}"
-public_subnet_2: "{{ vpc_public_subnets[1].cidr }}"
+public_subnet_1: "{{ vpc_subnets_public[0].cidr }}"
+public_subnet_2: "{{ vpc_subnets_public[1].cidr }}"
 
 # /28 per AZ NEEDE?
 # private_subnet_1: "{{ vpc_class_b }}.110.16/28"
