@@ -70,9 +70,30 @@ vpc_acl_sandbox:
     protocol: 'ALL'
     number: 100
     rule_action: 'ALLOW'
-    cidr_block: '0.0.0.0/0'
-    from_port: 0
+    cidr_block: "{{ vpc_cidr }}"
+    from_port: 1024
     to_port: 65535
+  - type: 'ingress'
+    protocol: 'ALL'
+    number: 110
+    rule_action: 'ALLOW'
+    cidr_block: "{{ vpc_cidr }}"
+    from_port: 22
+    to_port: 22
+  - type: 'ingress'
+    protocol: 'ALL'
+    number: 120
+    rule_action: 'ALLOW'
+    cidr_block: "{{ vpc_cidr }}"
+    from_port: 80
+    to_port: 80
+  - type: 'ingress'
+    protocol: 'ALL'
+    number: 130
+    rule_action: 'ALLOW'
+    cidr_block: "{{ vpc_cidr }}"
+    from_port: 18010
+    to_port: 18010
 
 vpc_routes_public:
   name: "{{ DEPLOYMENT }}-routes-public"
