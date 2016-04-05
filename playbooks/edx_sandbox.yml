@@ -1,6 +1,6 @@
 ---
 - name: Configure sandbox
-  hosts: tag_role_sandbox:&tag_environment_sandbox:&tag_Name_base
+  hosts: tag_Name_sandbox-instance-master
   sudo: True
   gather_facts: True
   vars:
@@ -39,9 +39,9 @@
       celery_worker: True
     - edxapp
     - notifier
-    - analytics_api
-    - insights
-    - edx_notes_api
+    # - analytics_api
+    # - insights
+    # - edx_notes_api
     - demo
     - oauth_client_setup
     - role: rabbitmq
