@@ -194,11 +194,11 @@
 - debug:
     var: created_private_rt
 
-# - name: output a vpc_config for using to build services
-#   local_action:
-#     module: template
-#     src: "vpc_config.yml.j2"
-#     dest: "~/{{ e_d }}.yml"
+- name: output a vpc_config for using to build services
+  local_action:
+    module: template
+    src: "vpc_config.yml.j2"
+    dest: "~/{{ e_d }}.yml"
 
 
 - name: create security group for jumpbox
