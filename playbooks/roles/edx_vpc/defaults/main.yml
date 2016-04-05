@@ -25,19 +25,22 @@ vpc_debian_pkgs: []
 vpc_redhat_pkgs: []
 
 DEPLOYMENT: 'sandbox'
-vpc_name: "{{ DEPLOYMENT }}"
-vpc_aws_region: 'us-west-1'
-vpc_cidr: '10.4.0.0/16'
-vpc_tags:
-  Deployment: "{{ DEPLOYMENT }}"
-  Name: "{{ vpc_name }}"
-name_internet_gateway: "{{ DEPLOYMENT }}-gateway-internet"
-internet_gateway_tags:
-  Deployment: "{{ DEPLOYMENT }}"
-  Name: "{{ name_internet_gateway }}"
-vpc_state: 'present'
-vpc_aws_profile:
 
+vpc_aws_profile:
+vpc_aws_region: 'us-west-1'
+
+vpc_vpc:
+  name: "{{ DEPLOYMENT }}"
+  state: 'present'
+  cidr: '10.4.0.0/16'
+  tags:
+    Deployment: "{{ DEPLOYMENT }}"
+    Name: "{{ DEPLOYMENT }}"
+  internet_gateway:
+    create: yes
+    tags:
+      Deployment: "{{ DEPLOYMENT }}"
+      Name: "{{ DEPLOYMENT }}-gateway-internet"
 vpc_acl_public:
   name: "{{ DEPLOYMENT }}-acl-public"
   rules:
@@ -55,7 +58,6 @@ vpc_acl_public:
     cidr_block: '0.0.0.0/0'
     from_port: 0
     to_port: 65535
-
 vpc_acl_sandbox:
   name: "{{ DEPLOYMENT }}-acl-sandbox"
   rules:
@@ -70,57 +72,43 @@ vpc_acl_sandbox:
     protocol: 'TCP'
     number: 102
     rule_action: 'ALLOW'
-    cidr_block: "{{ vpc_cidr }}"
+    cidr_block: "{{ vpc_vpc.cidr }}"
     from_port: 22
     to_port: 22
   - type: 'ingress'
     protocol: 'TCP'
     number: 110
     rule_action: 'ALLOW'
-    cidr_block: "{{ vpc_cidr }}"
+    cidr_block: "{{ vpc_vpc.cidr }}"
     from_port: 80
     to_port: 80
   - type: 'ingress'
     protocol: 'TCP'
     number: 120
     rule_action: 'ALLOW'
-    cidr_block: "{{ vpc_cidr }}"
+    cidr_block: "{{ vpc_vpc.cidr }}"
     from_port: 18010
     to_port: 18010
   - type: 'ingress'
     protocol: 'ALL'
     number: 130
     rule_action: 'ALLOW'
-    cidr_block: "{{ vpc_cidr }}"
+    cidr_block: "{{ vpc_vpc.cidr }}"
     from_port: 1024
     to_port: 65535
-
-vpc_routes_public:
-  name: "{{ DEPLOYMENT }}-routes-public"
-  routes:
-    - gateway: "{{ created_vpc.igw.id }}"
-      cidr: '0.0.0.0/0'
-    # what about local routes?
-
-vpc_routes_private:
-  name: "{{ DEPLOYMENT }}-routes-private"
-  routes:
-    - instance: "{{ nat_instance.instance_ids[0] }}"
-      cidr: '0.0.0.0/0'
-    # what about local routes?
-
-vpc_public_subnets:
-  - name: "{{ DEPLOYMENT }}-subnet-public"
-    cidr: '10.4.0.0/24'
-    az: 'us-west-1a'
-
-vpc_instance_nat:
-  name: "{{ DEPLOYMENT }}-instance-nat"
-  key: 'deployment'
-  type: 't2.micro'
-  # amzn-ami-vpc-nat-hvm-2016.03.0.x86_64-ebs
-  ami: 'ami-0d087a6d'
-
+vpc_group_jump:
+  name: "{{ DEPLOYMENT }}-group-jump"
+  description: 'TODO: Something smart here'
+  rules:
+    - proto: tcp
+      from_port: 22
+      to_port: 22
+      cidr_ip: 0.0.0.0/0
+  rules_egress:
+    - proto: tcp
+      from_port: 22
+      to_port: 22
+      cidr_ip: 0.0.0.0/0
 vpc_group_nat:
   name: "{{ DEPLOYMENT }}-group-nat"
   description: 'TODO: Something smart here'
@@ -142,27 +130,6 @@ vpc_group_nat:
       from_port: 443
       to_port: 443
       cidr_ip: 0.0.0.0/0
-
-vpc_group_jump:
-  name: "{{ DEPLOYMENT }}-group-jump"
-  description: 'TODO: Something smart here'
-  rules:
-    - proto: tcp
-      from_port: 22
-      to_port: 22
-      cidr_ip: 0.0.0.0/0
-  rules_egress:
-    - proto: tcp
-      from_port: 22
-      to_port: 22
-      cidr_ip: 0.0.0.0/0
-
-vpc_instance_jump:
-  name: "{{ DEPLOYMENT }}-instance-jump"
-  key: 'deployment'
-  type: 't2.micro'
-  ami: 'ami-2b2f594b'
-
 vpc_group_sandbox:
   name: "{{ DEPLOYMENT }}-group-sandbox"
   description: 'TODO: Something smart here'
@@ -174,24 +141,47 @@ vpc_group_sandbox:
     - proto: tcp
       from_port: 80
       to_port: 80
-      cidr_ip: "{{ vpc_cidr }}"
+      cidr_ip: "{{ vpc_vpc.cidr }}"
     - proto: tcp
       from_port: 18010
       to_port: 18010
-      cidr_ip: "{{ vpc_cidr }}"
+      cidr_ip: "{{ vpc_vpc.cidr }}"
   rules_egress:
     - proto: all
       from_port: 0
       to_port: 65535
       group_name: "{{ vpc_group_nat.name }}"
-
+vpc_instance_jump:
+  name: "{{ DEPLOYMENT }}-instance-jump"
+  key: 'deployment'
+  type: 't2.micro'
+  ami: 'ami-2b2f594b'
+vpc_instance_nat:
+  name: "{{ DEPLOYMENT }}-instance-nat"
+  key: 'deployment'
+  type: 't2.micro'
+  # amzn-ami-vpc-nat-hvm-2016.03.0.x86_64-ebs
+  ami: 'ami-0d087a6d'
 vpc_instances_sandbox:
   - key: 'deployment'
     type: 't2.medium'
     name: "{{ DEPLOYMENT }}-instance-master"
     ami: 'ami-b06717d0'
-
+vpc_routes_private:
+  name: "{{ DEPLOYMENT }}-routes-private"
+  routes:
+    - instance: "{{ nat_instance.instance_ids[0] }}"
+      cidr: '0.0.0.0/0'
+vpc_routes_public:
+  name: "{{ DEPLOYMENT }}-routes-public"
+  routes:
+    - gateway: "{{ created_vpc.igw.id }}"
+      cidr: '0.0.0.0/0'
 vpc_subnet_sandbox:
   name: "{{ DEPLOYMENT }}-subnet-sandbox"
   cidr: '10.4.1.0/24'
   az: 'us-west-1a'
+vpc_public_subnets:
+  - name: "{{ DEPLOYMENT }}-subnet-public"
+    cidr: '10.4.0.0/24'
+    az: 'us-west-1a'

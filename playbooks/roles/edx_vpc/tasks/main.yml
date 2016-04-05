@@ -34,12 +34,12 @@
   local_action:
     profile: "{{ vpc_aws_profile }}"
     module: "ec2_vpc_local"
-    resource_tags: "{{ vpc_tags }}"
+    resource_tags: "{{ vpc_vpc.tags }}"
     cidr_block: "{{ vpc_cidr }}"
     region: "{{ vpc_aws_region }}"
-    state: "{{ vpc_state }}"
-    internet_gateway: yes
-    internet_gateway_tags: "{{ internet_gateway_tags }}"
+    state: "{{ vpc_vpc.state }}"
+    internet_gateway: "{{ vpc_vpc.internet_gateway.create }}"
+    internet_gateway_tags: "{{ vpc_vpc.internet_gateway.tags }}"
     wait: yes
   register: created_vpc
 
