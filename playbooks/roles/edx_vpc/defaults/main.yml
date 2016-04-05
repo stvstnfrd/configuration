@@ -143,7 +143,7 @@ vpc_instance_jump:
   ami: 'ami-2b2f594b'
 
 vpc_group_sandbox:
-  name: "{{ DEPLOYMENT }}-group-jump"
+  name: "{{ DEPLOYMENT }}-group-sandbox"
   description: 'TODO: Something smart here'
   rules:
     - proto: tcp
@@ -152,9 +152,9 @@ vpc_group_sandbox:
       group_name: "{{ vpc_group_jump.name }}"
   rules_egress:
     - proto: tcp
-      from_port: 22
-      to_port: 22
-      group_name: "{{ vpc_group_jump.name }}"
+      from_port: 0
+      to_port: 65535
+      group_name: "{{ vpc_group_nat.name }}"
 
 vpc_instances_sandbox:
   - key: 'deployment'
