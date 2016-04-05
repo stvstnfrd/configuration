@@ -35,13 +35,14 @@
     profile: "{{ vpc_aws_profile }}"
     module: "ec2_vpc_local"
     resource_tags: "{{ vpc_vpc.tags }}"
-    cidr_block: "{{ vpc_cidr }}"
+    cidr_block: "{{ vpc_vpc.cidr }}"
     region: "{{ vpc_aws_region }}"
-    state: "{{ vpc_vpc.state }}"
+    state: "{{ vpc_vpc_state }}"
     internet_gateway: "{{ vpc_vpc.internet_gateway.create }}"
     internet_gateway_tags: "{{ vpc_vpc.internet_gateway.tags }}"
     wait: yes
   register: created_vpc
+  tags: vpc_only
 
 - debug:
     var: created_vpc

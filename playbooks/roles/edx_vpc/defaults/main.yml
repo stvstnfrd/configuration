@@ -30,9 +30,10 @@ vpc_aws_profile:
 vpc_aws_region: 'us-west-1'
 
 vpc_class_b: '10.4'
+
+vpc_vpc_state: 'present'
 vpc_vpc:
   name: "{{ DEPLOYMENT }}"
-  state: 'present'
   cidr: "{{ vpc_class_b }}.0.0/16"
   tags:
     Deployment: "{{ DEPLOYMENT }}"
