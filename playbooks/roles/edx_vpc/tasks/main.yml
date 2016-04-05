@@ -94,7 +94,7 @@
     tags:
       - key: Deployment
         value: "{{ DEPLOYMENT }}"
-  with_items: vpc_subnets_public
+  with_items: vpc_public_subnets
   register: created_public_subnets
 
 - debug:

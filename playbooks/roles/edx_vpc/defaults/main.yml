@@ -109,7 +109,7 @@ vpc_routes_private:
       cidr: '0.0.0.0/0'
     # what about local routes?
 
-vpc_subnets_public:
+vpc_public_subnets:
   - name: "{{ DEPLOYMENT }}-subnet-public"
     cidr: '10.4.0.0/24'
     az: 'us-west-1a'
