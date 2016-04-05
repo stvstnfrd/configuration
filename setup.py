@@ -26,12 +26,12 @@ setup(
     # URLs
     url='https://github.com/Stanford-Online/configuration',
     # Packages
-    packages=find_packages('src'),
-    include_package_data=True,
-    package_dir={
-        '': 'src',
-        'openedx_configuration': 'src/openedx_configuration',
-    },
+    # packages=find_packages('src'),
+    # include_package_data=True,
+    # package_dir={
+        # '': 'src',
+        # 'openedx_configuration': 'src/openedx_configuration',
+    # },
     dependency_links=[
         'http://github.com/edx/ansible/tarball/stable-1.9.3-rc1-edx#egg=ansible-1.9.3-edx',
     ],
