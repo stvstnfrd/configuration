@@ -12,7 +12,7 @@ instance_tags:
 root_ebs_size: 16
 zone: 'us-west-1a'
 instance_profile_name:
-elb: 'sandbox-elb-sandbox-master'
+elb:
 dns_name: 'master-sandbox'
 dns_zone: 'class.stanford.edu'
 
