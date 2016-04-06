@@ -25,9 +25,6 @@
     #   - name: "{{ SANDBOX_GITHUB_USERNAME }}"
     #     github: true
     #     type: admin
-    # EDXAPP_LMS_BASE: 'BRANCH-sandbox.{DNS_ZONE}'
-    # EDXAPP_CMS_BASE: "studio-{{ LMS_BASE }}"
-    # EDXAPP_PREVIEW_BASE: "preview-{{ LMS_BASE }}"
   roles:
     - role: user
       tags: users
