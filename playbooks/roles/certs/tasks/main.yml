@@ -88,8 +88,8 @@
   register: certs_gpg_key
 
 - name: copy the pgp trust export
-  copy: >
-    content={{ CERTS_OWNER_TRUST }}
+  template: >
+    src=gpg-trust.j2
     dest={{ certs_app_dir }}/trust.export
     owner={{ common_web_user }}
     mode=0600
