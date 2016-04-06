@@ -1,0 +1,5 @@
+---
+- name: Provision sandbox infrastructure
+  hosts: localhost
+  roles:
+    - edx_vpc

@@ -1,0 +1,6 @@
+---
+- name: Provision sandbox
+  hosts: localhost
+  roles:
+    - launch_ec2
+  gather_facts: false

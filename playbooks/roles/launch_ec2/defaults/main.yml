@@ -1,0 +1,22 @@
+---
+region: 'us-west-1'
+name_tag: 'sandbox-instance-master'
+terminate_instance: false
+keypair: 'deployment'
+security_group: 'sandbox-group-sandbox'
+instance_type: 't2.medium'
+ami: 'ami-2b2f594b'
+instance_tags:
+  Name: "{{ name_tag }}"
+  Deployment: 'sandbox'
+root_ebs_size: 16
+zone: 'us-west-1a'
+instance_profile_name:
+elb: 'sandbox-elb-sandbox-master'
+dns_name: 'master-sandbox'
+dns_zone: 'class.stanford.edu'
+
+DEPLOYMENT: 'sandbox'
+vpc_subnet_tags:
+  Deployment: "{{ DEPLOYMENT }}"
+  Name: "{{ DEPLOYMENT }}-subnet-public"
