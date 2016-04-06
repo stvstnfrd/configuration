@@ -36,3 +36,4 @@ over time, so expect frequent changes.
 For more information including installation instruction please see the [Configuration Wiki](https://github.com/edx/configuration/wiki).
 
 For info on any large recent changes please see the [change log](https://github.com/edx/configuration/blob/master/CHANGELOG.md).
+
