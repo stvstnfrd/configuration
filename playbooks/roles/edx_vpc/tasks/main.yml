@@ -327,25 +327,3 @@
 # 
 # - debug:
 #     var: create_subnet_sandbox
-# 
-# - name: create instance sandbox
-#   local_action:
-#     module: "ec2"
-#     state: "present"
-#     wait: yes
-#     source_dest_check: false
-#     region: "{{ vpc_aws_region }}"
-#     profile: "{{ vpc_aws_profile }}"
-#     group_id: "{{ create_group_sandbox.group_id }}"
-#     key_name: "{{ item.key }}"
-#     vpc_subnet_id: "{{ create_subnet_sandbox.subnet_id }}"
-#     instance_type: "{{ item.type }}"
-#     instance_tags:
-#       Name: "{{ item.name }}"
-#       Deployment: "{{ DEPLOYMENT }}"
-#     image: "{{ item.ami }}"
-#   with_items: "{{ vpc_instances_sandbox }}"
-#   register: create_instances_sandbox
-
-# - debug:
-#     var: create_instance_jump
