@@ -5,101 +5,6 @@ Provision a sandbox infrastructure
 """
 import argparse
 
-from boto.ec2 import EC2Connection
-from boto.vpc import VPCConnection
-
-from openedx_configuration.models.ec2.security_group import SecurityGroup
-from openedx_configuration.models.vpc.gateway import Gateway
-from openedx_configuration.models.vpc.route_table import RouteTable
-from openedx_configuration.models.vpc.subnet import Subnet
-from openedx_configuration.models.vpc.vpc import Vpc
-
-DESCRIPTION_SECURITY_GROUP = 'TODO: something smart here'
-NAME_ENVIRONMENT = 'sandbox'
-NAME_GATEWAY = 'sandbox-internet'
-NAME_ROUTE_TABLE = 'sandbox-route-public'
-NAME_SECURITY_GROUP = 'public-sandbox-openedx'
-NAME_SUBNET = 'sandbox-public'
-PUBLIC_CIDR_BLOCK = '0.0.0.0/0'
-PERMISSIONS = [
-    # cidr_block, permission, port, egress
-    (PUBLIC_CIDR_BLOCK, 'allow', 22, False),
-    (PUBLIC_CIDR_BLOCK, 'allow', 80, False),
-    (PUBLIC_CIDR_BLOCK, 'allow', 18010, False),
-]
-
-
-def get_all(arguments):
-    """
-    Find all resources associated with the VPC
-    """
-    api_vpc = VPCConnection()
-    api_ec2 = EC2Connection()
-    vpc_cidr_block = arguments.vpc_cidr_block
-    subnet_cidr_block = arguments.subnet_cidr_block
-    vpc = Vpc(NAME_ENVIRONMENT, api=api_vpc)
-    gateway = Gateway(
-        NAME_ENVIRONMENT,
-        name=NAME_GATEWAY,
-        vpc=vpc,
-        api=api_vpc,
-    )
-    subnet = Subnet(
-        NAME_ENVIRONMENT,
-        name=NAME_SUBNET,
-        vpc=vpc,
-        api=api_vpc,
-    )
-    security_group = SecurityGroup(
-        NAME_ENVIRONMENT,
-        name=NAME_SECURITY_GROUP,
-        vpc=vpc,
-        api=api_ec2,
-    )
-    route_table = RouteTable(
-        NAME_ENVIRONMENT,
-        name=NAME_ROUTE_TABLE,
-        subnet=subnet,
-        api=api_vpc,
-    )
-    return (
-        vpc,
-        gateway,
-        subnet,
-        security_group,
-        route_table,
-    )
-
-
-def describe(arguments):
-    """
-    Print all resources associated with the VPC
-    """
-    items = get_all(arguments)
-    for item in items:
-        if item.exists:
-            print(item)
-
-
-def create(arguments):
-    dry_run = not arguments.go
-    (vpc, gateway, subnet, security_group, route_table) = get_all(arguments)
-    vpc.create(cidr_block=arguments.vpc_cidr_block, dry_run=dry_run)
-    gateway.create(dry_run=dry_run)
-    subnet.create(cidr_block=arguments.subnet_cidr_block, dry_run=dry_run)
-    route_table.create(gateway_id=gateway.id, cidr_block=PUBLIC_CIDR_BLOCK, dry_run=dry_run)
-    security_group.create(permissions=PERMISSIONS, description=DESCRIPTION_SECURITY_GROUP, dry_run=dry_run)
-
-
-def destroy(arguments):
-    dry_run = not arguments.go
-    (vpc, gateway, subnet, security_group, route_table) = get_all(arguments)
-    route_table.destroy(dry_run=dry_run)
-    security_group.destroy(dry_run=dry_run)
-    subnet.destroy(dry_run=dry_run)
-    gateway.destroy(dry_run=dry_run)
-    vpc.destroy(dry_run=dry_run)
-
 
 def parse_arguments():
     """
@@ -110,26 +15,33 @@ def parse_arguments():
     )
     parser.add_argument(
         '-V',
-        '--vpc-cidr-block',
-        default='10.4.0.0/16'
+        '--vpc',
+        default='10.4.0.0/16',
+        metavar='CIDR_BLOCK'
     )
     parser.add_argument(
         '-s',
-        '--subnet-cidr-block',
-        default='10.4.0.0/24'
+        '--subnet',
+        default='10.4.0.0/24',
+        metavar='CIDR_BLOCK'
     )
     parser.add_argument(
-        '-a',
-        '--action',
-        help='one of [create, describe, destroy]',
-        default='describe'
-    )
-    parser.add_argument(
-        '-g',
-        '--go',
-        action='store_true',
-        help='should we actually take action?',
+        '-t',
+        '--terminate',
         default=False,
+        action='store_true',
+    )
+    parser.add_argument(
+        '-c',
+        '--create',
+        default=False,
+        action='store_true',
+    )
+    parser.add_argument(
+        '-l',
+        '--list',
+        default=True,
+        action='store_true',
     )
     arguments = parser.parse_args()
     return arguments
@@ -139,12 +51,12 @@ def main(arguments):
     """
     Handle core functionality; create, destroy, or describe
     """
-    if arguments.action == 'create':
-        create(arguments)
-    elif arguments.action == 'destroy':
-        destroy(arguments)
-    else:
-        describe(arguments)
+    if arguments.terminate:
+        print('TODO: terminate')
+    if arguments.create:
+        print('TODO: create')
+    if arguments.list:
+        print('TODO: list')
 
 if __name__ == '__main__':
     arguments = parse_arguments()

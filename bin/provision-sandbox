@@ -70,7 +70,8 @@ def main(arguments):
         print('TODO: create')
     elif arguments.start:
         print('TODO: start')
-    print('TODO: list')
+    if arguments.list:
+        print('TODO: list')
 
 if __name__ == '__main__':
     arguments = parse_arguments()
