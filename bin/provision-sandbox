@@ -5,18 +5,6 @@ Provision an EC2 instance for use as an OpenEdX sandbox
 """
 import argparse
 
-from boto.ec2 import EC2Connection
-from boto.vpc import VPCConnection
-
-from openedx_configuration.models.ec2.instance import Instance
-from openedx_configuration.models.ec2.security_group import SecurityGroup
-from openedx_configuration.models.vpc.subnet import Subnet
-from openedx_configuration.models.vpc.vpc import Vpc
-
-NAME_ENVIRONMENT = 'sandbox'
-NAME_SECURITY_GROUP = 'public-sandbox-openedx'
-NAME_SUBNET = 'sandbox-public'
-
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -30,94 +18,59 @@ def parse_arguments():
     parser.add_argument(
         '-d',
         '--disk-size',
-        help='what size EBS volume',
         default=16,
     )
     parser.add_argument(
-        '-a',
-        '--action',
-        help='one of [create, describe, destroy]',
-        default='describe'
+        '-t',
+        '--terminate',
+        default=False,
+        action='store_true',
     )
     parser.add_argument(
-        '-g',
-        '--go',
-        action='store_true',
-        help='should we actually take action?',
+        '-c',
+        '--create',
         default=False,
+        action='store_true',
+    )
+    parser.add_argument(
+        '-l',
+        '--list',
+        default=True,
+        action='store_true',
+    )
+    parser.add_argument(
+        '-s',
+        '--start',
+        default=False,
+        action='store_true',
+    )
+    parser.add_argument(
+        '-S',
+        '--stop',
+        default=False,
+        action='store_true',
     )
     parser.add_argument(
         '-A',
         '--ami',
-        help='which base AMI image to use?',
         default='ami-b06717d0',
     )
     arguments = parser.parse_args()
     return arguments
 
 
-def create(arguments, instance, security_group, subnet, dry_run):
-    """
-    Provision a new instance
-
-    Latest Sandbox Image
-    - TEMP-sandbox-dcadams
-    - ami-b06717d0
-    """
-    instance.create(
-        'sandbox',  # role
-        security_group,
-        subnet,
-        disk_size=arguments.disk_size,
-        ami=arguments.ami,
-        dry_run=dry_run,
-    )
-    instance.wait_until_ready()
-    print(instance.ip_address)
-    print(instance.public_dns_name)
-
-
-def destroy(instance, dry_run):
-    instance.destroy(dry_run=dry_run)
-
-
-def describe(arguments, instance, security_group, subnet):
-    print(subnet.exists, subnet)
-    print(security_group.exists, security_group)
-    print(instance.exists, instance)
-    print(instance.ip_address)
-    print(instance.public_dns_name)
-
-
 def main(arguments):
-    name = arguments.instance_name
-    instance = Instance(NAME_ENVIRONMENT, name)
-    api_vpc = VPCConnection()
-    api_ec2 = EC2Connection()
-    vpc = Vpc(NAME_ENVIRONMENT)
-    subnet = Subnet(
-        NAME_ENVIRONMENT,
-        name=NAME_SUBNET,
-        vpc=vpc,
-        api=api_vpc,
-    )
-    security_group = SecurityGroup(
-        NAME_ENVIRONMENT,
-        name=NAME_SECURITY_GROUP,
-        vpc=vpc,
-        api=api_ec2,
-    )
-    dry_run = not arguments.go
-    if arguments.action == 'create':
-        create(arguments, instance, security_group, subnet, dry_run)
-    elif arguments.action == 'destroy':
-        destroy(instance, dry_run)
-    elif arguments.action == 'start':
-        instance.start(dry_run=dry_run)
-    elif arguments.action == 'stop':
-        instance.stop(dry_run=dry_run)
-    else:
-        describe(arguments, instance, security_group, subnet)
+    print('ansible-playbook ./edx_sandbox.yml --private-key=~/.ssh/ubuntu')
+    print(arguments)
+    if arguments.terminate:
+        print('TODO: destroy')
+    elif arguments.stop:
+        print('TODO: stop')
+    if arguments.create:
+        print('TODO: create')
+    elif arguments.start:
+        print('TODO: start')
+    print('TODO: list')
 
 if __name__ == '__main__':
     arguments = parse_arguments()
