@@ -5,6 +5,8 @@ Provision an EC2 instance for use as an OpenEdX sandbox
 """
 import argparse
 
+from boto.ec2 import EC2Connection
+
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -56,22 +58,54 @@ def parse_arguments():
         default='ami-b06717d0',
     )
     arguments = parser.parse_args()
+    arguments.instance_name = "sandbox-instance-{name}".format(
+        name=arguments.instance_name,
+    )
     return arguments
 
+def get_instance(arguments):
+    connection_ec2 = EC2Connection()
+    instances = connection_ec2.get_only_instances(
+        filters={
+            'tag:Name': arguments.instance_name,
+            'tag:Deployment': 'sandbox',
+        },
+    )
+    len_instances = len(instances)
+    assert len(instances) <= 1
+    if len_instances == 1:
+        instance = instances[0]
+    else:
+        instance = None
+    return instance
 
 def main(arguments):
-    print('ansible-playbook ./edx_sandbox.yml --private-key=~/.ssh/ubuntu')
-    print(arguments)
+    # print(arguments)
+    instance = get_instance(arguments)
+    if arguments.stop:
+        instance.stop()
+        instance = get_instance(arguments)
     if arguments.terminate:
-        print('TODO: destroy')
-    elif arguments.stop:
-        print('TODO: stop')
+        instance.terminate()
     if arguments.create:
         print('TODO: create')
+        print('ansible-playbook ./edx_sandbox.yml --private-key=~/.ssh/ubuntu')
     elif arguments.start:
-        print('TODO: start')
+        instance.start()
+        instance = get_instance(arguments)
     if arguments.list:
-        print('TODO: list')
+        print(instance.tags)
+        name = instance.tags['Name']
+        name = name.split('-')[-1]
+        dns = name + '-sandbox.class.stanford.edu'
+        print('name', name)
+        print('id', instance.id)
+        print('id', instance.state)
+        print('tags', instance.tags)
+        print('instance_type', instance.instance_type)
+        print('private_ip_address', instance.private_ip_address)
+        print('public_dns_name', instance.public_dns_name)
+        print('dns', dns)
 
 if __name__ == '__main__':
     arguments = parse_arguments()
