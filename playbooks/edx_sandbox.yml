@@ -1,11 +1,18 @@
 ---
+- name: Provision sandbox
+  hosts: localhost
+  gather_facts: false
+  vars:
+    terminate_instance: true
+  roles:
+    - launch_ec2
 
 # Example sandbox configuration
 # for single server community
 # installs
 
 - name: Configure instance(s)
-  hosts: tag_Name_sandbox-instance-master
+  hosts: launched
   sudo: True
   gather_facts: True
   vars:
