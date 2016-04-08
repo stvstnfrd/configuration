@@ -1,4 +1,3 @@
-.cache/
 *.egg-info/
 *.swp
 *.pyc
