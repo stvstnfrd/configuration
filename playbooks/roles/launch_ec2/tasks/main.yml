@@ -39,8 +39,6 @@
     tags: "{{ vpc_subnet_tags }}"
   register: subnets
 
-- debug: var=subnets
-
 - name: Launch ec2 instance
   local_action:
     module: ec2
@@ -61,8 +59,6 @@
     instance_profile_name: "{{ instance_profile_name }}"
   register: ec2
   with_items: subnets.subnet_ids
-
-- debug: var=ec2
 
 - name: Add DNS name
   local_action:
