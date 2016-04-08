@@ -57,7 +57,6 @@ setup(
         # 'test': Tox,
     },
     scripts=[
-        'bin/export-ssh-config',
         'bin/provision-sandbox',
         'bin/provision-sandbox-infrastructure',
     ],
