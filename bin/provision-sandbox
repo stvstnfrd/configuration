@@ -5,6 +5,9 @@ Provision an EC2 instance for use as an OpenEdX sandbox
 """
 import argparse
 
+from ansible import utils
+from ansible import callbacks
+from ansible.playbook import PlayBook
 from boto.ec2 import EC2Connection
 
 
@@ -59,6 +62,11 @@ def parse_arguments():
         default='ami-b06717d0',
         help='(default=ami-b06717d0, base=ami-2b2f594b)',
     )
+    parser.add_argument(
+        '-p',
+        '--playbooks',
+        default='~/src/edx/configuration/playbooks',
+    )
     arguments = parser.parse_args()
     arguments.instance_name = "sandbox-instance-{name}".format(
         name=arguments.instance_name,
@@ -73,6 +81,11 @@ def get_instance(arguments):
             'tag:Deployment': 'sandbox',
         },
     )
+    instances = [
+        instance
+        for instance in instances
+        if instance.state != 'terminated'
+    ]
     len_instances = len(instances)
     assert len(instances) <= 1
     if len_instances == 1:
@@ -92,7 +105,27 @@ def create_instance(arguments):
     instance = get_instance(arguments)
     print('TODO: create')
     print('ansible-playbook ./edx_sandbox.yml --private-key=~/.ssh/ubuntu')
-    return instance
+    stats = callbacks.AggregateStats()
+    playbook_cb = callbacks.PlaybookCallbacks(
+        verbose=utils.VERBOSITY,
+    )
+    runner_cb = callbacks.PlaybookRunnerCallbacks(
+        stats,
+        verbose=utils.VERBOSITY,
+    )
+    print(arguments.playbooks)
+    path_ssh_key = '~/.ssh/ubuntu'
+    play = PlayBook(
+        playbook='edx_sandbox.yml',
+        host_list='ec2.py',
+        remote_user='ubuntu',
+        stats=stats,
+        runner_callbacks=runner_cb,
+        callbacks=playbook_cb,
+        private_key_file=path_ssh_key,
+    )
+    play.run()
+    playbook_cb.on_stats(play.stats)
 
 
 def start_instance(arguments):
@@ -127,17 +160,17 @@ def stop_instance(arguments):
 
 
 def main(arguments):
-    # print(arguments)
     if arguments.stop:
         stop_instance(arguments)
     if arguments.terminate:
-        terminate_instance(instance)
+        terminate_instance(arguments)
     if arguments.create:
         create_instance(arguments)
     elif arguments.start:
         start_instance(arguments)
     if arguments.list:
         list_instance(arguments)
+
 
 if __name__ == '__main__':
     arguments = parse_arguments()
