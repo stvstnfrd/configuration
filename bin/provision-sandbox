@@ -79,33 +79,63 @@ def get_instance(arguments):
         instance = None
     return instance
 
+
+def terminate_instance(arguments):
+    instance = get_instance(arguments)
+    instance.terminate()
+    return None
+
+
+def create_instance(arguments):
+    instance = get_instance(arguments)
+    print('TODO: create')
+    print('ansible-playbook ./edx_sandbox.yml --private-key=~/.ssh/ubuntu')
+    return instance
+
+
+def start_instance(arguments):
+    instance = get_instance(arguments)
+    instance.start()
+    instance = get_instance(arguments)
+    return instance
+
+
+def list_instance(arguments):
+    instance = get_instance(arguments)
+    print(instance.tags)
+    name = instance.tags['Name']
+    name = name.split('-')[-1]
+    dns = name + '-sandbox.class.stanford.edu'
+    print('name', name)
+    print('id', instance.id)
+    print('id', instance.state)
+    print('tags', instance.tags)
+    print('instance_type', instance.instance_type)
+    print('private_ip_address', instance.private_ip_address)
+    print('public_dns_name', instance.public_dns_name)
+    print('dns', dns)
+    return instance
+
+
+def stop_instance(arguments):
+    instance = get_instance(arguments)
+    instance.stop()
+    instance = get_instance(arguments)
+    return instance
+
+
 def main(arguments):
     # print(arguments)
-    instance = get_instance(arguments)
     if arguments.stop:
-        instance.stop()
-        instance = get_instance(arguments)
+        stop_instance(arguments)
     if arguments.terminate:
-        instance.terminate()
+        terminate_instance(instance)
     if arguments.create:
-        print('TODO: create')
-        print('ansible-playbook ./edx_sandbox.yml --private-key=~/.ssh/ubuntu')
+        create_instance(arguments)
     elif arguments.start:
-        instance.start()
-        instance = get_instance(arguments)
+        start_instance(arguments)
     if arguments.list:
-        print(instance.tags)
-        name = instance.tags['Name']
-        name = name.split('-')[-1]
-        dns = name + '-sandbox.class.stanford.edu'
-        print('name', name)
-        print('id', instance.id)
-        print('id', instance.state)
-        print('tags', instance.tags)
-        print('instance_type', instance.instance_type)
-        print('private_ip_address', instance.private_ip_address)
-        print('public_dns_name', instance.public_dns_name)
-        print('dns', dns)
+        list_instance(arguments)
 
 if __name__ == '__main__':
     arguments = parse_arguments()
