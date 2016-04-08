@@ -34,10 +34,23 @@ def parse_arguments():
         action='store_true',
     )
     parser.add_argument(
+        '-T',
+        '--tear-down',
+        default=False,
+        action='store_true',
+    )
+    parser.add_argument(
         '-c',
         '--create',
         default=False,
         action='store_true',
+    )
+    parser.add_argument(
+        '-b',
+        '--bootstrap',
+        default=False,
+        action='store_true',
+        help='provision vpc too?',
     )
     parser.add_argument(
         '-l',
@@ -158,11 +171,23 @@ def stop_instance(arguments):
     return instance
 
 
+def bootstrap_vpc(arguments):
+    print('TODO: bootstrap vpc')
+
+
+def tear_down_vpc(arguments):
+    print('TODO: tear down vpc')
+
+
 def main(arguments):
     if arguments.stop:
         stop_instance(arguments)
     if arguments.terminate:
         terminate_instance(arguments)
+    if arguments.tear_down:
+        tear_down_vpc(arguments)
+    if arguments.bootstrap:
+        bootstrap_vpc(arguments)
     if arguments.create:
         create_instance(arguments)
     elif arguments.start:
