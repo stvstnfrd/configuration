@@ -114,12 +114,6 @@ def get_instance(arguments):
     return instance
 
 
-def terminate_instance(arguments):
-    instance = get_instance(arguments)
-    instance.terminate()
-    return None
-
-
 def create_instance(arguments):
     stats = callbacks.AggregateStats()
     callbacks = callbacks.PlaybookCallbacks(
@@ -140,13 +134,6 @@ def create_instance(arguments):
     callbacks.on_stats(play.stats)
 
 
-def start_instance(arguments):
-    instance = get_instance(arguments)
-    instance.start()
-    instance = get_instance(arguments)
-    return instance
-
-
 def list_instance(arguments):
     instance = get_instance(arguments)
     print(instance.tags)
@@ -164,9 +151,9 @@ def list_instance(arguments):
     return instance
 
 
-def stop_instance(arguments):
+def update_instance(action, arguments):
     instance = get_instance(arguments)
-    instance.stop()
+    actionable = getattr(instance, action)
     instance = get_instance(arguments)
     return instance
 
@@ -181,9 +168,9 @@ def tear_down_vpc(arguments):
 
 def main(arguments):
     if arguments.stop:
-        stop_instance(arguments)
+        update_instance('stop', arguments)
     if arguments.terminate:
-        terminate_instance(arguments)
+        update_instance('terminate', arguments)
     if arguments.tear_down:
         tear_down_vpc(arguments)
     if arguments.bootstrap:
@@ -191,7 +178,7 @@ def main(arguments):
     if arguments.create:
         create_instance(arguments)
     elif arguments.start:
-        start_instance(arguments)
+        update_instance('start',arguments)
     if arguments.list:
         list_instance(arguments)
 
