@@ -7,8 +7,7 @@
   local_action:
     module: ec2_lookup
     region: "{{ region }}"
-    tags:
-      - Name: "{{ name_tag }}"
+    tags: "{{ instance_tags }}"
   register: tag_lookup
   when: terminate_instance == true
 
