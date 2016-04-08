@@ -21,6 +21,7 @@ def parse_arguments():
         '-d',
         '--disk-size',
         default=16,
+        help='the disk size in MB(?)'
     )
     parser.add_argument(
         '-t',
@@ -53,9 +54,10 @@ def parse_arguments():
         action='store_true',
     )
     parser.add_argument(
-        '-A',
+        '-a',
         '--ami',
         default='ami-b06717d0',
+        help='(default=ami-b06717d0, base=ami-2b2f594b)',
     )
     arguments = parser.parse_args()
     arguments.instance_name = "sandbox-instance-{name}".format(
