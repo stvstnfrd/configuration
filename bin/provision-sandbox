@@ -4,6 +4,7 @@
 Provision an EC2 instance for use as an OpenEdX sandbox
 """
 import argparse
+import os
 
 from ansible import utils
 from ansible import callbacks
@@ -64,8 +65,13 @@ def parse_arguments():
     )
     parser.add_argument(
         '-p',
-        '--playbooks',
-        default='~/src/edx/configuration/playbooks',
+        '--playbook',
+        default='~/src/edx/configuration/playbooks/',
+    )
+    parser.add_argument(
+        '-P',
+        '--playbook-directory',
+        default='~/src/edx/configuration/playbooks/',
     )
     arguments = parser.parse_args()
     arguments.instance_name = "sandbox-instance-{name}".format(
@@ -102,30 +108,23 @@ def terminate_instance(arguments):
 
 
 def create_instance(arguments):
-    instance = get_instance(arguments)
-    print('TODO: create')
-    print('ansible-playbook ./edx_sandbox.yml --private-key=~/.ssh/ubuntu')
     stats = callbacks.AggregateStats()
-    playbook_cb = callbacks.PlaybookCallbacks(
+    callbacks = callbacks.PlaybookCallbacks(
         verbose=utils.VERBOSITY,
     )
-    runner_cb = callbacks.PlaybookRunnerCallbacks(
+    runner_callbacks = callbacks.PlaybookRunnerCallbacks(
         stats,
         verbose=utils.VERBOSITY,
     )
-    print(arguments.playbooks)
-    path_ssh_key = '~/.ssh/ubuntu'
+    os.environ['ANSIBLE_CONFIG'] = arguments.playbook_dir
     play = PlayBook(
-        playbook='edx_sandbox.yml',
-        host_list='ec2.py',
-        remote_user='ubuntu',
+        playbook=arguments.play,
+        callbacks=callbacks,
+        runner_callbacks=runner_callbacks,
         stats=stats,
-        runner_callbacks=runner_cb,
-        callbacks=playbook_cb,
-        private_key_file=path_ssh_key,
     )
     play.run()
-    playbook_cb.on_stats(play.stats)
+    callbacks.on_stats(play.stats)
 
 
 def start_instance(arguments):
