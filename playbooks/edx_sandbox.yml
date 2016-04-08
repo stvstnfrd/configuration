@@ -1,4 +1,11 @@
 ---
+- name: Provision sandbox infrastructure
+  hosts: localhost
+  gather_facts: false
+  roles:
+    - edx_vpc
+  when: false
+
 - name: Provision sandbox
   hosts: localhost
   gather_facts: false
