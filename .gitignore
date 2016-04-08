@@ -1,4 +1,3 @@
-ansible.log
 .cache/
 *.egg-info/
 *.swp

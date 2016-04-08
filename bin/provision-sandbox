@@ -171,11 +171,11 @@ def main(arguments):
         update_instance('stop', arguments)
     if arguments.terminate:
         update_instance('terminate', arguments)
-    if arguments.tear_down:
-        tear_down_vpc(arguments)
-    if arguments.bootstrap:
-        bootstrap_vpc(arguments)
+        if arguments.tear_down:
+            tear_down_vpc(arguments)
     if arguments.create:
+        if arguments.bootstrap:
+            bootstrap_vpc(arguments)
         create_instance(arguments)
     elif arguments.start:
         update_instance('start',arguments)
