@@ -74,8 +74,6 @@
     tags:
       - key: Deployment
         value: "{{ DEPLOYMENT }}"
-      # - key: Name
-        # value: "{{ vpc_routes_public.name }}"
   register: created_public_rt
 
 - debug:
