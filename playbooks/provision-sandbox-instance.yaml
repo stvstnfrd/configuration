@@ -1,8 +1,0 @@
----
-- name: Provision sandbox
-  hosts: localhost
-  gather_facts: false
-  vars:
-    terminate_instance: true
-  roles:
-    - launch_ec2
