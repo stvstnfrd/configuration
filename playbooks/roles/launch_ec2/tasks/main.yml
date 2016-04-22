@@ -10,18 +10,24 @@
     tags: "{{ instance_tags }}"
   register: tag_lookup
   when: terminate_instance == true
+  tags:
+    - destroy
 
 - name: checking for other instances
   debug: msg="Too many results returned, not terminating!"
   when: terminate_instance == true and tag_lookup.instance_ids|length > 1
+  tags:
+    - destroy
 
 - name: terminating single instance
   local_action:
     module: ec2
-    state: 'absent'
+    state: "{{ modify_instance_state }}"
     region: "{{ region }}"
     instance_ids: "{{tag_lookup.instance_ids}}"
   when: terminate_instance == true and tag_lookup.instance_ids|length == 1
+  tags:
+    - destroy
 
 - name: deregister instance from an an elb if it was in one
   local_action:
@@ -32,6 +38,9 @@
       - "{{ elb }}"
     state: absent
   when: terminate_instance == true and elb and tag_lookup.instance_ids|length == 1
+  tags:
+    - destroy
+
 - name: lookup subnet
   local_action:
     region: "{{ region }}"

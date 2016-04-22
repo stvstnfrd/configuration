@@ -1,21 +1,10 @@
 ---
-- hosts: ~tag_Name_{{ machine }}_{{ env }}
+- hosts: localhost
   sudo: True
+  gather_facts: false
   vars:
     secure_dir: '../../configuration-secure/ansible'
     local_dir:  '../../configuration-secure/ansible/local'
-  vars_files:
-    - "{{ secure_dir }}/vars/default/common.yaml"
-    - "{{ secure_dir }}/vars/default/platform/defaults.yaml"
-    - "{{ secure_dir }}/vars/default/platform/embargo.yaml"
-    - "{{ secure_dir }}/vars/default/platform/git-identity.yaml"
-    - "{{ secure_dir }}/vars/default/platform/env.yaml"
-    - "{{ secure_dir }}/vars/default/platform/auth.yaml"
-    - "{{ secure_dir }}/vars/{{ env }}/platform/defaults.yaml"
-    - "{{ secure_dir }}/vars/{{ env }}/platform/env.yaml"
-    - "{{ secure_dir }}/vars/{{ env }}/platform/auth.yaml"
-    - "{{ secure_dir }}/vars/{{ env }}/users.yml"
-    - "{{ secure_dir }}/vars/{{ env }}/shib.yml"
   roles:
     - role: nginx
       tags: nginx

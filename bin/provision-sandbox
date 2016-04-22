@@ -79,12 +79,12 @@ def parse_arguments():
     parser.add_argument(
         '-p',
         '--playbook',
-        default='~/src/edx/configuration/playbooks/',
+        default='edx_sandbox.yml',
     )
     parser.add_argument(
         '-P',
         '--playbook-directory',
-        default='~/src/edx/configuration/playbooks/',
+        default='~/src/edx/configuration/playbooks',
     )
     arguments = parser.parse_args()
     arguments.instance_name = "sandbox-instance-{name}".format(
@@ -116,26 +116,34 @@ def get_instance(arguments):
 
 def create_instance(arguments):
     stats = callbacks.AggregateStats()
-    callbacks = callbacks.PlaybookCallbacks(
+    play_callbacks = callbacks.PlaybookCallbacks(
         verbose=utils.VERBOSITY,
     )
     runner_callbacks = callbacks.PlaybookRunnerCallbacks(
         stats,
         verbose=utils.VERBOSITY,
     )
-    os.environ['ANSIBLE_CONFIG'] = arguments.playbook_dir
+    arguments.playbook_directory = os.path.expanduser(arguments.playbook_directory)
+    os.environ['ANSIBLE_CONFIG'] = arguments.playbook_directory + '/ansible.cfg'
+    path_playbook = arguments.playbook_directory + '/' + arguments.playbook
+    tags = None
     play = PlayBook(
-        playbook=arguments.play,
-        callbacks=callbacks,
+        playbook=path_playbook,
+        callbacks=play_callbacks,
         runner_callbacks=runner_callbacks,
         stats=stats,
+        only_tags=tags,
     )
-    play.run()
-    callbacks.on_stats(play.stats)
+    ran = play.run()
+    print('ran', ran)
+    play_callbacks.on_stats(play.stats)
 
 
 def list_instance(arguments):
     instance = get_instance(arguments)
+    if not instance:
+        print('No such number; no such zone.')
+        return False
     print(instance.tags)
     name = instance.tags['Name']
     name = name.split('-')[-1]
