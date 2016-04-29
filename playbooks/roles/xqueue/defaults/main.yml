@@ -114,5 +114,3 @@ xqueue_debian_pkgs:
   - libgeos-dev
   # Needed to be able to create the xqueue mysqldb.
   - python-mysqldb
-
-nginx_template_directory: "edx/app/nginx/sites-available"
