@@ -1,0 +1,4 @@
+---
+- include: ../../stanford/logs-backend.yml
+  vars:
+    env: sandbox

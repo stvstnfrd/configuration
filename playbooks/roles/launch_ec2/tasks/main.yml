@@ -7,8 +7,7 @@
   local_action:
     module: ec2_lookup
     region: "{{ region }}"
-    tags:
-      - Name: "{{ name_tag }}"
+    tags: "{{ instance_tags }}"
   register: tag_lookup
   when: terminate_instance == true
 
@@ -32,7 +31,16 @@
     ec2_elbs:
       - "{{ elb }}"
     state: absent
-  when: terminate_instance == true and elb and tag_lookup.instance_ids|length == 1
+  when: terminate_instance == true and tag_lookup.instance_ids|length == 1 and elb
+
+- name: lookup subnet
+  local_action:
+    module: vpc_lookup
+    region: "{{ region }}"
+    tags: "{{ vpc_subnet_tags }}"
+  register: subnet
+
+- debug: var=subnet
 
 - name: Launch ec2 instance
   local_action:
@@ -41,7 +49,7 @@
     group: "{{ security_group }}"
     instance_type: "{{ instance_type }}"
     image: "{{ ami }}"
-    vpc_subnet_id: "{{ vpc_subnet_id }}"
+    vpc_subnet_id: "{{ subnet.subnet_ids[0] }}"
     assign_public_ip: yes
     wait: true
     region: "{{ region }}"
@@ -53,6 +61,8 @@
     zone: "{{ zone }}"
     instance_profile_name: "{{ instance_profile_name }}"
   register: ec2
+
+- debug: var=ec2
 
 - name: Add DNS name
   local_action:
