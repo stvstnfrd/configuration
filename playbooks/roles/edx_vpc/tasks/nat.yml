@@ -1,0 +1,98 @@
+---
+- name: create public subnets
+  ec2_subnet:
+    profile: "{{ vpc_aws_profile }}"
+    vpc_id: "{{ created_vpc.vpc_id }}"
+    region: "{{ vpc_aws_region }}"
+    state: "present"
+    name: "{{ item.name }}"
+    cidr: "{{ item.cidr }}"
+    az: "{{ item.az }}"
+    route_table_id: "{{ created_public_rt.id }}"
+    network_acl_id: "{{ created_public_acl.id }}"
+    tags:
+      - key: Deployment
+        value: "{{ DEPLOYMENT }}"
+  with_items: vpc_public_subnets
+  register: created_public_subnets
+
+- name: create NAT security group
+  local_action:
+    module: ec2_group_local
+    profile: "{{ vpc_aws_profile }}"
+    vpc_id: "{{ created_vpc.vpc_id }}"
+    state: "present"
+    region: "{{ vpc_aws_region }}"
+    name: "{{ vpc_group_nat.name }}"
+    rules: "{{ vpc_group_nat.rules }}"
+    description: "{{ vpc_group_nat.description }}"
+    rules_egress: "{{ vpc_group_nat.rules_egress }}"
+    tags:
+      - key: Deployment
+        value: "{{ DEPLOYMENT }}"
+      - key: Name
+        value: "{{ vpc_group_nat.name }}"
+  register: created_nat_security_group
+
+- debug:
+    var: created_nat_security_group
+
+- name: check to see if we already have a nat instance
+  local_action:
+    module: "ec2_lookup"
+    region: "{{ vpc_aws_region }}"
+    tags:
+      - Name: "{{ vpc_instance_nat.name }}"
+  register: nat_instance
+
+- debug:
+    var: nat_instance
+
+- name: create nat instance
+  local_action:
+    module: "ec2"
+    state: "present"
+    wait: yes
+    source_dest_check: false
+    region: "{{ vpc_aws_region }}"
+    profile: "{{ vpc_aws_profile }}"
+    group_id: "{{ created_nat_security_group.group_id }}"
+    key_name: "{{ vpc_instance_nat.key }}"
+    vpc_subnet_id: "{{ created_public_subnets.results[0].subnet_id }}"
+    instance_type: "{{ vpc_instance_nat.type }}"
+    instance_tags:
+      Name: "{{ vpc_instance_nat.name }}"
+      Deployment: "{{ DEPLOYMENT }}"
+    image: "{{ vpc_instance_nat.ami }}"
+  register: new_nat_instance
+  when: nat_instance.instances|length == 0
+
+- debug:
+    var: new_nat_instance
+
+# We need to do this instead of registering the output of the above
+# command because if the above command get skipped, the output does
+# not contain information about the instance.
+- name: lookup the created nat_instance
+  local_action:
+    module: "ec2_lookup"
+    region: "{{ vpc_aws_region }}"
+    tags:
+      - Name: "{{ vpc_instance_nat.name }}"
+  register: nat_instance
+
+- debug:
+    var: nat_instance
+
+- name: assign eip to nat
+  ec2_eip:
+    profile: "{{ vpc_aws_profile }}"
+    region: "{{ vpc_aws_region }}"
+    instance_id: "{{ nat_instance.instances[0].id }}"
+    in_vpc: true
+    reuse_existing_ip_allowed: true
+  register: created_eip
+  when: new_nat_instance.changed
+
+- debug:
+    var: created_eip

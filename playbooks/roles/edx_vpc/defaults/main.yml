@@ -23,3 +23,129 @@ vpc_role_name: vpc
 vpc_debian_pkgs: []
 
 vpc_redhat_pkgs: []
+
+DEPLOYMENT: 'sandbox'
+
+vpc_aws_profile:
+vpc_aws_region: 'us-west-1'
+
+vpc_class_b: '10.4'
+vpc_cidr: "{{ vpc_class_b }}.0.0/16"
+vpc_state: 'present'
+vpc_tags:
+  Deployment: "{{ DEPLOYMENT }}"
+  Name: "{{ DEPLOYMENT }}"
+vpc_vpc:
+  name: "{{ DEPLOYMENT }}"
+  internet_gateway:
+    create: yes
+    tags:
+      Deployment: "{{ DEPLOYMENT }}"
+      Name: "{{ DEPLOYMENT }}-gateway-internet"
+vpc_public_acl:
+  name: "{{ DEPLOYMENT }}-acl-public"
+  rules:
+  - type: 'egress'  # egress, ingress
+    protocol: 'ALL'  # TCP, UDP, ALL, ICMP
+    number: 100
+    rule_action: 'ALLOW'
+    cidr_block: '0.0.0.0/0'
+    from_port: 0
+    to_port: 65535
+  - type: 'ingress'
+    protocol: 'ALL'
+    number: 100
+    rule_action: 'ALLOW'
+    cidr_block: '0.0.0.0/0'
+    from_port: 0
+    to_port: 65535
+vpc_group_jump:
+  name: "{{ DEPLOYMENT }}-group-jump"
+  description: 'TODO: Something smart here'
+  rules:
+    - proto: tcp
+      from_port: 22
+      to_port: 22
+      cidr_ip: 0.0.0.0/0
+  rules_egress:
+    - proto: tcp
+      from_port: 22
+      to_port: 22
+      cidr_ip: 0.0.0.0/0
+vpc_group_nat:
+  name: "{{ DEPLOYMENT }}-group-nat"
+  description: 'TODO: Something smart here'
+  rules:
+    - proto: tcp
+      from_port: 80
+      to_port: 80
+      cidr_ip: '0.0.0.0/0'
+    - proto: tcp
+      from_port: 443
+      to_port: 443
+      cidr_ip: '0.0.0.0/0'
+  rules_egress:
+    - proto: tcp
+      from_port: 80
+      to_port: 80
+      cidr_ip: '0.0.0.0/0'
+    - proto: tcp
+      from_port: 443
+      to_port: 443
+      cidr_ip: '0.0.0.0/0'
+vpc_group_sandbox:
+  name: "{{ DEPLOYMENT }}-group-sandbox"
+  description: 'TODO: Something smart here'
+  rules:
+    - proto: tcp
+      from_port: 22
+      to_port: 22
+      cidr_ip: '0.0.0.0/0'
+    - proto: tcp
+      from_port: 80
+      to_port: 80
+      cidr_ip: '0.0.0.0/0'
+    - proto: tcp
+      from_port: 18010
+      to_port: 18010
+      cidr_ip: '0.0.0.0/0'
+  rules_egress:
+    - proto: all
+      from_port: 0
+      to_port: 65535
+      cidr_ip: '0.0.0.0/0'
+      # group_name: "{{ vpc_group_nat.name }}"
+vpc_instance_jump:
+  name: "{{ DEPLOYMENT }}-instance-jump"
+  key: 'deployment'
+  type: 't2.micro'
+  ami: 'ami-2b2f594b'
+vpc_instance_nat:
+  name: "{{ DEPLOYMENT }}-instance-nat"
+  key: 'deployment'
+  type: 't2.micro'
+  # amzn-ami-vpc-nat-hvm-2016.03.0.x86_64-ebs
+  ami: 'ami-0d087a6d'
+vpc_instances_sandbox:
+  - key: 'deployment'
+    type: 't2.medium'
+    name: "{{ DEPLOYMENT }}-instance-master"
+    ami: 'ami-b06717d0'
+vpc_routes_private:
+  name: "{{ DEPLOYMENT }}-routes-private"
+  routes:
+    - instance: "{{ nat_instance.instance_ids[0] }}"
+      cidr: '0.0.0.0/0'
+vpc_routes_public:
+  name: "{{ DEPLOYMENT }}-routes-public"
+  routes:
+    - gateway: "{{ created_vpc.igw.id }}"
+      cidr: '0.0.0.0/0'
+vpc_subnet_sandbox:
+  name: "{{ DEPLOYMENT }}-subnet-sandbox"
+  cidr: '{{ vpc_class_b }}.1.0/24'
+  az: 'us-west-1a'
+vpc_public_subnets:
+  - name: "{{ DEPLOYMENT }}-subnet-public"
+    cidr: '{{ vpc_class_b }}.0.0/24'
+    az: 'us-west-1a'
