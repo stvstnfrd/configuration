@@ -1,5 +1,5 @@
 ---
-- include: ../../stanford/logs-frontend.yml
+- include: ../../stanford/kibana.yml
   vars:
     env: sandbox
     KIBANA_SERVER_NAME: 'ec2-54-67-57-194.us-west-1.compute.amazonaws.com'
