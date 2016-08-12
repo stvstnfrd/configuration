@@ -1,4 +1,4 @@
 ---
-- include: ../../stanford/logs-backend.yml
+- include: ../../stanford/logstash.yml
   vars:
     env: sandbox
