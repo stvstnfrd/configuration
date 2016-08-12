@@ -20,7 +20,6 @@
 
 - name: install read-only certs ssh key
   copy: src="{{ secure_dir }}/files/git-identity-certs" dest="{{ certs_git_identity }}" owner={{ certs_user }} mode=0600
-  when: "{{ certs_templates_repo | bool }}"
 
 - name: checkout local theme
   git: >
@@ -32,7 +31,6 @@
     GIT_SSH: "{{ certs_git_ssh }}"
   notify:
   - "restart certs"
-  when: "{{ certs_templates_repo | bool }}"
 
 - name: writing supervisor script for certificates
   template: >
