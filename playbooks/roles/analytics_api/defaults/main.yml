@@ -75,7 +75,7 @@ ANALYTICS_API_SERVICE_CONFIG:
 ANALYTICS_API_REPOS:
   - PROTOCOL: "{{ COMMON_GIT_PROTOCOL }}"
     DOMAIN: "{{ COMMON_GIT_MIRROR }}"
-    PATH: "Stanford-Online"
+    PATH: "{{ COMMON_GIT_PATH }}"
     REPO: edx-analytics-data-api.git
     VERSION: "{{ ANALYTICS_API_VERSION }}"
     DESTINATION: "{{ analytics_api_code_dir }}"
