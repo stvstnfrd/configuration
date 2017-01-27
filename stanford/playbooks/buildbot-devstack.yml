@@ -1,0 +1,9 @@
+---
+- name: Provision
+  hosts: all
+  sudo: true
+  tasks:
+    debug:
+      msg: 'Provision'
+  roles:
+    - buildbot_master

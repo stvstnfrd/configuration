@@ -1,0 +1,51 @@
+---
+- name: Update package manager
+  apt:
+    update_cache: yes
+- name: Update packages
+  apt:
+    upgrade: dist
+- name: Install system dependencies
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - python-pip
+    - python-dev
+    - build-essential
+    - libssl-dev
+    - git
+- name: Install python dependencies
+  pip:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - pip
+    - virtualenv
+- name: Create user
+  user:
+    name: "{{ BUILDBOT_MASTER_USER }}"
+- name: Install buildbot
+  pip:
+    name: 'buildbot[bundle]'
+    state: present
+    virtualenv: "{{ buildbot_virtualenv }}"
+- name: Create master node
+  shell: "{{ buildbot_virtualenv }}/bin/buildbot create-master {{ buildbot_master_home }}"
+- name: Copy configuration
+  template:
+    src: master.cfg.j2
+    dest: "{{ buildbot_master_home }}/master.cfg"
+    owner: "{{ BUILDBOT_MASTER_USER }}"
+- name: Reasssign home directory
+  file:
+    path: "{{ buildbot_master_home }}"
+    owner: "{{ BUILDBOT_MASTER_USER }}"
+    group: "{{ BUILDBOT_MASTER_USER }}"
+    state: directory
+    recurse: yes
+- name: Start the server
+  shell: "{{ buildbot_virtualenv }}/bin/buildbot start {{ buildbot_master_home }}"
+  become: true
+  become_user: "{{ BUILDBOT_MASTER_USER }}"
+# ./virtualenv/bin/buildbot start ./

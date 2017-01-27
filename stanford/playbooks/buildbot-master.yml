@@ -1,0 +1,56 @@
+#!/usr/bin/env ansible-playbook
+---
+- include: provision.yml
+  vars:
+    Cluster: buildbot-master
+    keypair: deployment
+    instance_type: t2.micro
+    root_ebs_size: 8
+    zone: 'us-west-1a'
+    subnet_cidr: '10.0.110.0/24'
+    security_group_rules_ingress:
+    - proto: tcp
+      from_port: 443
+      to_port: 443
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 80
+      to_port: 80
+      cidr_ip: 0.0.0.0/0
+    - proto: tcp
+      from_port: 22
+      to_port: 22
+      cidr_ip: 10.0.0.0/16
+    elb_scheme: 'internet-facing'
+    elb_listeners:
+      - protocol: https # options are http, https, ssl, tcp
+        load_balancer_port: 443
+        instance_port: 80
+        ssl_certificate_id: "{{ ssl_certificate_id }}"
+        instance_protocol: http
+    elb_health_check:
+      ping_protocol: http
+      ping_port: 80
+      ping_path: '/about'
+      response_timeout: 5 # seconds
+      interval: 10 # seconds
+      unhealthy_threshold: 10
+      healthy_threshold: 2
+- name: Configure instance(s)
+  hosts: launched
+  sudo: True
+  gather_facts: True
+  vars:
+    Number: 1
+    Cluster: buildbot-master
+    Deployment: "{{ Deployment }}"
+  vars_files:
+    - "{{ secure_dir }}/vars/{{ Deployment }}/users.yml"
+    # - "{{ secure_dir }}/vars/{{ Deployment }}/{{ Cluster }}.yml"
+  roles:
+    - common
+    - buildbot_master
+    - buildbot_slave
+- include: rotate.yml
+  vars:
+    Cluster: buildbot-master

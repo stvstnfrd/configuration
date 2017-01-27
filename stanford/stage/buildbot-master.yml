@@ -1,0 +1,6 @@
+#!/usr/bin/env ansible-playbook
+---
+- include: ../playbooks/buildbot-master.yml
+  vars:
+    Deployment: stage
+    terminate_instances: yes

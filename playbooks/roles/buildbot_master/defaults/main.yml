@@ -1,0 +1,5 @@
+---
+BUILDBOT_MASTER_USER: buildbot_master
+buildbot_master_home: "/home/{{ BUILDBOT_MASTER_USER }}"
+buildbot_virtualenv: "{{ buildbot_master_home }}/virtualenv"
+BUILDBOT_SLAVE_COUNT: 3
