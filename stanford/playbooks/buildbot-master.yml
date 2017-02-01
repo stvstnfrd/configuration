@@ -10,12 +10,8 @@
     subnet_cidr: '10.0.110.0/24'
     security_group_rules_ingress:
     - proto: tcp
-      from_port: 443
-      to_port: 443
-      cidr_ip: 0.0.0.0/0
-    - proto: tcp
-      from_port: 80
-      to_port: 80
+      from_port: 8010
+      to_port: 8010
       cidr_ip: 0.0.0.0/0
     - proto: tcp
       from_port: 22
@@ -25,15 +21,15 @@
     elb_listeners:
       - protocol: https # options are http, https, ssl, tcp
         load_balancer_port: 443
-        instance_port: 80
+        instance_port: 8010
         ssl_certificate_id: "{{ ssl_certificate_id }}"
         instance_protocol: http
     elb_health_check:
       ping_protocol: http
-      ping_port: 80
-      ping_path: '/about'
-      response_timeout: 5 # seconds
-      interval: 10 # seconds
+      ping_port: 8010
+      ping_path: '/'
+      response_timeout: 4 # seconds
+      interval: 5 # seconds
       unhealthy_threshold: 10
       healthy_threshold: 2
 - name: Configure instance(s)
