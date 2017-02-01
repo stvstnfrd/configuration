@@ -46,7 +46,7 @@
   roles:
     - common
     - buildbot_master
-    - buildbot_slave
+    # - buildbot_slave
 - include: rotate.yml
   vars:
     Cluster: buildbot-master
