@@ -1,3 +1,6 @@
+- Role: jenkins_master
+  - Update pinned use of JDK7 in Jenkins installs to default JDK version from role `oraclejdk`.
+
 - Role: edxapp
   - Added creation of enterprise_worker user to provisioning. This user is used by the edx-enterprise package when making API requests to Open edX IDAs.
 
