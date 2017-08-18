@@ -21,6 +21,8 @@
     ENABLE_ELK: true
     configuration_version: master
     edx_platform_version: master
+    ECOMMERCE_VERSION: 'release-2016-12-15'
+    ECOMMERCE_DJANGO_SETTINGS_MODULE: "ecommerce.settings.devstack"
   roles:
     - edx_ansible
     - mysql
@@ -30,6 +32,8 @@
     - oraclejdk
     - elasticsearch
     - forum
+    - ecommerce
+    - ecomworker
     - { role: 'rabbitmq', rabbitmq_ip: '127.0.0.1' }
     - role: notifier
       NOTIFIER_DIGEST_TASK_INTERVAL: "5"

@@ -27,10 +27,9 @@
     group=root
 
 - name: untar Oracle Java
-  shell: >
-    tar -C /usr/lib/jvm -zxvf /var/tmp/{{ oraclejdk_file }}
-    executable=/bin/bash
-    creates=/usr/lib/jvm/{{ oraclejdk_base }}
+  unarchive:
+    src: '/var/tmp/jdk-7u51-linux-x64.tar.gz'
+    dest: /usr/lib/jvm
 
 - name: create symlink expected by elasticsearch
   file: src=/usr/lib/jvm/{{ oraclejdk_base }} dest={{ oraclejdk_link }} state=link force=yes

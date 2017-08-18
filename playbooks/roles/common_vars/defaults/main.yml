@@ -104,6 +104,7 @@ common_debian_pkgs:
   # Not installed by default on vagrant ubuntu
   # boxes
   - curl
+  - libffi-dev
 
 common_pip_pkgs:
   - pip==7.1.2

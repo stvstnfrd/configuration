@@ -102,7 +102,7 @@
   ignore_errors: yes
 
 - name: install ruby {{ rbenv_ruby_version }}
-  shell: "rbenv install {{ rbenv_ruby_version }} creates={{ rbenv_dir }}/.rbenv/versions/{{ rbenv_ruby_version }}"
+  shell: "rbenv install {{ rbenv_ruby_version }} -v creates={{ rbenv_dir }}/.rbenv/versions/{{ rbenv_ruby_version }}"
   when: ruby_installed|failed
   sudo_user: "{{ rbenv_user }}"
   environment: "{{ rbenv_environment }}"
