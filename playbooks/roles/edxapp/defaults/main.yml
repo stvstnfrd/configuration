@@ -491,7 +491,8 @@ EDXAPP_JWT_EXPIRATION: 30  # Number of seconds until expiration
 EDXAPP_JWT_AUDIENCE: "{{ COMMON_JWT_AUDIENCE }}"
 EDXAPP_JWT_SECRET_KEY: "{{ COMMON_JWT_SECRET_KEY }}"
 
-EDXAPP_PLATFORM_TWITTER_ACCOUNT: ''
+# Twitter account is set as URL as Stanford Online doesn't have a maintained twitter account right now.
+EDXAPP_PLATFORM_TWITTER_ACCOUNT: 'https://lagunita.stanford.edu'
 EDXAPP_PLATFORM_FACEBOOK_ACCOUNT: ''
 EDXAPP_FACEBOOK_APP_ID: "FACEBOOK_APP_ID"
 EDXAPP_FACEBOOK_APP_SECRET: "FACEBOOK_APP_SECRET"
