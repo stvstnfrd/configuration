@@ -35,8 +35,6 @@ MONGO_AUTH: true
 
 MONGO_USE_SMALLFILES: true
 
-MONGO_USE_SMALLFILES: true
-
 ##
 
 mongo_logpath: "{{ mongo_log_dir }}/mongodb.log"

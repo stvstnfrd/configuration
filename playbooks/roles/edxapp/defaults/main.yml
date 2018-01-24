@@ -56,8 +56,6 @@ EDXAPP_CC_MERCHANT_NAME: 'Stanford Lagunita'
 EDXAPP_CERT_NAME_SHORT: 'Statement'
 EDXAPP_CERT_NAME_LONG: 'Statement of Accomplishment'
 EDXAPP_CERT_QUEUE: 'certificates'
-EDXAPP_COURSE_ABOUT_VISIBILITY_PERMISSION: 'see_about_page'
-EDXAPP_COURSE_CATALOG_VISIBILITY_PERMISSION: 'see_in_catalog'
 EDXAPP_EXTRA_MIMETYPES:
   # StatTutor XBlock
   '.brd': 'application/xml'
@@ -209,9 +207,6 @@ EDXAPP_MYSQL_CSMH_PASSWORD: "{{ EDXAPP_MYSQL_PASSWORD }}"
 EDXAPP_MYSQL_CSMH_HOST: "{{ EDXAPP_MYSQL_HOST }}"
 EDXAPP_MYSQL_CSMH_PORT: "{{ EDXAPP_MYSQL_PORT }}"
 EDXAPP_MYSQL_CSMH_OPTIONS: "{{ EDXAPP_MYSQL_OPTIONS }}"
-
-# This is Django's default https://docs.djangoproject.com/en/1.8/ref/settings/#conn-max-age
-EDXAPP_MYSQL_CONN_MAX_AGE: 0
 
 # This is Django's default https://docs.djangoproject.com/en/1.8/ref/settings/#conn-max-age
 EDXAPP_MYSQL_CONN_MAX_AGE: 0
@@ -741,8 +736,8 @@ EDXAPP_CREDENTIALS_PUBLIC_SERVICE_URL: "http://localhost:8005"
 # which access.py permission name to check in order to determine if a course about page is
 # visible. We default this to the legacy permission 'see_exists'.
 
-EDXAPP_COURSE_CATALOG_VISIBILITY_PERMISSION: 'see_exists'
-EDXAPP_COURSE_ABOUT_VISIBILITY_PERMISSION: 'see_exists'
+EDXAPP_COURSE_CATALOG_VISIBILITY_PERMISSION: 'see_in_catalog'
+EDXAPP_COURSE_ABOUT_VISIBILITY_PERMISSION: 'see_about_page'
 
 # Mailchimp Settings
 EDXAPP_MAILCHIMP_NEW_USER_LIST_ID: null
@@ -899,7 +894,6 @@ EDXAPP_ICP_LICENSE: !!null
 edxapp_data_dir: "{{ COMMON_DATA_DIR }}/edxapp"
 edxapp_app_dir: "{{ COMMON_APP_DIR }}/edxapp"
 edxapp_log_dir: "{{ COMMON_LOG_DIR }}/edxapp"
-edxapp_tracking_log_dir: "{{ COMMON_LOG_DIR }}/tracking"
 edxapp_venvs_dir: "{{ edxapp_app_dir }}/venvs"
 edxapp_venv_dir: "{{ edxapp_venvs_dir }}/edxapp"
 edxapp_venv_bin: "{{ edxapp_venv_dir }}/bin"
@@ -1096,8 +1090,6 @@ generic_env_config:  &edxapp_generic_env
   ANALYTICS_DASHBOARD_NAME: "{{ EDXAPP_ANALYTICS_DASHBOARD_NAME }}"
   CERT_NAME_SHORT: "{{ EDXAPP_CERT_NAME_SHORT }}"
   CERT_NAME_LONG: "{{ EDXAPP_CERT_NAME_LONG }}"
-  COURSE_ABOUT_VISIBILITY_PERMISSION: "{{ EDXAPP_COURSE_ABOUT_VISIBILITY_PERMISSION }}"
-  COURSE_CATALOG_VISIBILITY_PERMISSION: "{{ EDXAPP_COURSE_CATALOG_VISIBILITY_PERMISSION }}"
   EXTRA_MIMETYPES: "{{ EDXAPP_EXTRA_MIMETYPES }}"
   HELP_MODAL_LINKS: "{{ EDXAPP_HELP_MODAL_LINKS }}"
   LANGUAGES: "{{ EDXAPP_LANGUAGES }}"
