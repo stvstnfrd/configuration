@@ -45,6 +45,7 @@
   ec2_vpc_route_table:
     vpc_id: "{{ DEPLOYMENT_VPC_ID }}"
     region: "{{ DEPLOYMENT_REGION }}"
+    purge_routes: false
     purge_subnets: false
     subnets:
       - "{{ deployment_subnet_nat.subnet.id }}"
