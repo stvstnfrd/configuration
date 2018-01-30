@@ -1,12 +1,4 @@
 {%- if EDXAPP_SHIB_ONLY -%}
-  location ~ ^/login$ {
-    return 302 /auth/login/tpa-saml/?auth_entry=login&idp=sunet&$args;
-  }
-
-  location /accounts/login {
-    return 302 /auth/login/tpa-saml/?auth_entry=login&idp=sunet&$args;
-  }
-
   location /signup {
     return 302 $scheme://{{ EDXAPP_LMS_SITE_NAME }}/auth/login/tpa-saml/?auth_entry=register&idp=sunet&next=/cms;
   }
