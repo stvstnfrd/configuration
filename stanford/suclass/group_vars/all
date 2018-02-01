@@ -26,7 +26,6 @@ ELASTICSEARCH_CLUSTER_MEMBERS:
 FORUM_ELASTICSEARCH_HOST: "esforum.{{ COMMON_DEPLOYMENT }}.vpc"
 NOTIFIER_LOGO_IMAGE_URL: 'https://suclass.stanford.edu/static/suclass/images/logo.png'
 NGINX_CREATE_HTPASSWD_FILE: True
-NGINX_SKIP_COURSE_LISTING: true
 RABBITMQ_CLUSTERED_HOSTS:
   - "rabbit@rabbitmq1.{{ COMMON_DEPLOYMENT }}.vpc"
   - "rabbit@rabbitmq2.{{ COMMON_DEPLOYMENT }}.vpc"
