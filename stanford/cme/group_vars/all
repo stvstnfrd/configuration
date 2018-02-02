@@ -27,6 +27,7 @@ EDXAPP_FEATURES_USE_CME_REGISTRATION: true
 EDXAPP_LMS_NGINX_PORT: 80
 EDXAPP_MKTG_URL_LINK_MAP:
   COURSES: 'https://med.stanford.edu/cme/learning-opportunities/online.html'
+  FAQ: 'https://support.zoho.com/portal/stanfordonlinecmesupport/home'
 EDXAPP_PLATFORM_NAME: 'Stanford CME'
 EDXAPP_PREVIEW_LMS_BASE: "preview.{{ EDXAPP_LMS_SITE_NAME }}"
 EDXAPP_REGISTRATION_EXTENSION_FORM: 'openedx.stanford.djangoapps.register_cme.forms.ExtraInfoForm'
