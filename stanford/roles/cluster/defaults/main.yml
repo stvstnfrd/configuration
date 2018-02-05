@@ -201,6 +201,7 @@ CLUSTER_ELBS:
           instance_protocol: http
           ssl_certificate_id: "{{ DEPLOYMENT_SSL_CERTIFICATE_ID }}"
       scheme: internet-facing
+      idle_timeout: 300
       group:
         name: "{{ COMMON_DEPLOYMENT }}-group-edxapp-elb-public"
         rules:

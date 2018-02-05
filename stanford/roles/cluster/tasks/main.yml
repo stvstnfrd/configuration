@@ -92,6 +92,7 @@
     subnets:
       - "{{ CLUSTER_SUBNET_ID }}"
     purge_subnets: no
+    idle_timeout: "{{ item.idle_timeout | default(60) }}"
   with_items: "{{ CLUSTER_ELBS[CLUSTER_NAME] | default([]) }}"
   register: cluster_elb
   ignore_errors: yes
