@@ -26,11 +26,21 @@ CLUSTER_SUBNETS:
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.5.0/24"
     - zone: 'us-west-1c'
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.6.0/24"
+  cache:
+    - zone: 'us-west-1a'
+      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.125.0/24"
+    - zone: 'us-west-1c'
+      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.126.0/24"
   certs:
     - zone: 'us-west-1a'
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.85.0/24"
     - zone: 'us-west-1c'
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.86.0/24"
+  db:
+    - zone: 'us-west-1a'
+      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.135.0/24"
+    - zone: 'us-west-1c'
+      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.136.0/24"
   jump:
     - zone: 'us-west-1a'
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.75.0/24"
@@ -335,3 +345,7 @@ CLUSTER_ELBS:
             cidr_ip: '0.0.0.0/0'
       subnets:
         - "{{ COMMON_DEPLOYMENT }}-subnet-public-{{ CLUSTER_NUMBER }}"
+CLUSTER_SERVICE_TYPE: 'ec2'
+# alternate values are
+# CLUSTER_SERVICE_TYPE: 'rds'
+# CLUSTER_SERVICE_TYPE: 'emr'
