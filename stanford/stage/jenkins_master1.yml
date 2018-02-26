@@ -1,6 +1,6 @@
 #!/usr/bin/env ansible-playbook
 ---
-- include: ../playbooks/jenkins.yml
+- include: ../playbooks/jenkins_master.yml
   vars:
     CLUSTER_NUMBER: 1
     COMMON_DEPLOYMENT: stage
