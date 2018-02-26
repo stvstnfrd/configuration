@@ -66,6 +66,11 @@ CLUSTER_SUBNETS:
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.35.0/24"
     - zone: 'us-west-1c'
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.36.0/24"
+  jenkins_master:
+    - zone: 'us-west-1a'
+      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.165.0/24"
+    - zone: 'us-west-1c'
+      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.166.0/24"
   notifier:
     - zone: 'us-west-1a'
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.95.0/24"
@@ -134,6 +139,15 @@ CLUSTER_SECURITY_GROUP_RULES:
       from_port: 80
       to_port: 80
       cidr_ip: "{{ DEPLOYMENT_CIDR }}"
+  jenkins_master:
+    - proto: tcp
+      from_port: 22
+      to_port: 22
+      cidr_ip: "{{ DEPLOYMENT_CIDR }}"
+    - proto: tcp
+      from_port: 80
+      to_port: 80
+      cidr_ip: '0.0.0.0/0'
   notifier:
     - proto: tcp
       from_port: 22
@@ -262,6 +276,41 @@ CLUSTER_ELBS:
             cidr_ip: "{{ DEPLOYMENT_CIDR }}"
       subnets:
         - "{{ COMMON_DEPLOYMENT }}-subnet-forum-{{ CLUSTER_NUMBER }}"
+  jenkins_master:
+    - name: "{{ COMMON_DEPLOYMENT }}-elb-jenkins_master-public"
+      health_check:
+        ping_protocol: tcp
+        # ping_protocol: http
+        # ping_path: '/heartbeat'
+        ping_port: 80
+        response_timeout: 5  # seconds
+        interval: 30  # seconds
+        unhealthy_threshold: 2  # attempts
+        healthy_threshold: 10  # attempts
+      listeners:
+        - protocol: http
+          load_balancer_port: 80
+          instance_port: 80
+        - protocol: https
+          load_balancer_port: 443
+          instance_port: 80
+          instance_protocol: http
+          ssl_certificate_id: "{{ DEPLOYMENT_SSL_CERTIFICATE_ID }}"
+      scheme: internet-facing
+      idle_timeout: 300
+      group:
+        name: "{{ COMMON_DEPLOYMENT }}-group-jenkins_master-elb-public"
+        rules:
+          - proto: tcp
+            from_port: 80
+            to_port: 80
+            cidr_ip: '0.0.0.0/0'
+          - proto: tcp
+            from_port: 443
+            to_port: 443
+            cidr_ip: '0.0.0.0/0'
+      subnets:
+        - "{{ COMMON_DEPLOYMENT }}-subnet-public-{{ CLUSTER_NUMBER }}"
   rabbitmq:
     - name: "{{ COMMON_DEPLOYMENT }}-elb-{{ CLUSTER_NAME }}-private"
       health_check:
