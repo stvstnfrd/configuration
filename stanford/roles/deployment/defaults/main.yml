@@ -6,3 +6,5 @@ DEPLOYMENT_REGION: "{{ region }}"
 DEPLOYMENT_SSL_CERTIFICATE_ID: 'arn:aws:acm:<REGION>:<ACCOUNT>:certificate/<GUID>'
 # DEPLOYMENT_VPC_ID: vpc-deadbeefcafe
 DEPLOYMENT_NUMBER: "{{ cluster_subnet_index|int + 1 | int }}"
+DEPLOYMENT_SUBNET_PUBLIC_ID: "{{ deployment_subnet_nat.subnet.id }}"
+DEPLOYMENT_SUBNET_PUBLIC_NAME: "{{ COMMON_DEPLOYMENT }}-subnet-public-{{ DEPLOYMENT_NUMBER }}"

@@ -1,0 +1,6 @@
+#!/usr/bin/env ansible-playbook
+---
+- include: ../playbooks/build.yml
+  vars:
+    CLUSTER_NUMBER: 1
+    COMMON_DEPLOYMENT: stage
