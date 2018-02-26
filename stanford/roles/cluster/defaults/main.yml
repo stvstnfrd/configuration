@@ -277,7 +277,7 @@ CLUSTER_ELBS:
       subnets:
         - "{{ COMMON_DEPLOYMENT }}-subnet-forum-{{ CLUSTER_NUMBER }}"
   jenkins_master:
-    - name: "{{ COMMON_DEPLOYMENT }}-elb-jenkins_master-public"
+    - name: "{{ COMMON_DEPLOYMENT }}-elb-jenkins-master-public"
       health_check:
         ping_protocol: tcp
         # ping_protocol: http
@@ -299,7 +299,7 @@ CLUSTER_ELBS:
       scheme: internet-facing
       idle_timeout: 300
       group:
-        name: "{{ COMMON_DEPLOYMENT }}-group-jenkins_master-elb-public"
+        name: "{{ COMMON_DEPLOYMENT }}-group-jenkins-master-elb-public"
         rules:
           - proto: tcp
             from_port: 80
