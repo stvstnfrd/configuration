@@ -10,6 +10,7 @@
   become: true
   vars:
     CLUSTER_NAME: jenkins_master
+    COMMON_HOSTNAME: "jenkins-master{{ CLUSTER_NUMBER }}.{{ COMMON_DEPLOYMENT }}.vpc"
   vars_files:
     - "{{ COMMON_DEPLOYMENT_DIR }}/common.yaml"
   roles:
