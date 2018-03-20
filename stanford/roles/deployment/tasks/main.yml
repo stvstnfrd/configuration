@@ -34,9 +34,9 @@
     cidr: "{{ CLUSTER_NAT_SUBNET.cidr }}"
     az: "{{ CLUSTER_NAT_SUBNET.zone }}"
     resource_tags:
-      Cluster: nat
+      Cluster: public
       Deployment: "{{ COMMON_DEPLOYMENT }}"
-      Name: "{{ COMMON_DEPLOYMENT }}-subnet-nat-{{ DEPLOYMENT_NUMBER }}"
+      Name: "{{ DEPLOYMENT_SUBNET_PUBLIC_NAME }}"
       Number: "{{ DEPLOYMENT_NUMBER }}"
   register: deployment_subnet_nat
 - debug: var=deployment_subnet_nat
