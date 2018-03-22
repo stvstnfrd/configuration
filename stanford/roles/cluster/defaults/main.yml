@@ -21,11 +21,6 @@ CLUSTER_SECURITY_GROUPS:
 
 CLUSTER_NETWORK: private
 CLUSTER_SUBNETS:
-  public:
-    - zone: 'us-west-1a'
-      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.5.0/24"
-    - zone: 'us-west-1c'
-      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.6.0/24"
   build:
     - zone: 'us-west-1a'
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.175.0/24"
@@ -81,7 +76,6 @@ CLUSTER_SUBNETS:
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.55.0/24"
     - zone: 'us-west-1c'
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.56.0/24"
-CLUSTER_NAT_SUBNET: "{{ CLUSTER_SUBNETS['public'][cluster_subnet_index|int] }}"
 cluster_subnet_index: "{{ CLUSTER_NUMBER|int - 1 | abs % 2 | int }}"
 CLUSTER_SUBNET: "{{ CLUSTER_SUBNETS[CLUSTER_NAME][cluster_subnet_index|int] }}"
 

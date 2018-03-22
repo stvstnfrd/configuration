@@ -27,19 +27,19 @@
   #   Name: "{{ COMMON_DEPLOYMENT }}-gateway-internet"
 - debug: var=deployment_gateway
 
-- name: Create NAT subnet
+- name: Create public subnet
   ec2_vpc_subnet:
     state: present
     vpc_id: "{{ DEPLOYMENT_VPC_ID }}"
-    cidr: "{{ CLUSTER_NAT_SUBNET.cidr }}"
-    az: "{{ CLUSTER_NAT_SUBNET.zone }}"
+    cidr: "{{ DEPLOYMENT_SUBNET_PUBLIC.cidr }}"
+    az: "{{ DEPLOYMENT_SUBNET_PUBLIC.zone }}"
     resource_tags:
       Cluster: public
       Deployment: "{{ COMMON_DEPLOYMENT }}"
       Name: "{{ DEPLOYMENT_SUBNET_PUBLIC_NAME }}"
       Number: "{{ DEPLOYMENT_NUMBER }}"
-  register: deployment_subnet_nat
-- debug: var=deployment_subnet_nat
+  register: deployment_subnet_public
+- debug: var=deployment_subnet_public
 
 - name: Create public route table
   ec2_vpc_route_table:
@@ -47,7 +47,7 @@
     region: "{{ DEPLOYMENT_REGION }}"
     purge_subnets: false
     subnets:
-      - "{{ deployment_subnet_nat.subnet.id }}"
+      - "{{ DEPLOYMENT_SUBNET_PUBLIC_ID }}"
     routes:
       - dest: 0.0.0.0/0
         gateway_id: "{{ deployment_gateway.gateway_id }}"
@@ -64,7 +64,7 @@
 - name: Create NAT gateway
   ec2_vpc_nat_gateway:
     state: present
-    subnet_id: "{{ deployment_subnet_nat.subnet.id }}"
+    subnet_id: "{{ DEPLOYMENT_SUBNET_PUBLIC_ID }}"
     wait: yes
     region: "{{ DEPLOYMENT_REGION }}"
     if_exist_do_not_create: true
