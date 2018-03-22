@@ -76,8 +76,7 @@ CLUSTER_SUBNETS:
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.55.0/24"
     - zone: 'us-west-1c'
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.56.0/24"
-cluster_subnet_index: "{{ (CLUSTER_NUMBER - 1 |int|abs) % 2 |int }}"
-CLUSTER_SUBNET: "{{ CLUSTER_SUBNETS[CLUSTER_NAME][cluster_subnet_index|int] }}"
+CLUSTER_SUBNET: "{{ CLUSTER_SUBNETS[CLUSTER_NAME][deployment_subnet_index|int] }}"
 
 CLUSTER_SECURITY_GROUP_RULES_INGRESS: "{{ CLUSTER_SECURITY_GROUP_RULES[CLUSTER_NAME] }}"
 CLUSTER_SECURITY_GROUP_RULES:
