@@ -1,4 +1,7 @@
 ---
+- debug: var=deployment_subnet_index
+- debug: var=DEPLOYMENT_NUMBER
+- debug: var=CLUSTER_NUMBER
 - name: Create VPC
   ec2_vpc_net:
     name: "{{ DEPLOYMENT_NAME }}"
