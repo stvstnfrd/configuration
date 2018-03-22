@@ -243,7 +243,7 @@ CLUSTER_ELBS:
             to_port: 443
             cidr_ip: '0.0.0.0/0'
       subnets:
-        - "{{ COMMON_DEPLOYMENT }}-subnet-public-{{ CLUSTER_NUMBER }}"
+        - "{{ DEPLOYMENT_SUBNET_PUBLIC_ID }}"
   esforum:
     - name: "{{ COMMON_DEPLOYMENT }}-elb-esforum-private"
       health_check:
@@ -266,7 +266,7 @@ CLUSTER_ELBS:
             to_port: 9200
             cidr_ip: "{{ DEPLOYMENT_CIDR }}"
       subnets:
-        - "{{ COMMON_DEPLOYMENT }}-subnet-esforum-private-{{ CLUSTER_NUMBER }}"
+        - "{{ CLUSTER_SUBNET_ID }}"
   forum:
     - name: "{{ COMMON_DEPLOYMENT }}-elb-forum-private"
       health_check:
@@ -290,7 +290,7 @@ CLUSTER_ELBS:
             to_port: 80
             cidr_ip: "{{ DEPLOYMENT_CIDR }}"
       subnets:
-        - "{{ COMMON_DEPLOYMENT }}-subnet-forum-{{ CLUSTER_NUMBER }}"
+        - "{{ CLUSTER_SUBNET_ID }}"
   rabbitmq:
     - name: "{{ COMMON_DEPLOYMENT }}-elb-{{ CLUSTER_NAME }}-private"
       health_check:
@@ -320,7 +320,7 @@ CLUSTER_ELBS:
             to_port: 6163
             cidr_ip: "{{ DEPLOYMENT_CIDR }}"
       subnets:
-        - "{{ COMMON_DEPLOYMENT }}-subnet-{{ CLUSTER_NAME }}-{{ CLUSTER_NUMBER }}"
+        - "{{ CLUSTER_SUBNET_ID }}"
     - name: "{{ COMMON_DEPLOYMENT }}-elb-{{ CLUSTER_NAME }}-public"
       health_check:
         ping_protocol: http
@@ -344,7 +344,7 @@ CLUSTER_ELBS:
             to_port: 15672
             cidr_ip: '0.0.0.0/0'
       subnets:
-        - "{{ COMMON_DEPLOYMENT }}-subnet-public-{{ CLUSTER_NUMBER }}"
+        - "{{ DEPLOYMENT_SUBNET_PUBLIC_ID }}"
   xqueue:
     - name: "{{ COMMON_DEPLOYMENT }}-elb-{{ CLUSTER_NAME }}-public"
       health_check:
@@ -374,4 +374,4 @@ CLUSTER_ELBS:
             to_port: 443
             cidr_ip: '0.0.0.0/0'
       subnets:
-        - "{{ COMMON_DEPLOYMENT }}-subnet-public-{{ CLUSTER_NUMBER }}"
+        - "{{ DEPLOYMENT_SUBNET_PUBLIC_ID }}"
