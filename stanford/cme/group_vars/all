@@ -23,10 +23,10 @@ EDXAPP_ENABLE_THIRD_PARTY_AUTH: false
 EDXAPP_FEATURES_ENABLE_PAID_COURSE_REGISTRATION: true
 EDXAPP_FEATURES_ENABLE_SHOPPING_CART: true
 EDXAPP_FEATURES_SHOW_ABOUT_LINK: false
-EDXAPP_FEATURES_USE_CME_REGISTRATION: true
 EDXAPP_LMS_NGINX_PORT: 80
 EDXAPP_MKTG_URL_LINK_MAP:
   COURSES: 'https://med.stanford.edu/cme/learning-opportunities/online.html'
+  FAQ: 'https://support.zoho.com/portal/stanfordonlinecmesupport/home'
 EDXAPP_PLATFORM_NAME: 'Stanford CME'
 EDXAPP_PREVIEW_LMS_BASE: "preview.{{ EDXAPP_LMS_SITE_NAME }}"
 EDXAPP_REGISTRATION_EXTENSION_FORM: 'openedx.stanford.djangoapps.register_cme.forms.ExtraInfoForm'
@@ -46,6 +46,7 @@ ELASTICSEARCH_CLUSTER_MEMBERS:
   - "esforum2.{{ COMMON_DEPLOYMENT }}.vpc"
 FORUM_ELASTICSEARCH_HOST: "esforum.{{ COMMON_DEPLOYMENT }}.vpc"
 NGINX_CREATE_HTPASSWD_FILE: True
+NGINX_SKIP_COURSE_LISTING: true
 RABBITMQ_CLUSTERED_HOSTS:
   - "rabbit@rabbitmq1.{{ COMMON_DEPLOYMENT }}.vpc"
   - "rabbit@rabbitmq2.{{ COMMON_DEPLOYMENT }}.vpc"

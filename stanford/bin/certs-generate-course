@@ -1,0 +1,35 @@
+#!/bin/bash
+
+_required_variables='REMOTE_BOX COURSE_ID SYSTEM_USER'
+for _variable in ${_required_variables}; do
+    test -n "${!_variable}" || { echo "$_variable must be set"; exit 1; }
+done
+
+# optional variables
+: "${IS_DRY_RUN:=true}"
+: "${RERUN_STATUS:=}"
+: "${VERBOSITY:=3}"
+
+_flag_noop=''
+if "${IS_DRY_RUN}"; then
+    _flag_noop='--noop'
+fi
+_flag_rerun=''
+if [ -n "${RERUN_STATUS}" ]; then
+    _flag_rerun="--force-gen ${RERUN_STATUS}"
+fi
+
+
+read -r -d '' _remote_command <<EOF
+    sudo -u ${SYSTEM_USER}
+        /edx/bin/python.edxapp
+        /edx/bin/manage.edxapp
+        lms ungenerated_certs
+        --settings aws
+        --verbosity ${VERBOSITY}
+        --course ${COURSE_ID}
+        ${_flag_noop}
+        ${_flag_rerun}
+    ;
+EOF
+ssh "${REMOTE_BOX}" ${_remote_command}

@@ -1,0 +1,35 @@
+#!/bin/bash
+
+_required_variables='REMOTE_BOX COURSE_ID USER_NAME SYSTEM_USER'
+for _variable in ${_required_variables}; do
+    test -n "${!_variable}" || { echo "$_variable must be set"; exit 1; }
+done
+
+# optional variables
+: "${IS_DRY_RUN:=true}"
+: "${DESIGNATION:=}"
+: "${VERBOSITY:=3}"
+
+_flag_noop=''
+if "${IS_DRY_RUN}"; then
+    _flag_noop='--noop'
+fi
+_flag_designation=''
+if [ -n "${DESIGNATION}" ]; then
+    _flag_designation="--designation ${DESIGNATION}"
+fi
+
+read -r -d '' _remote_command <<EOF
+    sudo -u ${SYSTEM_USER}
+        /edx/bin/python.edxapp
+        /edx/bin/manage.edxapp
+        lms regenerate_user
+        --settings aws
+        --verbosity ${VERBOSITY}
+        --user ${USER_NAME}
+        --course ${COURSE_ID}
+        ${_flag_noop}
+        ${_flag_designation}
+    ;
+EOF
+ssh "${REMOTE_BOX}" ${_remote_command}

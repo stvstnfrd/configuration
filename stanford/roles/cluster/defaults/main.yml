@@ -1,5 +1,5 @@
 ---
-CLUSTER_AMI: 'ami-45ead225'
+CLUSTER_AMI: 'ami-07585467'
 CLUSTER_ASSIGN_PUBLIC_IP: no
 CLUSTER_EBS_SIZE: 16
 CLUSTER_ELB_GROUPS: "{{ CLUSTER_SECURITY_GROUPS }}"
@@ -7,10 +7,10 @@ CLUSTER_SECURITY_GROUP: "{{ COMMON_DEPLOYMENT }}-group-{{ CLUSTER_NAME }}"
 CLUSTER_SECURITY_GROUP_DESCRIPTION: "Secure {{ COMMON_DEPLOYMENT }}-{{ CLUSTER_NAME }} clusters"
 CLUSTER_SUBNET_AZ: "{{ region }}a"
 CLUSTER_SUBNET_TAGS:
-      Name: "{{ COMMON_DEPLOYMENT }}-subnet-{{ CLUSTER_NAME }}-{{ CLUSTER_NUMBER }}"
+      Name: "{{ COMMON_DEPLOYMENT }}-subnet-{{ CLUSTER_NAME }}-{{ DEPLOYMENT_NUMBER }}"
       Deployment: "{{ COMMON_DEPLOYMENT }}"
       Cluster: "{{ CLUSTER_NAME }}"
-      Number: "{{ CLUSTER_NUMBER }}"
+      Number: "{{ DEPLOYMENT_NUMBER }}"
 CLUSTER_INSTANCE_TYPE: t2.micro
 CLUSTER_KEY: "{{ COMMON_DEPLOYMENT }}-key-deploy"
 CLUSTER_NAME: 'TODO'
@@ -21,16 +21,26 @@ CLUSTER_SECURITY_GROUPS:
 
 CLUSTER_NETWORK: private
 CLUSTER_SUBNETS:
-  public:
+  build:
     - zone: 'us-west-1a'
-      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.5.0/24"
+      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.175.0/24"
     - zone: 'us-west-1c'
-      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.6.0/24"
+      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.176.0/24"
+  cache:
+    - zone: 'us-west-1a'
+      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.125.0/24"
+    - zone: 'us-west-1c'
+      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.126.0/24"
   certs:
     - zone: 'us-west-1a'
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.85.0/24"
     - zone: 'us-west-1c'
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.86.0/24"
+  db:
+    - zone: 'us-west-1a'
+      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.135.0/24"
+    - zone: 'us-west-1c'
+      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.136.0/24"
   jump:
     - zone: 'us-west-1a'
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.75.0/24"
@@ -76,9 +86,7 @@ CLUSTER_SUBNETS:
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.55.0/24"
     - zone: 'us-west-1c'
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.56.0/24"
-CLUSTER_NAT_SUBNET: "{{ CLUSTER_SUBNETS['public'][cluster_subnet_index|int] }}"
-cluster_subnet_index: "{{ CLUSTER_NUMBER|int - 1 | abs % 2 | int }}"
-CLUSTER_SUBNET: "{{ CLUSTER_SUBNETS[CLUSTER_NAME][cluster_subnet_index|int] }}"
+CLUSTER_SUBNET: "{{ CLUSTER_SUBNETS[CLUSTER_NAME][deployment_subnet_index|int] }}"
 
 CLUSTER_SECURITY_GROUP_RULES_INGRESS: "{{ CLUSTER_SECURITY_GROUP_RULES[CLUSTER_NAME] }}"
 CLUSTER_SECURITY_GROUP_RULES:
@@ -87,6 +95,15 @@ CLUSTER_SECURITY_GROUP_RULES:
       from_port: 22
       to_port: 22
       cidr_ip: 0.0.0.0/0
+  build:
+    - proto: tcp
+      from_port: 22
+      to_port: 22
+      cidr_ip: "{{ DEPLOYMENT_CIDR }}"
+    - proto: tcp
+      from_port: 80
+      to_port: 80
+      cidr_ip: "{{ DEPLOYMENT_CIDR }}"
   certs:
     - proto: tcp
       from_port: 22
@@ -171,6 +188,32 @@ CLUSTER_SECURITY_GROUP_RULES:
       to_port: 80
       cidr_ip: '0.0.0.0/0'
 CLUSTER_ELBS:
+  build:
+    - name: "{{ COMMON_DEPLOYMENT }}-elb-build-public"
+      health_check:
+        ping_protocol: http
+        ping_path: '/cc.xml'
+        ping_port: 80
+        response_timeout: 5  # seconds
+        interval: 30  # seconds
+        unhealthy_threshold: 2  # attempts
+        healthy_threshold: 10  # attempts
+      listeners:
+        - protocol: https
+          load_balancer_port: 443
+          instance_port: 80
+          instance_protocol: http
+          ssl_certificate_id: "{{ DEPLOYMENT_SSL_CERTIFICATE_ID }}"
+      scheme: internet-facing
+      group:
+        name: "{{ COMMON_DEPLOYMENT }}-group-build-elb-public"
+        rules:
+          - proto: tcp
+            from_port: 443
+            to_port: 443
+            cidr_ip: '0.0.0.0/0'
+      subnets:
+        - "{{ DEPLOYMENT_SUBNET_PUBLIC_ID }}"
   edxapp:
     - name: "{{ COMMON_DEPLOYMENT }}-elb-edxapp-public"
       health_check:
@@ -191,6 +234,7 @@ CLUSTER_ELBS:
           instance_protocol: http
           ssl_certificate_id: "{{ DEPLOYMENT_SSL_CERTIFICATE_ID }}"
       scheme: internet-facing
+      idle_timeout: 300
       group:
         name: "{{ COMMON_DEPLOYMENT }}-group-edxapp-elb-public"
         rules:
@@ -203,7 +247,7 @@ CLUSTER_ELBS:
             to_port: 443
             cidr_ip: '0.0.0.0/0'
       subnets:
-        - "{{ COMMON_DEPLOYMENT }}-subnet-public-{{ CLUSTER_NUMBER }}"
+        - "{{ DEPLOYMENT_SUBNET_PUBLIC_ID }}"
   esforum:
     - name: "{{ COMMON_DEPLOYMENT }}-elb-esforum-private"
       health_check:
@@ -226,7 +270,7 @@ CLUSTER_ELBS:
             to_port: 9200
             cidr_ip: "{{ DEPLOYMENT_CIDR }}"
       subnets:
-        - "{{ COMMON_DEPLOYMENT }}-subnet-esforum-private-{{ CLUSTER_NUMBER }}"
+        - "{{ CLUSTER_SUBNET_ID }}"
   forum:
     - name: "{{ COMMON_DEPLOYMENT }}-elb-forum-private"
       health_check:
@@ -250,7 +294,7 @@ CLUSTER_ELBS:
             to_port: 80
             cidr_ip: "{{ DEPLOYMENT_CIDR }}"
       subnets:
-        - "{{ COMMON_DEPLOYMENT }}-subnet-forum-{{ CLUSTER_NUMBER }}"
+        - "{{ CLUSTER_SUBNET_ID }}"
   rabbitmq:
     - name: "{{ COMMON_DEPLOYMENT }}-elb-{{ CLUSTER_NAME }}-private"
       health_check:
@@ -280,7 +324,7 @@ CLUSTER_ELBS:
             to_port: 6163
             cidr_ip: "{{ DEPLOYMENT_CIDR }}"
       subnets:
-        - "{{ COMMON_DEPLOYMENT }}-subnet-{{ CLUSTER_NAME }}-{{ CLUSTER_NUMBER }}"
+        - "{{ CLUSTER_SUBNET_ID }}"
     - name: "{{ COMMON_DEPLOYMENT }}-elb-{{ CLUSTER_NAME }}-public"
       health_check:
         ping_protocol: http
@@ -304,7 +348,7 @@ CLUSTER_ELBS:
             to_port: 15672
             cidr_ip: '0.0.0.0/0'
       subnets:
-        - "{{ COMMON_DEPLOYMENT }}-subnet-public-{{ CLUSTER_NUMBER }}"
+        - "{{ DEPLOYMENT_SUBNET_PUBLIC_ID }}"
   xqueue:
     - name: "{{ COMMON_DEPLOYMENT }}-elb-{{ CLUSTER_NAME }}-public"
       health_check:
@@ -334,4 +378,8 @@ CLUSTER_ELBS:
             to_port: 443
             cidr_ip: '0.0.0.0/0'
       subnets:
-        - "{{ COMMON_DEPLOYMENT }}-subnet-public-{{ CLUSTER_NUMBER }}"
+        - "{{ DEPLOYMENT_SUBNET_PUBLIC_ID }}"
+CLUSTER_SERVICE_TYPE: 'ec2'
+# alternate values are
+# CLUSTER_SERVICE_TYPE: 'rds'
+# CLUSTER_SERVICE_TYPE: 'emr'
