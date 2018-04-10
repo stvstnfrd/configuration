@@ -1,0 +1,17 @@
+#!/usr/bin/env ansible-playbook
+---
+- include: ../playbooks/cluster.yml
+  vars:
+    CLUSTER_NAME: build
+  when: redeploy | default(False) | bool
+- name: "Setup {{ COMMON_HOSTNAME }}"
+  hosts: "tag_Cluster_{{ CLUSTER_NAME }}:&tag_todo_deploy:&tag_Deployment_{{ COMMON_DEPLOYMENT }}:&tag_Number_{{ CLUSTER_NUMBER }}"
+  gather_facts: True
+  become: true
+  vars:
+    CLUSTER_NAME: build
+    jenkins_server_name: '_'
+  vars_files:
+    - "{{ COMMON_DEPLOYMENT_DIR }}/common.yaml"
+  roles:
+    - role: jenkins_master

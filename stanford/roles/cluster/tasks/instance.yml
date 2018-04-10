@@ -19,6 +19,7 @@
     volumes:
       - device_name: /dev/sda1
         volume_size: "{{ CLUSTER_EBS_SIZE }}"
+        volume_type: gp2
         delete_on_termination: true
   register: ec2
 - debug:

@@ -1,0 +1,30 @@
+#!/bin/bash
+
+_required_variables='REMOTE_BOX COURSE_ID SYSTEM_USER'
+for _variable in ${_required_variables}; do
+    test -n "${!_variable}" || { echo "$_variable must be set"; exit 1; }
+done
+
+# optional variables
+: "${ACTION:=list}"
+: "${USERS:=}"
+
+_users=$(echo "${USERS}" | tr '\n' ',')
+_flag_action=''
+if [ "${ACTION}" == 'add' ]; then
+    _flag_action="--add ${_users}"
+elif [ "${ACTION}" == 'delete' ]; then
+    _flag_action="--del ${_users}"
+fi
+
+read -r -d '' _remote_command <<EOF
+    sudo -u ${SYSTEM_USER}
+        /edx/bin/python.edxapp
+        /edx/bin/manage.edxapp
+        lms cert_whitelist
+        --settings aws
+        --course ${COURSE_ID}
+        ${_flag_action}
+    ;
+EOF
+ssh "${REMOTE_BOX}" ${_remote_command}

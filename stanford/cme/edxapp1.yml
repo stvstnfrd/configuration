@@ -2,6 +2,7 @@
 ---
 - include: ../playbooks/edxapp.yml
   vars:
+    CLUSTER_EBS_SIZE: 32
     CLUSTER_INSTANCE_TYPE: 'm4.large'
     CLUSTER_NUMBER: 1
     COMMON_DEPLOYMENT: cme

@@ -1,0 +1,17 @@
+#!/bin/bash
+
+_required_variables='REMOTE_BOX COURSE_ID SYSTEM_USER'
+for _variable in ${_required_variables}; do
+    test -n "${!_variable}" || { echo "$_variable must be set"; exit 1; }
+done
+
+read -r -d '' _remote_command <<EOF
+    sudo -u ${SYSTEM_USER}
+        /edx/bin/python.edxapp
+        /edx/bin/manage.edxapp
+        lms gen_cert_report
+        --settings aws
+        --course ${COURSE_ID}
+    ;
+EOF
+ssh "${REMOTE_BOX}" ${_remote_command}

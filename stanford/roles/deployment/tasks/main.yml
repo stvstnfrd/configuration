@@ -16,30 +16,48 @@
     DEPLOYMENT_VPC_ID: "{{ deployment_vpc.vpc.id }}"
   when: DEPLOYMENT_VPC_ID is not defined
 - debug: var=DEPLOYMENT_VPC_ID
+
 - name: Create internet gateway
   ec2_vpc_igw:
     vpc_id: "{{ DEPLOYMENT_VPC_ID }}"
     state: present
   register: deployment_gateway
+  when: DEPLOYMENT_INTERNET_GATEWAY_ID is not defined
   # Not supported until Ansible 2.4
   # tags:
   #   Deployment: "{{ COMMON_DEPLOYMENT }}"
   #   Name: "{{ COMMON_DEPLOYMENT }}-gateway-internet"
 - debug: var=deployment_gateway
+  when: DEPLOYMENT_INTERNET_GATEWAY_ID is not defined
+- name: Set internet gateway facts
+  set_fact:
+    DEPLOYMENT_INTERNET_GATEWAY_ID: "{{ deployment_gateway.gateway_id }}"
+  when: DEPLOYMENT_INTERNET_GATEWAY_ID is not defined
+- debug: var=DEPLOYMENT_INTERNET_GATEWAY_ID
 
-- name: Create NAT subnet
+- name: Create public subnet
   ec2_vpc_subnet:
     state: present
     vpc_id: "{{ DEPLOYMENT_VPC_ID }}"
-    cidr: "{{ CLUSTER_NAT_SUBNET.cidr }}"
-    az: "{{ CLUSTER_NAT_SUBNET.zone }}"
+    cidr: "{{ DEPLOYMENT_SUBNET_PUBLIC.cidr }}"
+    az: "{{ DEPLOYMENT_SUBNET_PUBLIC.zone }}"
     resource_tags:
-      Cluster: nat
+      Cluster: public
       Deployment: "{{ COMMON_DEPLOYMENT }}"
-      Name: "{{ COMMON_DEPLOYMENT }}-subnet-nat-{{ DEPLOYMENT_NUMBER }}"
+      Name: "{{ DEPLOYMENT_SUBNET_PUBLIC.name }}"
       Number: "{{ DEPLOYMENT_NUMBER }}"
-  register: deployment_subnet_nat
-- debug: var=deployment_subnet_nat
+  register: deployment_subnet_public
+  when: DEPLOYMENT_SUBNET_PUBLIC_IDS is not defined
+- debug: var=deployment_subnet_public
+- name: Set public subnet facts
+  set_fact:
+    DEPLOYMENT_SUBNET_PUBLIC_ID: "{{ deployment_subnet_public.subnet.id }}"
+  when: DEPLOYMENT_SUBNET_PUBLIC_IDS is not defined
+- name: Set public subnet facts
+  set_fact:
+    DEPLOYMENT_SUBNET_PUBLIC_ID: "{{ DEPLOYMENT_SUBNET_PUBLIC_IDS[deployment_subnet_index|int] }}"
+  when: DEPLOYMENT_SUBNET_PUBLIC_IDS is defined
+- debug: var=DEPLOYMENT_SUBNET_PUBLIC_ID
 
 - name: Create public route table
   ec2_vpc_route_table:
@@ -48,10 +66,10 @@
     purge_routes: false
     purge_subnets: false
     subnets:
-      - "{{ deployment_subnet_nat.subnet.id }}"
+      - "{{ DEPLOYMENT_SUBNET_PUBLIC_ID }}"
     routes:
       - dest: 0.0.0.0/0
-        gateway_id: "{{ deployment_gateway.gateway_id }}"
+        gateway_id: "{{ DEPLOYMENT_INTERNET_GATEWAY_ID }}"
       - dest: "{{ DEPLOYMENT_CIDR }}"
         gateway_id: local
     tags:
@@ -60,14 +78,30 @@
       Name: "{{ COMMON_DEPLOYMENT }}-route-public-{{ DEPLOYMENT_NUMBER }}"
       Number: "{{ DEPLOYMENT_NUMBER }}"
   register: deployment_route_public
+  when: DEPLOYMENT_SUBNET_PUBLIC_IDS is not defined
 - debug: var=deployment_route_public
+- name: Set public route table facts
+  set_fact:
+    DEPLOYMENT_ROUTE_TABLE_PUBLIC_ID: "{{ deployment_route_public.route_table.id  }}"
+  when: DEPLOYMENT_ROUTE_TABLE_PUBLIC_ID is not defined and DEPLOYMENT_SUBNET_PUBLIC_IDS is not defined
+- debug: var=DEPLOYMENT_ROUTE_TABLE_PUBLIC_ID
 
 - name: Create NAT gateway
   ec2_vpc_nat_gateway:
     state: present
-    subnet_id: "{{ deployment_subnet_nat.subnet.id }}"
+    subnet_id: "{{ DEPLOYMENT_SUBNET_PUBLIC_ID }}"
     wait: yes
     region: "{{ DEPLOYMENT_REGION }}"
     if_exist_do_not_create: true
-  register: new_nat_gateway
-- debug: var=new_nat_gateway
+  register: deployment_nat_gateway
+  when: DEPLOYMENT_NAT_GATEWAYS is not defined
+- debug: var=deployment_nat_gateway
+- name: Set NAT gateway facts
+  set_fact:
+    DEPLOYMENT_NAT_GATEWAY_ID: "{{ deployment_nat_gateway.nat_gateway_id  }}"
+  when: DEPLOYMENT_NAT_GATEWAYS is not defined
+- name: Set NAT gateway facts
+  set_fact:
+    DEPLOYMENT_NAT_GATEWAY_ID: "{{ DEPLOYMENT_NAT_GATEWAYS[deployment_subnet_index|int] }}"
+  when: DEPLOYMENT_NAT_GATEWAYS is defined
+- debug: var=DEPLOYMENT_NAT_GATEWAY_ID

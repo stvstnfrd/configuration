@@ -5,4 +5,14 @@ DEPLOYMENT_NAME: "{{ COMMON_DEPLOYMENT }}-vpc"
 DEPLOYMENT_REGION: "{{ region }}"
 DEPLOYMENT_SSL_CERTIFICATE_ID: 'arn:aws:acm:<REGION>:<ACCOUNT>:certificate/<GUID>'
 # DEPLOYMENT_VPC_ID: vpc-deadbeefcafe
-DEPLOYMENT_NUMBER: "{{ cluster_subnet_index|int + 1 | int }}"
+deployment_subnet_index: "{{ (CLUSTER_NUMBER - 1 |int|abs) % 2 |int }}"
+DEPLOYMENT_NUMBER: "{{ deployment_subnet_index|int + 1 | int }}"
+DEPLOYMENT_SUBNET_PUBLIC: "{{ DEPLOYMENT_SUBNETS['public'][deployment_subnet_index|int] }}"
+DEPLOYMENT_SUBNETS:
+  public:
+    - zone: 'us-west-1a'
+      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.5.0/24"
+      name: "{{ COMMON_DEPLOYMENT }}-subnet-public-1"
+    - zone: 'us-west-1c'
+      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.6.0/24"
+      name: "{{ COMMON_DEPLOYMENT }}-subnet-public-2"

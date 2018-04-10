@@ -23,7 +23,7 @@
     purge_subnets: false
     routes:
       - dest: 0.0.0.0/0
-        gateway_id: "{{ new_nat_gateway.nat_gateway_id }}"
+        gateway_id: "{{ DEPLOYMENT_NAT_GATEWAY_ID }}"
       - dest: "{{ DEPLOYMENT_CIDR }}"
         gateway_id: local
     subnets:
@@ -48,7 +48,7 @@
       - "{{ CLUSTER_SUBNET_ID }}"
     routes:
       - dest: 0.0.0.0/0
-        gateway_id: "{{ deployment_gateway.gateway_id }}"
+        gateway_id: "{{ DEPLOYMENT_INTERNET_GATEWAY_ID }}"
       - dest: "{{ DEPLOYMENT_CIDR }}"
         gateway_id: local
     tags:
@@ -56,9 +56,9 @@
       Network: Public
       Name: "{{ COMMON_DEPLOYMENT }}-route-public-{{ DEPLOYMENT_NUMBER }}"
       Number: "{{ DEPLOYMENT_NUMBER }}"
-  register: deployment_route_public
+  register: cluster_route_public
   when: CLUSTER_NETWORK == 'public'
-- debug: var=deployment_route_public
+- debug: var=cluster_route_public
   when: CLUSTER_NETWORK == 'public'
 
 - debug: var=CLUSTER_ELBS[CLUSTER_NAME]
@@ -89,9 +89,9 @@
     security_group_names:
       - "{{ item.group.name }}"
     scheme: "{{ item.scheme }}"
-    subnets:
-      - "{{ CLUSTER_SUBNET_ID }}"
+    subnets: "{{ item.subnets }}"
     purge_subnets: no
+    idle_timeout: "{{ item.idle_timeout | default(60) }}"
   with_items: "{{ CLUSTER_ELBS[CLUSTER_NAME] | default([]) }}"
   register: cluster_elb
   ignore_errors: yes

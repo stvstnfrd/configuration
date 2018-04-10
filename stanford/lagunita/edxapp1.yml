@@ -2,6 +2,7 @@
 ---
 - include: ../playbooks/edxapp.yml
   vars:
+    CLUSTER_EBS_SIZE: 64
     CLUSTER_INSTANCE_TYPE: 'm4.4xlarge'
     CLUSTER_NUMBER: 1
     COMMON_DEPLOYMENT: lagunita
