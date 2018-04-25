@@ -1,6 +1,6 @@
 - name: Deploy Analytics Insights
   hosts: ~tag_Name_{{ machine }}_{{ env }}
-  sudo: True
+  become: True
   gather_facts: True
   vars_files:
     - "{{ COMMON_DEPLOYMENT_DIR }}/insights.yml"

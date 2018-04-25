@@ -1,6 +1,6 @@
 ---
 - hosts: ~tag_Name_{{ machine }}_{{ env }}
-  sudo: True
+  become: True
   vars_files:
     - "{{ COMMON_DEPLOYMENT_DIR }}/common.yaml"
     - "{{ COMMON_DEPLOYMENT_DIR }}/edxapp-common.yaml"

@@ -38,7 +38,7 @@
       healthy_threshold: 2
 - name: Configure instance(s)
   hosts: launched
-  sudo: True
+  become: True
   gather_facts: True
   vars:
     KIBANA_ENABLE_SSL: true

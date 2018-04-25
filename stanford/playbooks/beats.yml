@@ -1,6 +1,6 @@
 - name: Configure instance(s)
   hosts: all
-  sudo: True
+  become: True
   gather_facts: True
   vars:
     FILEBEAT_LOGSTASH_HOST: "logstash.{{ Deployment }}.vpc"

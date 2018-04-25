@@ -30,7 +30,7 @@
       healthy_threshold: 10
 - name: Configure instance(s)
   hosts: launched
-  sudo: True
+  become: True
   gather_facts: True
   vars:
     # take in number of mega bytes, will scale it properly 

@@ -1,5 +1,5 @@
 - hosts: tag_environment_prod:&tag_function_dbgrader
-  sudo: True
+  become: True
   vars_files:
     - "{{ COMMON_DEPLOYMENT_DIR }}/db-grader.yml"
   roles:
