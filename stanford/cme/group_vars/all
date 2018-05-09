@@ -25,7 +25,9 @@ EDXAPP_FEATURES_ENABLE_SHOPPING_CART: true
 EDXAPP_FEATURES_SHOW_ABOUT_LINK: false
 EDXAPP_LMS_NGINX_PORT: 80
 EDXAPP_MKTG_URL_LINK_MAP:
+  BLOG: None
   COURSES: 'https://med.stanford.edu/cme/learning-opportunities/online.html'
+  DONATE: None
   FAQ: 'https://support.zoho.com/portal/stanfordonlinecmesupport/home'
 EDXAPP_PLATFORM_NAME: 'Stanford CME'
 EDXAPP_PREVIEW_LMS_BASE: "preview.{{ EDXAPP_LMS_SITE_NAME }}"
