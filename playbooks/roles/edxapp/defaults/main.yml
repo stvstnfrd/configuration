@@ -514,7 +514,7 @@ EDXAPP_MKTG_URL_LINK_MAP:
   FAQ: 'https://stanfordonline.zendesk.com/hc/en-us'
   TOS_AND_HONOR: 'tos_and_honor'
 EDXAPP_MKTG_URLS: {}
-EDXAPP_SUPPORT_SITE_LINK: 'https://stanfordonline.zendesk.com/hc/en-us/requests/new'
+EDXAPP_SUPPORT_SITE_LINK: 'https://stanfordonline.zendesk.com/hc/en-us'
 EDXAPP_ACTIVATION_EMAIL_SUPPORT_LINK: ''
 EDXAPP_PASSWORD_RESET_SUPPORT_LINK: ''
 EDXAPP_EDXMKTG_USER_INFO_COOKIE_NAME: "edx-user-info"
