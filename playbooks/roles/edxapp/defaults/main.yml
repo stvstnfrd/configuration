@@ -753,11 +753,12 @@ EDXAPP_MAILCHIMP_NEW_USER_LIST_ID: null
 
 # Social Sharing Related Settings
 EDXAPP_SOCIAL_SHARING_SETTINGS:
+  CERTIFICATE_FACEBOOK: true
+  CERTIFICATE_TWITTER: true
+  CERTIFICATE_TWITTER_TEXT: "I completed a course at {platform_name}. Take a look at my statement of accomplishment."
   CUSTOM_COURSE_URLS: false
-  DASHBOARD_FACEBOOK: false
-  CERTIFICATE_FACEBOOK: false
-  CERTIFICATE_TWITTER: false
-  DASHBOARD_TWITTER: false
+  DASHBOARD_FACEBOOK: true
+  DASHBOARD_TWITTER: true
 
 #To use AWS S3 as your backend, you need different kwargs:
 # EDXAPP_PROFILE_IMAGE_BACKEND_CONFIG:

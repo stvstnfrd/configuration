@@ -43,6 +43,12 @@ EDXAPP_REGISTRATION_EXTRA_FIELDS:
   terms_of_service: required
   privacy_policy: required
   year_of_birth: hidden
+EDXAPP_SOCIAL_SHARING_SETTINGS:
+  CUSTOM_COURSE_URLS: false
+  DASHBOARD_FACEBOOK: false
+  CERTIFICATE_FACEBOOK: false
+  CERTIFICATE_TWITTER: false
+  DASHBOARD_TWITTER: false
 ELASTICSEARCH_CLUSTER_MEMBERS:
   - "esforum1.{{ COMMON_DEPLOYMENT }}.vpc"
   - "esforum2.{{ COMMON_DEPLOYMENT }}.vpc"
