@@ -1,0 +1,11 @@
+---
+- name: Lookup/create emr slave security group
+  ec2_group:
+    # Tags added in Ansible 2.4
+    name: "{{ CLUSTER_SECURITY_GROUP }}-slave"
+    description: "{{ CLUSTER_SECURITY_GROUP_DESCRIPTION }}-slave"
+    vpc_id: "{{ DEPLOYMENT_VPC_ID }}"
+    region: "{{ CLUSTER_REGION }}"
+    rules: "{{ cluster_emr_internal_group_rules_slave }}"
+  register: cluster_security_group_slave
+- debug: var=cluster_security_group_slave

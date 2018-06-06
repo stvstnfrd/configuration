@@ -47,6 +47,11 @@ CLUSTER_SUBNETS:
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.135.0/24"
     - zone: 'us-west-1c'
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.136.0/24"
+  emr:
+    - zone: 'us-west-1a'
+      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.205.0/24"
+    - zone: 'us-west-1c'
+      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.206.0/24"
   es:
     - zone: 'us-west-1a'
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.195.0/24"
@@ -163,6 +168,7 @@ CLUSTER_SECURITY_GROUP_RULES:
       from_port: 80
       to_port: 80
       cidr_ip: '0.0.0.0/0'
+  emr: "{{ cluster_emr_internal_group_rules_master }}"
   esforum:
     - proto: tcp
       from_port: 9200
@@ -537,3 +543,66 @@ CLUSTER_SERVICE_TYPE: 'ec2'
 # alternate values are
 # CLUSTER_SERVICE_TYPE: 'rds'
 # CLUSTER_SERVICE_TYPE: 'emr'
+cluster_emr_internal_group_rules_master:
+  - proto: icmp
+    from_port: -1
+    to_port: -1
+    cidr_ip: "{{ CLUSTER_SUBNETS['emr'][0]['cidr'] }}"
+  - proto: icmp
+    from_port: -1
+    to_port: -1
+    cidr_ip: "{{ CLUSTER_SUBNETS['emr'][1]['cidr'] }}"
+  - proto: tcp
+    from_port: 0
+    to_port: 65535
+    cidr_ip: "{{ CLUSTER_SUBNETS['emr'][0]['cidr'] }}"
+  - proto: tcp
+    from_port: 0
+    to_port: 65535
+    cidr_ip: "{{ CLUSTER_SUBNETS['emr'][1]['cidr'] }}"
+  - proto: udp
+    from_port: 0
+    to_port: 65535
+    cidr_ip: "{{ CLUSTER_SUBNETS['emr'][0]['cidr'] }}"
+  - proto: udp
+    from_port: 0
+    to_port: 65535
+    cidr_ip: "{{ CLUSTER_SUBNETS['emr'][1]['cidr'] }}"
+# The following IP entries are created with the default EMR security group (ElasticMapReduce-master).
+  - proto:  "tcp"
+    from_port:  "8443"
+    to_port:  "8443"
+    cidr_ip:  "204.246.160.32/28"
+  - proto:  "tcp"
+    from_port:  "8443"
+    to_port:  "8443"
+    cidr_ip:  "204.246.162.32/28"
+  - proto:  "tcp"
+    from_port:  "8443"
+    to_port:  "8443"
+    cidr_ip:  "54.240.198.0/24"
+cluster_emr_internal_group_rules_slave:
+  - proto: icmp
+    from_port: -1
+    to_port: -1
+    cidr_ip: "{{ CLUSTER_SUBNETS['emr'][0]['cidr'] }}"
+  - proto: icmp
+    from_port: -1
+    to_port: -1
+    cidr_ip: "{{ CLUSTER_SUBNETS['emr'][1]['cidr'] }}"
+  - proto: tcp
+    from_port: 0
+    to_port: 65535
+    cidr_ip: "{{ CLUSTER_SUBNETS['emr'][0]['cidr'] }}"
+  - proto: tcp
+    from_port: 0
+    to_port: 65535
+    cidr_ip: "{{ CLUSTER_SUBNETS['emr'][1]['cidr'] }}"
+  - proto: udp
+    from_port: 0
+    to_port: 65535
+    cidr_ip: "{{ CLUSTER_SUBNETS['emr'][0]['cidr'] }}"
+  - proto: udp
+    from_port: 0
+    to_port: 65535
+    cidr_ip: "{{ CLUSTER_SUBNETS['emr'][1]['cidr'] }}"
