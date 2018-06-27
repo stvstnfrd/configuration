@@ -31,3 +31,4 @@ NGINX_CREATE_HTPASSWD_FILE: True
 RABBITMQ_CLUSTERED_HOSTS:
   - "rabbit@rabbitmq1.{{ COMMON_DEPLOYMENT }}.vpc"
   - "rabbit@rabbitmq2.{{ COMMON_DEPLOYMENT }}.vpc"
+RABBITMQ_USE_LONGNAME: true

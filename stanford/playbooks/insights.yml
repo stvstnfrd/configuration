@@ -25,7 +25,8 @@
     - role: nginx
       nginx_sites:
         - insights
-    - insights
+    - role: insights
+      COMMON_GIT_PATH: 'Stanford-Online'
     - role: postfix_queue
       when: POSTFIX_QUEUE_EXTERNAL_SMTP_HOST != ''
   tasks:

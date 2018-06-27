@@ -39,4 +39,5 @@ NOTIFIER_EMAIL_BACKEND: 'console'
 NOTIFIER_LOG_LEVEL: 'DEBUG'
 NOTIFIER_LOGO_IMAGE_URL: 'https://stage.lagunita.stanford.edu/static/lagunita/images/logo.png'
 TOPBEAT_LOGSTASH_HOST: ''
+RABBITMQ_USE_LONGNAME: true
 XQUEUE_RABBITMQ_HOSTNAME: "rabbitmq.{{ COMMON_DEPLOYMENT }}.vpc"
