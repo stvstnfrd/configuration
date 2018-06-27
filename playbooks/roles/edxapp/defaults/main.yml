@@ -107,6 +107,7 @@ EDXAPP_LANGUAGES:
   - ['ar', 'العربية']
   - ['en', 'English']
   - ['es-419', 'Español (Latinoamérica)']
+  - ['mn', 'Монгол хэл']
   - ['ru', 'Русский']
   - ['vi', 'Tiếng Việt']
   - ['zh-cn', '中文 (简体)']
