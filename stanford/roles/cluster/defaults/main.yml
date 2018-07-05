@@ -560,6 +560,14 @@ cluster_emr_internal_group_rules_master:
     from_port: 0
     to_port: 65535
     cidr_ip: "{{ CLUSTER_SUBNETS['emr'][1]['cidr'] }}"
+  - proto: tcp
+    from_port: 22
+    to_port: 22
+    cidr_ip: "{{ CLUSTER_SUBNETS['scheduler'][0]['cidr'] }}"
+  - proto: tcp
+    from_port: 22
+    to_port: 22
+    cidr_ip: "{{ CLUSTER_SUBNETS['scheduler'][1]['cidr'] }}"
   - proto: udp
     from_port: 0
     to_port: 65535
