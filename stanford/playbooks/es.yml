@@ -1,7 +1,0 @@
-#!/usr/bin/env ansible-playbook
----
-- include: ../playbooks/cluster.yml
-  vars:
-    CLUSTER_NAME: es
-    CLUSTER_SERVICE_TYPE: es
-  when: redeploy | default(False) | bool
