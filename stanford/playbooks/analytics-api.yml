@@ -10,8 +10,28 @@
   gather_facts: True
   become: True
   vars:
+    ANALYTICS_API_DATABASES:
+      default:
+        ENGINE: 'django.db.backends.mysql'
+        NAME: "{{ ANALYTICS_API_DEFAULT_DB_NAME }}"
+        USER: "{{ ANALYTICS_MYSQL_USERNAME }}"
+        PASSWORD: "{{ ANALYTICS_MYSQL_PASSWORD }}"
+        HOST: "{{ ANALYTICS_MYSQL_HOST }}"
+        PORT: "{{ ANALYTICS_MYSQL_PORT }}"
+      reports:
+        ENGINE: 'django.db.backends.mysql'
+        NAME: "{{ ANALYTICS_API_REPORTS_DB_NAME }}"
+        USER: "{{ ANALYTICS_MYSQL_USERNAME }}"
+        PASSWORD: "{{ ANALYTICS_MYSQL_PASSWORD }}"
+        HOST: "{{ ANALYTICS_MYSQL_HOST }}"
+        PORT: "{{ ANALYTICS_MYSQL_PORT }}"
+    ANALYTICS_API_ELASTICSEARCH_CONNECTION_DEFAULT_REGION: 'us-west-1'
+    ANALYTICS_API_NGINX_PORT: '80'
+    ANALYTICS_API_VERSION: 'rc'
     CLUSTER_NAME: analytics-api
     COMMON_GIT_PATH: 'Stanford-Online'
+    COMMON_MYSQL_MIGRATE_PASS: "{{ ANALYTICS_MYSQL_PASSWORD }}"
+    COMMON_MYSQL_MIGRATE_USER: "{{ ANALYTICS_MYSQL_USERNAME }}"
     migrate_db: 'yes'
     disable_edx_services: false
   vars_files:
