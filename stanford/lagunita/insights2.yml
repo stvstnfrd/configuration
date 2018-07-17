@@ -1,0 +1,5 @@
+#!/usr/bin/env ansible-playbook
+---
+- include: ./insights1.yml
+  vars:
+    CLUSTER_NUMBER: 2
