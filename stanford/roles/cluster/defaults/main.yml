@@ -257,7 +257,7 @@ CLUSTER_SECURITY_GROUP_RULES:
       cidr_ip: '0.0.0.0/0'
 CLUSTER_ELBS:
   analytics-api:
-    - name: "{{ COMMON_DEPLOYMENT }}-elb-analytics-api-public"
+    - name: "{{ COMMON_DEPLOYMENT }}-elb-analytics-api-publi"
       health_check:
         ping_protocol: http
         ping_path: '/health/'
