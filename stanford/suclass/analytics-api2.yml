@@ -1,0 +1,5 @@
+#!/usr/bin/env ansible-playbook
+---
+- include: ./analytics-api1.yml
+  vars:
+    CLUSTER_NUMBER: 2
