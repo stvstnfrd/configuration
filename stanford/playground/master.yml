@@ -8,6 +8,6 @@
     edxapp_theme_version: master
     EDXAPP_GRADE_STORAGE_KWARGS:
       location: /edx/var/edxapp/media/grades
-      base_url: /media/grades
+      base_url: "{{ EDXAPP_LMS_ROOT_URL }}/media/grades"
     # Remember to enable:
     # /admin/self_paced/selfpacedconfiguration/
