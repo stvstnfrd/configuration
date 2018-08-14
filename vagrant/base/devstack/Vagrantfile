@@ -33,6 +33,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Creates a devstack from a base Ubuntu 16.04 image for virtualbox
   config.vm.box = "boxcutter/ubuntu1604"
+  config.vm.box_url = 'https://s3-us-west-1.amazonaws.com/stanford-vagrant/boxcutter-ubuntu1604.box'
 
   config.vm.network :private_network, ip: vm_guest_ip, nic_type: "virtio"
 
