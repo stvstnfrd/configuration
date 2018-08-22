@@ -37,6 +37,11 @@ CLUSTER_SUBNETS:
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.125.0/24"
     - zone: 'us-west-1c'
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.126.0/24"
+  coursegraph:
+    - zone: 'us-west-1a'
+      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.215.0/24"
+    - zone: 'us-west-1c'
+      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.216.0/24"
   certs:
     - zone: 'us-west-1a'
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.85.0/24"
@@ -144,6 +149,11 @@ CLUSTER_SECURITY_GROUP_RULES:
       from_port: 22
       to_port: 22
       cidr_ip: 0.0.0.0/0
+  coursegraph:
+    - proto: tcp
+      from_port: 22
+      to_port: 22
+      cidr_ip: "{{ DEPLOYMENT_CIDR }}"
   db:
     - proto: tcp
       from_port: 3306
