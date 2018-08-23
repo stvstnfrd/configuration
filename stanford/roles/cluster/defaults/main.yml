@@ -52,11 +52,6 @@ CLUSTER_SUBNETS:
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.205.0/24"
     - zone: 'us-west-1c'
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.206.0/24"
-  es:
-    - zone: 'us-west-1a'
-      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.195.0/24"
-    - zone: 'us-west-1c'
-      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.196.0/24"
   jump:
     - zone: 'us-west-1a'
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.75.0/24"
@@ -178,15 +173,6 @@ CLUSTER_SECURITY_GROUP_RULES:
       from_port: 22
       to_port: 22
       cidr_ip: "{{ DEPLOYMENT_CIDR }}"
-  es:
-    - proto: tcp
-      from_port: 22
-      to_port: 22
-      cidr_ip: "{{ DEPLOYMENT_CIDR }}"
-    - proto: tcp
-      from_port: 9200
-      to_port: 9400
-      cidr_ip: "{{ DEPLOYMENT_CIDR }}"
   forum:
     - proto: tcp
       from_port: 22
@@ -271,7 +257,7 @@ CLUSTER_SECURITY_GROUP_RULES:
       cidr_ip: '0.0.0.0/0'
 CLUSTER_ELBS:
   analytics-api:
-    - name: "{{ COMMON_DEPLOYMENT }}-elb-analytics-api-public"
+    - name: "{{ COMMON_DEPLOYMENT }}-elb-analytics-api-publi"
       health_check:
         ping_protocol: http
         ping_path: '/health/'
@@ -560,6 +546,14 @@ cluster_emr_internal_group_rules_master:
     from_port: 0
     to_port: 65535
     cidr_ip: "{{ CLUSTER_SUBNETS['emr'][1]['cidr'] }}"
+  - proto: tcp
+    from_port: 22
+    to_port: 22
+    cidr_ip: "{{ CLUSTER_SUBNETS['scheduler'][0]['cidr'] }}"
+  - proto: tcp
+    from_port: 22
+    to_port: 22
+    cidr_ip: "{{ CLUSTER_SUBNETS['scheduler'][1]['cidr'] }}"
   - proto: udp
     from_port: 0
     to_port: 65535
