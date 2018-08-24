@@ -1,0 +1,5 @@
+---
+DEPLOY_MANUALLY_PATH_CONFIG: /opt/configuration
+DEPLOY_MANUALLY_REPO_USER: Stanford-Online
+DEPLOY_MANUALLY_VERSION_CONFIG: rc
+deploy_manually_path_config_src: "{{ DEPLOY_MANUALLY_PATH_CONFIG }}/src"
