@@ -2,6 +2,7 @@
 ---
 - include: ../playbooks/cluster.yml
   vars:
+    ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p {{ ansible_jumpbox }}"'
     CLUSTER_NAME: build
   when: redeploy | default(False) | bool
 - name: "Setup {{ COMMON_HOSTNAME }}"
@@ -9,9 +10,11 @@
   gather_facts: True
   become: true
   vars:
+    ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p {{ ansible_jumpbox }}"'
     CLUSTER_NAME: build
     jenkins_server_name: '_'
   vars_files:
     - "{{ COMMON_DEPLOYMENT_DIR }}/common.yaml"
   roles:
+    - deploy_manually
     - role: jenkins_master
