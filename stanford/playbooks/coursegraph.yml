@@ -2,6 +2,7 @@
 ---
 - include: ../playbooks/cluster.yml
   vars:
+    CLUSTER_INSTANCE_TYPE: 'r4.large'
     CLUSTER_NAME: coursegraph
   when: redeploy | default(False) | bool
 - name: "Setup {{ COMMON_HOSTNAME }}"
