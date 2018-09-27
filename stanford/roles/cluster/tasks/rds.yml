@@ -1,0 +1,56 @@
+- name: Gather facts about the subnets to include in subnet group
+  ec2_vpc_subnet_facts:
+    filters:
+      "tag:Deployment": "{{ COMMON_DEPLOYMENT }}"
+      "tag:Cluster": "{{ CLUSTER_NAME }}"
+  register: cluster_subnet_list
+
+- name: Set Subnet Id list
+  set_fact:
+    CLUSTER_SUBNET_ID_LIST: "{{cluster_subnet_list.subnets|map(attribute='id')|list }}"
+- debug: var=cluster_subnet_list      
+
+- name: Create new subnet group from the subnets
+  rds_subnet_group:
+    state: present
+    name: "{{ COMMON_DEPLOYMENT }}-subnetgroup-{{ CLUSTER_NAME }}"
+    description: "Subnet group for {{ COMMON_DEPLOYMENT }}-subnetgroup-{{ CLUSTER_NAME }}"
+    subnets: "{{ CLUSTER_SUBNET_ID_LIST }}"
+  register: cluster_subnetgroup
+
+- name:  Set Subnet Group ID
+  set_fact:
+    CLUSTER_SUBNETGROUP: "{{ COMMON_DEPLOYMENT }}-subnetgroup-{{ CLUSTER_NAME }}"
+- debug: var=cluster_subnetgroup
+
+- name: Gather facts about cluster security group
+  ec2_group_facts:
+    region: "{{ CLUSTER_REGION }}"
+    filters:
+      vpc-id: "{{ DEPLOYMENT_VPC_ID }}"
+      group_name: "{{ COMMON_DEPLOYMENT }}-group-db"
+  register: security_group_for_rds
+- debug: var=security_group_for_rds
+
+- name: Set Security Group ID
+  set_fact:
+    CLUSTER_SECURITY_GROUP_ID: "{{ security_group_for_rds.security_groups[0].group_id }}"
+- debug: var=CLUSTER_SECURITY_GROUP_ID
+
+- name: Create new db instance
+  rds:
+    command: create
+    db_engine: MySQL
+    instance_name: "{{ COMMON_DEPLOYMENT }}-db-{{ CLUSTER_RDS_NAME }}"
+    instance_type: "{{ CLUSTER_INSTANCE_TYPE }}"
+    multi_zone: yes
+    password: "{{ CLUSTER_RDS_PASSWORD }}"
+    region: "{{ CLUSTER_REGION }}"
+    size: "{{ CLUSTER_EBS_SIZE }}"
+    subnet: "{{ CLUSTER_SUBNETGROUP }}"
+    username: "{{ CLUSTER_RDS_USERNAME }}"
+    vpc_security_groups: "{{ CLUSTER_SECURITY_GROUP_ID }}"
+    tags:
+        Deployment: "{{ COMMON_DEPLOYMENT }}"
+        Cluster: "{{ CLUSTER_RDS_NAME }}"
+        Name: "{{ COMMON_DEPLOYMENT }}-db-{{ CLUSTER_RDS_NAME }}"

@@ -1,0 +1,7 @@
+#!/usr/bin/env ansible-playbook
+---
+- include: ../playbooks/cluster.yml
+  vars:
+    CLUSTER_NAME: emr
+    CLUSTER_SERVICE_TYPE: emr
+  when: redeploy | default(False) | bool

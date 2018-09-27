@@ -108,10 +108,13 @@ EDXAPP_HELP_MODAL_LINKS:
   - 'url': 'https://stanfordonline.zendesk.com/hc/en-us/articles/203009244-How-do-I-enroll-in-a-course-'
     'text': 'How to enroll in a course'
 EDXAPP_LANGUAGES:
-  - ['ar', 'Arabic']
-  - ['en', "English"]
-  - ['es-419', "Espa\u00f1ol"]
-  - ['vi', 'Vietnamese']
+  - ['ar', 'العربية']
+  - ['en', 'English']
+  - ['es-419', 'Español (Latinoamérica)']
+  - ['mn', 'Монгол хэл']
+  - ['ru', 'Русский']
+  - ['vi', 'Tiếng Việt']
+  - ['zh-cn', '中文 (简体)']
 EDXAPP_PASSWORD_COMPLEXITY:
   UPPER: 1
   LOWER: 1

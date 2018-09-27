@@ -1,4 +1,5 @@
 ---
+- debug: var=ANALYTICS_MYSQL_PASSWORD
 - debug: var=DEPLOYMENT_SSL_CERTIFICATE_ID
 - debug: var=CLUSTER_SUBNET
 - debug: var=CLUSTER_SUBNET_TAGS
@@ -110,3 +111,7 @@
 
 - include: instance.yml
   when: CLUSTER_SERVICE_TYPE == 'ec2'
+- include: emr.yml
+  when: CLUSTER_SERVICE_TYPE == 'emr'
+- include: rds.yml
+  when: CLUSTER_SERVICE_TYPE == 'rds'

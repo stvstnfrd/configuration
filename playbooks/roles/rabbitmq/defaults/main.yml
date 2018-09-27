@@ -23,6 +23,7 @@ RABBIT_ADMIN_PASSWORD: 'the example admin password'
 
 # Environment specific vars
 RABBIT_ERLANG_COOKIE: 'DEFAULT_COOKIE'
+RABBITMQ_USE_LONGNAME: false
 RABBIT_USERS:
   - name: 'admin'
     password: "{{ RABBIT_ADMIN_PASSWORD }}"

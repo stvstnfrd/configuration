@@ -1,5 +1,5 @@
 #!/usr/bin/env ansible-playbook
 ---
-- include: deploy1.yml
+- include: ./db-analytics1.yml
   vars:
     CLUSTER_NUMBER: 2

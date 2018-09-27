@@ -1,5 +1,7 @@
 #!/usr/bin/env ansible-playbook
 ---
+#
+# When running this playbook you must use '--skip-tags="jenkins-seed-job"'
 - include: ../playbooks/cluster.yml
   vars:
     CLUSTER_NAME: scheduler

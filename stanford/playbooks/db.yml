@@ -2,6 +2,8 @@
 ---
 - include: ../playbooks/cluster.yml
   vars:
-    CLUSTER_NAME: es
-    CLUSTER_SERVICE_TYPE: es
+    CLUSTER_EBS_SIZE: 5
+    CLUSTER_INSTANCE_TYPE: db.t2.medium
+    CLUSTER_NAME: db
+    CLUSTER_SERVICE_TYPE: 'rds'
   when: redeploy | default(False) | bool

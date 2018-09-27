@@ -1,0 +1,9 @@
+#!/usr/bin/env ansible-playbook
+---
+- include: ../playbooks/db.yml
+  vars:
+    CLUSTER_NUMBER: 1
+    CLUSTER_RDS_NAME: analytics
+    CLUSTER_RDS_PASSWORD: "{{ ANALYTICS_MYSQL_PASSWORD }}"
+    CLUSTER_RDS_USERNAME: "{{ ANALYTICS_MYSQL_USERNAME }}"
+    COMMON_DEPLOYMENT: suclass
