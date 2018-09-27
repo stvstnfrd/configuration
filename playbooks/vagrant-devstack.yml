@@ -59,3 +59,4 @@
       when: ENABLE_ELK
     - role: filebeat
       when: ENABLE_ELK
+    - neo4j

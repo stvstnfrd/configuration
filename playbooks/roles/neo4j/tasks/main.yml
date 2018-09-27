@@ -111,6 +111,16 @@
     - install
     - install:base
 
+- name: open bolt port
+  lineinfile:
+    create: yes
+    dest: "{{ neo4j_server_config_file }}"
+    regexp: "dbms.connector.bolt.address="
+    line: "dbms.connector.bolt.address=0.0.0.0:{{ neo4j_bolt_port }}"
+  tags:
+    - install
+    - install:configuration
+
 - name: restart neo4j
   service:
     name: neo4j
