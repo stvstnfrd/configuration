@@ -4,10 +4,13 @@
   vars:
     CLUSTER_SANDBOX_NAME: master
     COMMON_DEPLOYMENT: playground
+    configuration_version: master
     edx_platform_version: master
+    EDXAPP_COMPREHENSIVE_THEME_VERSION: master
     edxapp_theme_version: master
     EDXAPP_GRADE_STORAGE_KWARGS:
       location: /edx/var/edxapp/media/grades
       base_url: "{{ EDXAPP_LMS_ROOT_URL }}/media/grades"
+    forum_version: 'master'
     # Remember to enable:
     # /admin/self_paced/selfpacedconfiguration/
