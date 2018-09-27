@@ -13,8 +13,6 @@ EDXAPP_FEATURES_SHOW_ABOUT_LINK: false
 EDXAPP_LMS_BASE: 'suclass.stanford.edu'
 EDXAPP_LMS_BASE_SCHEME: 'https'
 EDXAPP_LMS_NGINX_PORT: 80
-EDXAPP_MKTG_URL_LINK_MAP:
-  FAQ: 'https://stanfordonline.zendesk.com/hc/en-us'
 EDXAPP_PREVIEW_LMS_BASE: "preview.{{ EDXAPP_LMS_SITE_NAME }}"
 EDXAPP_REGISTRATION_EXTRA_FIELDS:
   city: hidden
@@ -25,6 +23,12 @@ EDXAPP_REGISTRATION_EXTRA_FIELDS:
   level_of_education: hidden
   mailing_address: hidden
   year_of_birth: hidden
+EDXAPP_SOCIAL_SHARING_SETTINGS:
+  CUSTOM_COURSE_URLS: false
+  DASHBOARD_FACEBOOK: false
+  CERTIFICATE_FACEBOOK: false
+  CERTIFICATE_TWITTER: false
+  DASHBOARD_TWITTER: false
 ELASTICSEARCH_CLUSTER_MEMBERS:
   - "esforum1.{{ COMMON_DEPLOYMENT }}.vpc"
   - "esforum2.{{ COMMON_DEPLOYMENT }}.vpc"

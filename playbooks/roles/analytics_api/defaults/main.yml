@@ -20,7 +20,11 @@ ANALYTICS_API_PIP_EXTRA_ARGS: "-i {{ COMMON_PYPI_MIRROR_URL }}"
 ANALYTICS_API_NGINX_PORT: "18100"
 
 ANALYTICS_API_DEFAULT_DB_NAME: 'analytics-api'
+ANALYTICS_API_DEFAULT_MYSQL_OPTIONS:
+  connect_timeout: 10
 ANALYTICS_API_REPORTS_DB_NAME: 'reports'
+ANALYTICS_API_REPORTS_MYSQL_OPTIONS:
+  connect_timeout: 10
 
 ANALYTICS_API_DATABASES:
   # rw user
@@ -31,6 +35,7 @@ ANALYTICS_API_DATABASES:
     PASSWORD: 'password'
     HOST: 'localhost'
     PORT: '3306'
+    OPTIONS: "{{ ANALYTICS_API_DEFAULT_MYSQL_OPTIONS }}"
   # read-only user
   reports:
     ENGINE: 'django.db.backends.mysql'
@@ -39,6 +44,7 @@ ANALYTICS_API_DATABASES:
     PASSWORD: 'password'
     HOST: 'localhost'
     PORT: '3306'
+    OPTIONS: "{{ ANALYTICS_API_REPORTS_MYSQL_OPTIONS }}"
 
 ANALYTICS_API_VERSION: "master"
 # Default dummy user, override this!!
@@ -66,6 +72,7 @@ ANALYTICS_API_DATE_FORMAT: '%Y-%m-%d'
 ANALYTICS_API_DATETIME_FORMAT: '%Y-%m-%dT%H%M%S'
 ANALYTICS_API_DEFAULT_PAGE_SIZE: 25
 ANALYTICS_API_MAX_PAGE_SIZE: 100
+ANALYTICS_API_AGGREGATE_PAGE_SIZE: 10
 
 ANALYTICS_API_BASE_URL: 'http://localhost:8100'
 ANALYTICS_API_DATA_DIR: '{{ COMMON_DATA_DIR }}/{{ analytics_api_service_name }}'
@@ -109,8 +116,6 @@ ANALYTICS_API_SERVICE_CONFIG:
   STATICFILES_DIRS: ['static']
   STATIC_ROOT: "{{ COMMON_DATA_DIR }}/{{ analytics_api_service_name }}/staticfiles"
   # db config
-  DATABASE_OPTIONS:
-    connect_timeout: 10
   DATABASES: '{{ ANALYTICS_API_DATABASES }}'
   ELASTICSEARCH_LEARNERS_HOST: '{{ ANALYTICS_API_ELASTICSEARCH_LEARNERS_HOST }}'
   ELASTICSEARCH_LEARNERS_INDEX: '{{ ANALYTICS_API_ELASTICSEARCH_LEARNERS_INDEX }}'
@@ -123,6 +128,7 @@ ANALYTICS_API_SERVICE_CONFIG:
   DATETIME_FORMAT: '{{ ANALYTICS_API_DATETIME_FORMAT }}'
   DEFAULT_PAGE_SIZE: '{{ ANALYTICS_API_DEFAULT_PAGE_SIZE }}'
   MAX_PAGE_SIZE: '{{ ANALYTICS_API_MAX_PAGE_SIZE }}'
+  AGGREGATE_PAGE_SIZE: '{{ ANALYTICS_API_AGGREGATE_PAGE_SIZE }}'
   REPORT_DOWNLOAD_BACKEND: '{{ ANALYTICS_API_REPORT_DOWNLOAD_BACKEND }}'
 
 ANALYTICS_API_REPOS:
@@ -150,6 +156,8 @@ analytics_api_user: "{{ analytics_api_service_name }}"
 analytics_api_home: "{{ COMMON_APP_DIR }}/{{ analytics_api_service_name }}"
 analytics_api_code_dir: "{{ analytics_api_home }}/{{ analytics_api_service_name }}"
 analytics_api_conf_dir: "{{ analytics_api_home }}"
+analytics_api_venv_dir: "{{ analytics_api_home }}/venvs/{{ analytics_api_service_name }}"
+analytics_api_venv_bin: "{{ analytics_api_venv_dir }}/bin"
 
 analytics_api_gunicorn_host: "127.0.0.1"
 analytics_api_gunicorn_port: "8100"

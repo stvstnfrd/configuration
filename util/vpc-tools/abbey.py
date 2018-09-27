@@ -327,9 +327,9 @@ fi
 #
 # Bootstrapping constants
 #
-VIRTUAL_ENV_VERSION="15.0.2"
-PIP_VERSION="8.1.2"
-SETUPTOOLS_VERSION="24.0.3"
+VIRTUAL_ENV_VERSION="15.2.0"
+PIP_VERSION="9.0.3"
+SETUPTOOLS_VERSION="39.0.1"
 EDX_PPA="deb http://ppa.edx.org precise main"
 EDX_PPA_KEY_SERVER="keyserver.ubuntu.com"
 EDX_PPA_KEY_ID="B41E5E3969464050"
@@ -701,7 +701,7 @@ def create_ami(instance_id, name, description):
     params = {'instance_id': instance_id,
               'name': name,
               'description': description,
-              'no_reboot': True}
+              'no_reboot': False}
 
     AWS_API_WAIT_TIME = 1
     image_id = ec2.create_image(**params)
