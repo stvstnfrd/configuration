@@ -32,5 +32,6 @@ NOTIFIER_LOGO_IMAGE_URL: 'https://lagunita.stanford.edu/static/lagunita/images/l
 RABBITMQ_CLUSTERED_HOSTS:
   - "rabbit@rabbitmq1.{{ COMMON_DEPLOYMENT }}.vpc"
   - "rabbit@rabbitmq2.{{ COMMON_DEPLOYMENT }}.vpc"
+RABBITMQ_USE_LONGNAME: true
 TOPBEAT_LOGSTASH_HOST: ''
 XQUEUE_RABBITMQ_HOSTNAME: "rabbitmq.{{ COMMON_DEPLOYMENT }}.vpc"

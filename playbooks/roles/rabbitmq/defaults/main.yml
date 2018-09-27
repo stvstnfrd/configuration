@@ -75,3 +75,4 @@ rabbitmq_plugins:
   - rabbitmq_management
 
 rabbitmq_cron_timeout: 5
+RABBITMQ_USE_LONGNAME: false
