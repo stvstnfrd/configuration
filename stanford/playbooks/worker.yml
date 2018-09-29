@@ -2,6 +2,7 @@
 ---
 - include: ../playbooks/cluster.yml
   vars:
+    CLUSTER_INSTANCE_TYPE: 't2.medium'
     CLUSTER_NAME: worker
   when: redeploy | default(False) | bool
 - name: "Setup {{ COMMON_HOSTNAME }}"
