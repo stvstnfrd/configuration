@@ -6,6 +6,7 @@
     CLUSTER_INSTANCE_TAG_NAME: "{{ COMMON_DEPLOYMENT }}-box-{{ CLUSTER_NAME }}-{{ CLUSTER_SANDBOX_NAME }}"
     CLUSTER_INSTANCE_TYPE: t2.medium
     CLUSTER_NAME: sandbox
+    CLUSTER_NUMBER: 1
     CLUSTER_NETWORK: public
     CLUSTER_SANDBOX_NAME: master
   when: redeploy | default(False) | bool

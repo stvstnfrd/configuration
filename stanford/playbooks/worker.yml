@@ -4,6 +4,7 @@
   vars:
     CLUSTER_INSTANCE_TYPE: 't2.medium'
     CLUSTER_NAME: worker
+    CLUSTER_NUMBER: 1
   when: redeploy | default(False) | bool
 - name: "Setup {{ COMMON_HOSTNAME }}"
   hosts:
@@ -12,6 +13,7 @@
   become: true
   vars:
     CLUSTER_NAME: worker
+    CLUSTER_NUMBER: 1
     celery_worker: True
   vars_files:
     - "{{ COMMON_DEPLOYMENT_DIR }}/common.yaml"

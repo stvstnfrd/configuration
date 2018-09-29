@@ -3,6 +3,7 @@
 - include: ../playbooks/cluster.yml
   vars:
     CLUSTER_NAME: edxapp
+    CLUSTER_NUMBER: 1
   when: redeploy | default(False) | bool
 - name: "Setup {{ COMMON_HOSTNAME }}"
   hosts:
@@ -11,6 +12,7 @@
   become: true
   vars:
     CLUSTER_NAME: edxapp
+    CLUSTER_NUMBER: 1
     nginx_sites:
      - lms
      - cms

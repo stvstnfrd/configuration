@@ -4,6 +4,7 @@
   vars:
     CLUSTER_INSTANCE_TYPE: 'r4.large'
     CLUSTER_NAME: coursegraph
+    CLUSTER_NUMBER: 1
   when: redeploy | default(False) | bool
 - name: "Setup {{ COMMON_HOSTNAME }}"
   hosts:
@@ -12,6 +13,7 @@
   become: true
   vars:
     CLUSTER_NAME: coursegraph
+    CLUSTER_NUMBER: 1
   vars_files:
     - "{{ COMMON_DEPLOYMENT_DIR }}/common.yaml"
   roles:

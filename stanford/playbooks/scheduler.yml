@@ -5,6 +5,7 @@
 - include: ../playbooks/cluster.yml
   vars:
     CLUSTER_NAME: scheduler
+    CLUSTER_NUMBER: 1
   when: redeploy | default(False) | bool
 
 - name: Deploy scheduler service
@@ -14,6 +15,7 @@
   become: True
   vars:
     CLUSTER_NAME: scheduler
+    CLUSTER_NUMBER: 1
   vars_files:
     - "{{ COMMON_DEPLOYMENT_DIR }}/common.yaml"
     - "{{ COMMON_DEPLOYMENT_DIR }}/{{ CLUSTER_NAME }}.yml"

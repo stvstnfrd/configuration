@@ -4,6 +4,7 @@
   vars:
     ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p {{ ansible_jumpbox }}"'
     CLUSTER_NAME: build
+    CLUSTER_NUMBER: 1
   when: redeploy | default(False) | bool
 - name: "Setup {{ COMMON_HOSTNAME }}"
   hosts:
@@ -13,6 +14,7 @@
   vars:
     ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p {{ ansible_jumpbox }}"'
     CLUSTER_NAME: build
+    CLUSTER_NUMBER: 1
     jenkins_server_name: '_'
   vars_files:
     - "{{ COMMON_DEPLOYMENT_DIR }}/common.yaml"
