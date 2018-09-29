@@ -181,6 +181,10 @@ CLUSTER_SECURITY_GROUP_RULES:
       from_port: 80
       to_port: 80
       cidr_ip: '0.0.0.0/0'
+    - proto: tcp
+      from_port: 443
+      to_port: 443
+      cidr_ip: '0.0.0.0/0'
   emr: "{{ cluster_emr_internal_group_rules_master }}"
   esforum:
     - proto: tcp
