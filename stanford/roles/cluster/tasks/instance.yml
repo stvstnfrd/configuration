@@ -39,6 +39,7 @@
     name: "{{ cluster_ansible_host }}"
     groups:
       - cluster_group_launched
+      - "{{ CLUSTER_NAME }}{{ CLUSTER_NUMBER }}"
       - tag_todo_deploy
       - "tag_Deployment_{{ COMMON_DEPLOYMENT }}"
       - "tag_Cluster_{{ CLUSTER_NAME }}"
