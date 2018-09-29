@@ -1,4 +1,4 @@
-- hosts: "tag_Deployment_{{ COMMON_DEPLOYMENT }}"
+- hosts: all
   become: True
   vars:
     - user_info: "{{ COMMON_USER_INFO }}"

@@ -39,11 +39,8 @@
     name: "{{ cluster_ansible_host }}"
     groups:
       - cluster_group_launched
-      - tag_todo_deploy
-      - "tag_Deployment_{{ COMMON_DEPLOYMENT }}"
-      - "tag_Cluster_{{ CLUSTER_NAME }}"
-      - "tag_Number_{{ CLUSTER_NUMBER }}"
-      - "tag_Name_{{ CLUSTER_INSTANCE_TAG_NAME }}"
+      - "{{ CLUSTER_NAME }}"
+      - "{{ CLUSTER_NAME }}{{ CLUSTER_NUMBER }}"
 - name: Set initial hostname
   route53:
     command: create
