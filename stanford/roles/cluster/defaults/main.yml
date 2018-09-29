@@ -409,7 +409,7 @@ CLUSTER_ELBS:
       group:
         name: "{{ COMMON_DEPLOYMENT }}-group-forum-elb-private"
         rules:
-          - proto: http
+          - proto: tcp
             from_port: 80
             to_port: 80
             cidr_ip: "{{ DEPLOYMENT_CIDR }}"
