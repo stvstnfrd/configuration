@@ -4,6 +4,7 @@
   vars:
     CLUSTER_ASSIGN_PUBLIC_IP: yes
     CLUSTER_NAME: jump
+    CLUSTER_NUMBER: 1
     CLUSTER_NETWORK: public
   when: redeploy | default(False) | bool
 - name: 'Setup jumpbox'
@@ -13,6 +14,7 @@
   become: true
   vars:
     CLUSTER_NAME: jump
+    CLUSTER_NUMBER: 1
     CLUSTER_NETWORK: public
   vars_files:
     - "{{ COMMON_DEPLOYMENT_DIR }}/common.yaml"

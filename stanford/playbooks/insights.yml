@@ -3,6 +3,7 @@
 - include: ../playbooks/cluster.yml
   vars:
     CLUSTER_NAME: insights
+    CLUSTER_NUMBER: 1
   when: redeploy | default(False) | bool
 
 - name: Deploy insights service
@@ -12,6 +13,7 @@
   become: True
   vars:
     CLUSTER_NAME: insights
+    CLUSTER_NUMBER: 1
     COMMON_MYSQL_MIGRATE_PASS: "{{ ANALYTICS_MYSQL_PASSWORD }}"
     COMMON_MYSQL_MIGRATE_USER: "{{ ANALYTICS_MYSQL_USERNAME }}"
     INSIGHTS_CMS_BASE: "{{ EDXAPP_LMS_BASE_SCHEME }}://{{ EDXAPP_CMS_BASE }}"
