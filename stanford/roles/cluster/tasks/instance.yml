@@ -39,6 +39,7 @@
     name: "{{ cluster_ansible_host }}"
     groups:
       - cluster_group_launched
+      - "{{ CLUSTER_NAME }}"
       - "{{ CLUSTER_NAME }}{{ CLUSTER_NUMBER }}"
 - name: Set initial hostname
   route53:
