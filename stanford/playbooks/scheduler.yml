@@ -22,3 +22,5 @@
   roles:
     - role: jenkins_analytics
       tags: jenkins_analytics
+- include: ../playbooks/ami.yml
+  when: redeploy | default(False) | bool

@@ -25,3 +25,5 @@
         - xqueue
     - role: xqueue
       tags: xqueue
+- include: ../playbooks/ami.yml
+  when: redeploy | default(False) | bool

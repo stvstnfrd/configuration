@@ -23,3 +23,5 @@
       tags: common
     - role: filebeat
       when: FILEBEAT_LOGSTASH_HOST != ""
+- include: ../playbooks/ami.yml
+  when: redeploy | default(False) | bool

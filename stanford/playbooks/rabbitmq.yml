@@ -19,3 +19,5 @@
   roles:
     - supervisor
     - rabbitmq
+- include: ../playbooks/ami.yml
+  when: redeploy | default(False) | bool
