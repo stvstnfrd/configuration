@@ -18,3 +18,5 @@
     - "{{ COMMON_DEPLOYMENT_DIR }}/common.yaml"
   roles:
     - neo4j
+- include: ../playbooks/ami.yml
+  when: redeploy | default(False) | bool

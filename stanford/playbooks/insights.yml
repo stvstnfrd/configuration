@@ -53,3 +53,5 @@
       apt: name=libffi-dev state=present
     - name: 'Install make'
       apt: name=make state=present
+- include: ../playbooks/ami.yml
+  when: redeploy | default(False) | bool

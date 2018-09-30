@@ -23,3 +23,5 @@
   roles:
     - role: edxapp
       tags: edxapp
+- include: ../playbooks/ami.yml
+  when: redeploy | default(False) | bool

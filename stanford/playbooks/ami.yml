@@ -1,0 +1,19 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Create AMI
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  vars_files:
+    - '../roles/cluster/defaults/main.yml'
+  tasks:
+    - name: Create AMI from new image
+      local_action:
+        module: ec2_ami
+        region: "{{ CLUSTER_REGION }}"
+        instance_id: "{{ item.id }}"
+        wait: yes
+        name: "{{ item.tags.Deployment }}-ami-{{ item.tags.Cluster }}-{{ item.tags.Number }}-{{ item.tags.Birthday | regex_replace('[^-0-9]', '-') }}"
+        tags: "{{ item.tags }}"
+      with_items: "{{ ec2.instances | default([])}}"
+      register: cluster_ami

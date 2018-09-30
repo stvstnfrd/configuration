@@ -19,3 +19,5 @@
   roles:
     - role: certs
       tags: certs
+- include: ../playbooks/ami.yml
+  when: redeploy | default(False) | bool

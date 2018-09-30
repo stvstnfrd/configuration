@@ -21,3 +21,5 @@
   roles:
     - deploy_manually
     - role: jenkins_master
+- include: ../playbooks/ami.yml
+  when: redeploy | default(False) | bool
