@@ -40,11 +40,6 @@
     groups:
       - cluster_group_launched
       - "{{ CLUSTER_NAME }}{{ CLUSTER_NUMBER }}"
-      - tag_todo_deploy
-      - "tag_Deployment_{{ COMMON_DEPLOYMENT }}"
-      - "tag_Cluster_{{ CLUSTER_NAME }}"
-      - "tag_Number_{{ CLUSTER_NUMBER }}"
-      - "tag_Name_{{ CLUSTER_INSTANCE_TAG_NAME }}"
 - name: Set initial hostname
   route53:
     command: create
