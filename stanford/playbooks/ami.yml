@@ -5,7 +5,7 @@
   connection: local
   gather_facts: False
   vars_files:
-    - "../roles/cluster/defaults/main.yml"
+    - '../roles/cluster/defaults/main.yml'
   tasks:
     - name: Create AMI from new image
       local_action:
