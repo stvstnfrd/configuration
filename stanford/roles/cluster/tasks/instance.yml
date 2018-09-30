@@ -13,7 +13,7 @@
       Deployment: "{{ COMMON_DEPLOYMENT }}"
       Name: "{{ CLUSTER_INSTANCE_TAG_NAME }}"
       Number: "{{ CLUSTER_NUMBER }}"
-      todo: deploy
+      Release: "{{ CLUSTER_RELEASE }}"
     groups: "{{ CLUSTER_SECURITY_GROUPS }}"
     region: "{{ CLUSTER_REGION }}"
     volumes:
