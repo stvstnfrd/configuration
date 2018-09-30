@@ -1,0 +1,7 @@
+#!/bin/sh
+./rabbitmq1.yml -e CLUSTER_NUMBER=2 -e redeploy=yes ${@}
+./xqueue1.yml   -e CLUSTER_NUMBER=2 -e redeploy=yes ${@}
+./forum1.yml    -e CLUSTER_NUMBER=2 -e redeploy=yes ${@}
+./notifier1.yml -e CLUSTER_NUMBER=2 -e redeploy=yes -e migrate_db=yes ${@}
+./worker1.yml   -e CLUSTER_NUMBER=2 -e redeploy=yes ${@}
+./edxapp1.yml   -e CLUSTER_NUMBER=2 -e redeploy=yes ${@}
