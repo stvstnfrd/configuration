@@ -79,6 +79,7 @@ EDXAPP_FEATURES_SEND_USERS_EMAILADDR_WITH_CODERESPONSE: true
 EDXAPP_FEATURES_SHOW_ABOUT_LINK: true
 EDXAPP_FEATURES_STORE_BILLING_INFO: false
 EDXAPP_FEATURES_USE_MICROSITES: false
+EDXAPP_FOOTER_DISCLAIMER_TEXT: 'Stanford University pursues the science of learning. Online learners are important participants in that pursuit. The information we gather from your engagement with our instructional offerings makes it possible for faculty, researchers, designers and engineers to continuously improve their work and, in that process, build learning science.'
 EDXAPP_FORCED_TPA_PROVIDER_ID: ''
 EDXAPP_FORUM_MONGO_PARAMS:
   database: "{{ FORUM_MONGO_DATABASE }}"
@@ -396,6 +397,7 @@ EDXAPP_FEATURES: &edxapp_features
   ENABLED_PAYMENT_REPORTS: "{{ EDXAPP_FEATURES_ENABLED_PAYMENT_REPORTS }}"
   ENFORCE_PASSWORD_POLICY: true
   ENTRANCE_EXAMS: true
+  FOOTER_DISCLAIMER_TEXT: "{{ EDXAPP_FOOTER_DISCLAIMER_TEXT }}"
   INDIVIDUAL_DUE_DATES: true
   MAX_ENROLLMENT_INSTR_BUTTONS: 1000
   MILESTONES_APP: true
