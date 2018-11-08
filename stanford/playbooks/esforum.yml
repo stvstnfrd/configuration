@@ -4,7 +4,7 @@
   vars:
     CLUSTER_NAME: esforum
   when: redeploy | default(False) | bool
-- name: "Setup {{ COMMON_HOSTNAME }}"
+- name: "Setup {{ CLUSTER_NAME }}"
   hosts: "tag_Cluster_{{ CLUSTER_NAME }}:&tag_todo_deploy:&tag_Deployment_{{ COMMON_DEPLOYMENT }}:&tag_Number_{{ CLUSTER_NUMBER }}"
   gather_facts: True
   become: true

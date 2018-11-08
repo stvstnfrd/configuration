@@ -5,7 +5,7 @@
     CLUSTER_NAME: xqueue
     CLUSTER_NUMBER: 1
   when: redeploy | default(False) | bool
-- name: "Setup {{ COMMON_HOSTNAME }}"
+- name: "Setup {{ CLUSTER_NAME }}"
   hosts:
     - "{{ CLUSTER_NAME }}{{ CLUSTER_NUMBER }}[-1]"
   gather_facts: True
