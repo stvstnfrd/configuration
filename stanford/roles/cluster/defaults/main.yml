@@ -17,6 +17,7 @@ CLUSTER_KEY: "{{ COMMON_DEPLOYMENT }}-key-deploy"
 CLUSTER_NAME: 'TODO'
 CLUSTER_NUMBER: 1
 CLUSTER_REGION: 'us-west-1'
+CLUSTER_RELEASE: ginkgo
 CLUSTER_SECURITY_GROUPS:
   - "{{ CLUSTER_SECURITY_GROUP }}"
 
@@ -180,6 +181,10 @@ CLUSTER_SECURITY_GROUP_RULES:
     - proto: tcp
       from_port: 80
       to_port: 80
+      cidr_ip: '0.0.0.0/0'
+    - proto: tcp
+      from_port: 443
+      to_port: 443
       cidr_ip: '0.0.0.0/0'
   emr: "{{ cluster_emr_internal_group_rules_master }}"
   esforum:
@@ -409,7 +414,7 @@ CLUSTER_ELBS:
       group:
         name: "{{ COMMON_DEPLOYMENT }}-group-forum-elb-private"
         rules:
-          - proto: http
+          - proto: tcp
             from_port: 80
             to_port: 80
             cidr_ip: "{{ DEPLOYMENT_CIDR }}"

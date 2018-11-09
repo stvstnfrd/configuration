@@ -1,0 +1,8 @@
+#!/bin/sh
+./rabbitmq1.yml -e CLUSTER_NUMBER=2 -e redeploy=yes ${@} > build-rabbitmq2.log &
+./xqueue1.yml   -e CLUSTER_NUMBER=2 -e redeploy=yes ${@} > build-xqueue2.log &
+./forum1.yml    -e CLUSTER_NUMBER=2 -e redeploy=yes ${@} > build-forum2.log &
+./notifier1.yml -e CLUSTER_NUMBER=2 -e redeploy=yes -e migrate_db=yes ${@} > build-notifier2.log &
+./worker1.yml   -e CLUSTER_NUMBER=2 -e redeploy=yes ${@} > build-worker2.log &
+./edxapp1.yml   -e CLUSTER_NUMBER=2 -e redeploy=yes ${@} > build-edxapp2.log &
+wait

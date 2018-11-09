@@ -2,5 +2,4 @@
 ---
 - include: ../playbooks/notifier.yml
   vars:
-    CLUSTER_NUMBER: 1
     COMMON_DEPLOYMENT: lagunita
