@@ -1,5 +1,5 @@
 ---
-CLUSTER_AMI: 'ami-07585467'
+CLUSTER_AMI: 'ami-0ad16744583f21877'
 CLUSTER_ASSIGN_PUBLIC_IP: no
 CLUSTER_EBS_SIZE: 16
 CLUSTER_ELB_GROUPS: "{{ CLUSTER_SECURITY_GROUPS }}"
@@ -17,6 +17,7 @@ CLUSTER_KEY: "{{ COMMON_DEPLOYMENT }}-key-deploy"
 CLUSTER_NAME: 'TODO'
 CLUSTER_NUMBER: 1
 CLUSTER_REGION: 'us-west-1'
+CLUSTER_RELEASE: ginkgo
 CLUSTER_SECURITY_GROUPS:
   - "{{ CLUSTER_SECURITY_GROUP }}"
 
@@ -37,6 +38,11 @@ CLUSTER_SUBNETS:
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.125.0/24"
     - zone: 'us-west-1c'
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.126.0/24"
+  coursegraph:
+    - zone: 'us-west-1a'
+      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.215.0/24"
+    - zone: 'us-west-1c'
+      cidr: "{{ DEPLOYMENT_CIDR_BASE }}.216.0/24"
   certs:
     - zone: 'us-west-1a'
       cidr: "{{ DEPLOYMENT_CIDR_BASE }}.85.0/24"
@@ -144,6 +150,19 @@ CLUSTER_SECURITY_GROUP_RULES:
       from_port: 22
       to_port: 22
       cidr_ip: 0.0.0.0/0
+  coursegraph:
+    - proto: tcp
+      from_port: 22
+      to_port: 22
+      cidr_ip: "{{ DEPLOYMENT_CIDR }}"
+    - proto: tcp
+      from_port: 7474
+      to_port: 7474
+      cidr_ip: "{{ DEPLOYMENT_CIDR }}"
+    - proto: tcp
+      from_port: 7687
+      to_port: 7687
+      cidr_ip: "{{ DEPLOYMENT_CIDR }}"
   db:
     - proto: tcp
       from_port: 3306
@@ -163,6 +182,10 @@ CLUSTER_SECURITY_GROUP_RULES:
       from_port: 80
       to_port: 80
       cidr_ip: '0.0.0.0/0'
+    - proto: tcp
+      from_port: 443
+      to_port: 443
+      cidr_ip: '0.0.0.0/0'
   emr: "{{ cluster_emr_internal_group_rules_master }}"
   esforum:
     - proto: tcp
@@ -172,6 +195,14 @@ CLUSTER_SECURITY_GROUP_RULES:
     - proto: tcp
       from_port: 22
       to_port: 22
+      cidr_ip: "{{ DEPLOYMENT_CIDR }}"
+    - proto: tcp
+      from_port: 80
+      to_port: 80
+      cidr_ip: "{{ DEPLOYMENT_CIDR }}"
+    - proto: tcp
+      from_port: 443
+      to_port: 443
       cidr_ip: "{{ DEPLOYMENT_CIDR }}"
   forum:
     - proto: tcp
@@ -383,7 +414,7 @@ CLUSTER_ELBS:
       group:
         name: "{{ COMMON_DEPLOYMENT }}-group-forum-elb-private"
         rules:
-          - proto: http
+          - proto: tcp
             from_port: 80
             to_port: 80
             cidr_ip: "{{ DEPLOYMENT_CIDR }}"

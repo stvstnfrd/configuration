@@ -3,16 +3,21 @@
 - include: ../playbooks/cluster.yml
   vars:
     CLUSTER_NAME: notifier
+    CLUSTER_NUMBER: 1
   when: redeploy | default(False) | bool
-- name: "Setup {{ COMMON_HOSTNAME }}"
-  hosts: "tag_Cluster_{{ CLUSTER_NAME }}:&tag_todo_deploy:&tag_Deployment_{{ COMMON_DEPLOYMENT }}:&tag_Number_{{ CLUSTER_NUMBER }}"
+- name: "Setup {{ CLUSTER_NAME }}"
+  hosts:
+    - "{{ CLUSTER_NAME }}{{ CLUSTER_NUMBER }}[-1]"
   gather_facts: True
   become: true
   vars:
     CLUSTER_NAME: notifier
+    CLUSTER_NUMBER: 1
   vars_files:
     - "{{ COMMON_DEPLOYMENT_DIR }}/common.yaml"
     - "{{ COMMON_DEPLOYMENT_DIR }}/{{ CLUSTER_NAME }}.yml"
   roles:
     - role: notifier
       tags: notifier
+- include: ../playbooks/ami.yml
+  when: redeploy | default(False) | bool

@@ -22,7 +22,7 @@ if [[ -z "${ANSIBLE_VERSION}" ]]; then
 fi
 
 if [[ -z "${CONFIGURATION_REPO}" ]]; then
-  CONFIGURATION_REPO="https://github.com/edx/configuration.git"
+  CONFIGURATION_REPO="https://github.com/Stanford-Online/configuration.git"
 fi
 
 if [[ -z "${CONFIGURATION_VERSION}" ]]; then
@@ -40,9 +40,9 @@ fi
 #
 # Bootstrapping constants
 #
-VIRTUAL_ENV_VERSION="15.0.2"
-PIP_VERSION="8.1.2"
-SETUPTOOLS_VERSION="24.0.3"
+VIRTUAL_ENV_VERSION="15.2.0"
+PIP_VERSION="9.0.3"
+SETUPTOOLS_VERSION="39.0.1"
 VIRTUAL_ENV="/tmp/bootstrap"
 PYTHON_BIN="${VIRTUAL_ENV}/bin"
 ANSIBLE_DIR="/tmp/ansible"
@@ -123,7 +123,7 @@ apt-get install -y python2.7 python2.7-dev python-pip python-apt python-yaml pyt
 # potentially downgrade to the preferred version.
 if [[ "xenial" = "${SHORT_DIST}" ]]; then
     #apt-get install -y python2.7 python2.7-dev python-pip python-apt python-yaml python-jinja2
-    pip install --upgrade pip
+    # pip install --upgrade pip
     pip install --upgrade pip=="${PIP_VERSION}"
     #apt-get install -y build-essential sudo git-core libmysqlclient-dev
 else
@@ -151,7 +151,7 @@ if [[ "true" == "${RUN_ANSIBLE}" ]]; then
     make requirements
 
     cd "${CONFIGURATION_DIR}"/playbooks/edx-east
-    "${PYTHON_BIN}"/ansible-playbook edx_ansible.yml -i '127.0.0.1,' -c local -e "configuration_version=${CONFIGURATION_VERSION}"
+    "${PYTHON_BIN}"/ansible-playbook edx_ansible.yml -i '127.0.0.1,' -c local -e "configuration_version=${CONFIGURATION_VERSION}" -e "edx_ansible_source_repo=${CONFIGURATION_REPO}" -vvvv
 
     # cleanup
     rm -rf "${ANSIBLE_DIR}"

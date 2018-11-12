@@ -1,0 +1,13 @@
+#!/bin/sh
+./rabbitmq1.yml -e redeploy=yes ${@} > build-rabbitmq1.log &
+./rabbitmq2.yml -e redeploy=yes ${@} > build-rabbitmq2.log &
+./xqueue1.yml   -e redeploy=yes ${@} > build-xqueue1.log &
+./xqueue2.yml   -e redeploy=yes ${@} > build-xqueue2.log &
+./forum1.yml    -e redeploy=yes ${@} > build-forum1.log &
+./forum2.yml    -e redeploy=yes ${@} > build-forum2.log &
+./notifier1.yml -e redeploy=yes -e migrate_db=yes ${@} > build-notifier1.log &
+./worker1.yml   -e redeploy=yes ${@} > build-worker1.log &
+./worker2.yml   -e redeploy=yes ${@} > build-worker2.log &
+./edxapp1.yml   -e redeploy=yes ${@} > build-edxapp1.log &
+./edxapp2.yml   -e redeploy=yes ${@} > build-edxapp2.log &
+wait

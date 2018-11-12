@@ -3,10 +3,12 @@
 - include: ../playbooks/cluster.yml
   vars:
     CLUSTER_NAME: analytics-api
+    CLUSTER_NUMBER: 1
   when: redeploy | default(False) | bool
 
 - name: Deploy analytics-api service
-  hosts: "tag_Cluster_{{ CLUSTER_NAME }}:&tag_todo_deploy:&tag_Deployment_{{ COMMON_DEPLOYMENT }}:&tag_Number_{{ CLUSTER_NUMBER }}"
+  hosts:
+    - "{{ CLUSTER_NAME }}{{ CLUSTER_NUMBER }}[-1]"
   gather_facts: True
   become: True
   vars:
@@ -29,6 +31,7 @@
     ANALYTICS_API_NGINX_PORT: '80'
     ANALYTICS_API_VERSION: 'rc'
     CLUSTER_NAME: analytics-api
+    CLUSTER_NUMBER: 1
     COMMON_GIT_PATH: 'Stanford-Online'
     COMMON_MYSQL_MIGRATE_PASS: "{{ ANALYTICS_MYSQL_PASSWORD }}"
     COMMON_MYSQL_MIGRATE_USER: "{{ ANALYTICS_MYSQL_USERNAME }}"
@@ -54,3 +57,5 @@
       apt: name=libffi-dev state=present
     - name: 'Install make'
       apt: name=make state=present
+- include: ../playbooks/ami.yml
+  when: redeploy | default(False) | bool

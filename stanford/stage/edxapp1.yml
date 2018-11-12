@@ -2,6 +2,5 @@
 ---
 - include: ../playbooks/edxapp.yml
   vars:
-    CLUSTER_INSTANCE_TYPE: t2.xlarge
-    CLUSTER_NUMBER: 1
+    CLUSTER_INSTANCE_TYPE: t2.large
     COMMON_DEPLOYMENT: stage

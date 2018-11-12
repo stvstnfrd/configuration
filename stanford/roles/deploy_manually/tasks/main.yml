@@ -1,0 +1,54 @@
+---
+- name: Checkout configuration code globally
+  git:
+    repo: 'https://github.com/{{ DEPLOY_MANUALLY_REPO_USER }}/configuration.git'
+    dest: "{{ deploy_manually_path_config_src }}"
+    version: "{{ DEPLOY_MANUALLY_VERSION_CONFIG }}"
+  tags:
+    - src
+- name: Install mysql-client
+  apt:
+    name: libmysqlclient-dev
+    state: present
+- name: Install python packages globally
+  pip:
+    chdir: "{{ deploy_manually_path_config_src }}"
+    requirements: requirements.txt
+  tags:
+    - requirements
+- name: Checkout configuration code for each user (team)
+  git:
+    remote: origin
+    repo: "https://github.com/{{ DEPLOY_MANUALLY_REPO_USER }}/configuration.git"
+    dest: "/home/{{ item.name }}{{ deploy_manually_path_config_src }}"
+    version: "{{ DEPLOY_MANUALLY_VERSION_CONFIG }}"
+  become: true
+  become_user: "{{ item.name }}"
+  ignore_errors: yes
+  when: item.type is defined and item.type == 'admin'
+  with_items: "{{ COMMON_USER_INFO }}"
+  tags:
+    - users
+    - src
+- name: Add remote for personal fork
+  command: "git remote add {{ item.name }} https://github.com/{{ item.name }}/configuration.git"
+  args:
+    chdir: "/home/{{ item.name }}{{ deploy_manually_path_config_src }}"
+  become: true
+  become_user: "{{ item.name }}"
+  register: command_result
+  failed_when: command_result.stderr and 'already exists' not in command_result.stderr
+  when: item.type is defined and item.type == 'admin'
+  with_items: "{{ COMMON_USER_INFO }}"
+  tags:
+    - users
+    - src
+- name: Add deploy helper scripts
+  lineinfile:
+    create: yes
+    dest: "/home/{{ item.name }}/.bashrc"
+    line: "source ${HOME}{{ deploy_manually_path_config_src }}/stanford/bin/startup.sh"
+  when: item.type is defined and item.type == 'admin'
+  with_items: "{{ COMMON_USER_INFO }}"
+  tags:
+    - startup

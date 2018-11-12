@@ -3,5 +3,4 @@
 - include: ../playbooks/worker.yml
   vars:
     CLUSTER_INSTANCE_TYPE: r4.xlarge
-    CLUSTER_NUMBER: 1
     COMMON_DEPLOYMENT: lagunita

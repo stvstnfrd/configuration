@@ -4,14 +4,17 @@
   vars:
     CLUSTER_ASSIGN_PUBLIC_IP: yes
     CLUSTER_NAME: jump
+    CLUSTER_NUMBER: 1
     CLUSTER_NETWORK: public
   when: redeploy | default(False) | bool
 - name: 'Setup jumpbox'
-  hosts: "tag_Cluster_jump:&tag_todo_deploy:&tag_Deployment_{{ COMMON_DEPLOYMENT }}:&tag_Number_{{ CLUSTER_NUMBER }}"
+  hosts:
+    - "{{ CLUSTER_NAME }}{{ CLUSTER_NUMBER }}[-1]"
   gather_facts: True
   become: true
   vars:
     CLUSTER_NAME: jump
+    CLUSTER_NUMBER: 1
     CLUSTER_NETWORK: public
   vars_files:
     - "{{ COMMON_DEPLOYMENT_DIR }}/common.yaml"
@@ -20,3 +23,5 @@
       tags: common
     - role: filebeat
       when: FILEBEAT_LOGSTASH_HOST != ""
+- include: ../playbooks/ami.yml
+  when: redeploy | default(False) | bool
