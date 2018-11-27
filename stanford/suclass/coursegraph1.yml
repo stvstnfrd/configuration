@@ -1,0 +1,5 @@
+#!/usr/bin/env ansible-playbook
+---
+- include: ../playbooks/coursegraph.yml
+  vars:
+    COMMON_DEPLOYMENT: suclass
