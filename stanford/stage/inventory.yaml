@@ -44,7 +44,7 @@ all:
             edxapp1.stage.vpc:
         edxapp2:
           hosts:
-            new.edxapp2.stage.vpc:
+            edxapp2.stage.vpc:
     forum:
       children:
         forum1:
@@ -52,7 +52,7 @@ all:
             forum1.stage.vpc:
         forum2:
           hosts:
-            new.forum2.stage.vpc:
+            forum2.stage.vpc:
     notifier:
       children:
         notifier1:
@@ -60,7 +60,7 @@ all:
             notifier1.stage.vpc:
         notifier2:
           hosts:
-            new.notifier2.stage.vpc:
+            notifier2.stage.vpc:
     rabbitmq:
       children:
         rabbitmq1:
@@ -68,7 +68,7 @@ all:
             rabbitmq1.stage.vpc:
         rabbitmq2:
           hosts:
-            new.rabbitmq2.stage.vpc:
+            rabbitmq2.stage.vpc:
     worker:
       children:
         worker1:
@@ -76,7 +76,7 @@ all:
             worker1.stage.vpc:
         worker2:
           hosts:
-            new.worker2.stage.vpc:
+            worker2.stage.vpc:
     xqueue:
       children:
         xqueue1:
@@ -84,4 +84,4 @@ all:
             xqueue1.stage.vpc:
         xqueue2:
           hosts:
-            new.xqueue2.stage.vpc:
+            xqueue2.stage.vpc:
