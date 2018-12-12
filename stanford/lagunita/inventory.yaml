@@ -26,6 +26,9 @@ all:
             coursegraph1.lagunita.vpc:
     edxapp:
       children:
+        edxapp0:
+          hosts:
+            edxapp0.lagunita.vpc:
         edxapp1:
           hosts:
             edxapp1.lagunita.vpc:
