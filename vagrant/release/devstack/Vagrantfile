@@ -28,6 +28,7 @@ MOUNT_DIRS = {
   :edx_platform => {:repo => "edx-platform", :local => "/edx/app/edxapp/edx-platform", :owner => "edxapp"},
   :themes => {:repo => "themes", :local => "/edx/app/edxapp/themes", :owner => "edxapp"},
   :comprehensive_themes => {:repo => "comprehensive_themes", :local => "/edx/app/edxapp/comprehensive_themes", :owner => "edxapp"},
+  :xblocks => {:repo => "xblocks", :local => "/edx/app/edxapp/xblocks", :owner => "edxapp"},
   :forum => {:repo => "cs_comments_service", :local => "/edx/app/forum/cs_comments_service", :owner => "forum"},
   :ecommerce => {:repo => "ecommerce", :local => "/edx/app/ecommerce/ecommerce", :owner => "ecommerce"},
   :ecommerce_worker => {:repo => "ecommerce-worker", :local => "/edx/app/ecommerce_worker/ecommerce_worker", :owner => "ecommerce_worker"},
@@ -123,8 +124,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   # Creates an edX devstack VM from an official release
-  config.vm.box     = 'stanford-openedx-devstack_2017-09-28-14-25-25'
-  config.vm.box_url = 'https://s3-us-west-1.amazonaws.com/stanford-vagrant/stanford-openedx-devstack_2017-09-28-14-25-25.box'
+  config.vm.box     = 'stanford-openedx-devstack_2019-01-10-15-06-14'
+  config.vm.box_url = 'https://s3-us-west-1.amazonaws.com/stanford-vagrant/stanford-openedx-devstack_2019-01-10-15-06-14.box'
   config.vm.box_check_update = false
 
   config.vm.network :private_network, ip: "192.168.33.10", nic_type: "virtio"
