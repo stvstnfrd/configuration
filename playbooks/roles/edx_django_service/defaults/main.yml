@@ -16,7 +16,9 @@ edx_django_service_name_devstack_logs:
   - '{{ supervisor_log_dir }}/{{ edx_django_service_name }}-stdout.log'
   - '{{ supervisor_log_dir }}/{{ edx_django_service_name }}-stderr.log'
 
-
+edx_django_service_git_protocol: '{{ COMMON_GIT_PROTOCOL }}'
+edx_django_service_git_domain: '{{ COMMON_GIT_MIRROR }}'
+edx_django_service_git_path: '{{ COMMON_GIT_PATH }}'
 edx_django_service_version: 'master'
 edx_django_service_git_identity: null
 edx_django_service_django_settings_module: null
@@ -66,6 +68,10 @@ nginx_edx_django_service_gunicorn_hosts:
 
 edx_django_service_hostname: '~^((stage|prod)-)?{{ edx_django_service_name }}.*'
 edx_django_service_nginx_port: '1{{ edx_django_service_gunicorn_port }}'
+
+EDX_DJANGO_SERVICE_ENABLE_S3_MAINTENANCE: false
+EDX_DJANGO_SERVICE_S3_MAINTENANCE_FILE: "/edx-static/maintenance/maintenance.html"
+
 edx_django_service_ssl_nginx_port: '4{{ edx_django_service_gunicorn_port }}'
 edx_django_service_enable_basic_auth: false
 edx_django_service_basic_auth_exempted_paths_default:
@@ -76,9 +82,9 @@ edx_django_service_basic_auth_exempted_paths: '{{ edx_django_service_basic_auth_
 edx_django_service_newrelic_appname: '{{ COMMON_ENVIRONMENT }}-{{ COMMON_DEPLOYMENT }}-{{ edx_django_service_name }}'
 
 edx_django_service_repos:
-  - PROTOCOL: '{{ COMMON_GIT_PROTOCOL }}'
-    DOMAIN: '{{ COMMON_GIT_MIRROR }}'
-    PATH: '{{ COMMON_GIT_PATH }}'
+  - PROTOCOL: '{{ edx_django_service_git_protocol }}'
+    DOMAIN: '{{ edx_django_service_git_domain }}'
+    PATH: '{{ edx_django_service_git_path }}'
     REPO: '{{ edx_django_service_repo }}.git'
     VERSION: '{{ edx_django_service_version }}'
     DESTINATION: '{{ edx_django_service_code_dir }}'
@@ -114,6 +120,7 @@ edx_django_service_db_user: 'REPLACE-ME'
 edx_django_service_db_password: 'password'
 edx_django_service_db_options:
   connect_timeout: 10
+  init_command: "SET sql_mode='STRICT_TRANS_TABLES'"
 
 edx_django_service_databases:
   default:
@@ -188,7 +195,28 @@ edx_django_service_config: '{{ edx_django_service_config_default|combine(edx_dja
 edx_django_service_automated_users:
   automated_user:
     sudo_commands:
-      - command: '{{ edx_django_service_venv_dir }}/python {{ edx_django_service_code_dir }}/manage.py migrate --list'
+      - command: '{{ edx_django_service_venv_dir }}/python {{ edx_django_service_code_dir }}/manage.py showmigrations'
         sudo_user: '{{ edx_django_service_user }}'
     authorized_keys:
       - 'SSH authorized key'
+
+# This array contains commands that should be run after migration.
+#
+# The commands will be executed from the code directory with the application's virtualenv activated. The migration
+# environment (e.g. migration DB username/password) will NOT be used, so commands should not rely on these values being
+# set. In other words, don't try to sneak in another run of the migrate management command.
+#
+# Example:
+#   edx_django_service_post_migrate_management_commands:
+#     - command: './manage.py conditional_command'
+#       when: '{{ foo }}'
+#     - command: './manage.py always_command'
+#       when: True
+#
+# In this example, the "conditional_command" will only be run when the variable `foo` is set to `True`. The
+# "always_command" will always be run because its conditional is set to `True`. To minimize surprises, the `when`
+# key *MUST* be supplied for all commands.
+#
+edx_django_service_post_migrate_commands: []
+
+EDX_DJANGO_SERVICE_ENABLE_DJANGO_ADMIN_RESTRICTION: false
