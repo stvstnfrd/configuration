@@ -1,13 +1,19 @@
 {%- if EDXAPP_SHIB_ONLY -%}
-  location /signup {
-    return 302 $scheme://{{ EDXAPP_LMS_SITE_NAME }}/auth/login/tpa-saml/?auth_entry=register&idp=sunet&next=/cms;
-  }
+  {%- set login_url_path = "auth/login/tpa-saml/?auth_entry=login&idp=sunet&next=/cms" -%}
+  {%- set register_url_path = "auth/login/tpa-saml/?auth_entry=register&idp=sunet&next=/cms" -%}
+{%- else -%}
+  {%- set login_url_path = "login?next=/cms" -%}
+  {%- set register_url_path = "register?next=/cms" -%}
+{%- endif -%}
 
-  location /signin {
-    return 302 $scheme://{{ EDXAPP_LMS_SITE_NAME }}/auth/login/tpa-saml/?auth_entry=login&idp=sunet&next=/cms;
-  }
+location /signup {
+  return 302 $scheme://{{ EDXAPP_LMS_SITE_NAME }}/{{ register_url_path }};
+}
 
-  location = /cms {
-    return 302 $scheme://{{ EDXAPP_CMS_SITE_NAME }}/home/;
-  }
-{%- endif %}
+location /signin {
+  return 302 $scheme://{{ EDXAPP_LMS_SITE_NAME }}/{{ login_url_path }};
+}
+
+location = /cms {
+  return 302 $scheme://{{ EDXAPP_CMS_SITE_NAME }}/home/;
+}
