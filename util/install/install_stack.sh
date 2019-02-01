@@ -161,8 +161,8 @@ if [[ $stack == "devstack" ]]; then # Install devstack
         echo -e "${WARN}The release you entered is not 'master' or an open-release. Please be aware that a branch other than master or a release other than the latest open-release could cause errors when installing $stack.${NC}" | fmt
     fi
 
-    wiki_link="https://openedx.atlassian.net/wiki/display/OpenOPS/Running+Devstack"
-    curl -fOL# https://raw.githubusercontent.com/edx/configuration/${OPENEDX_RELEASE}/vagrant/release/devstack/Vagrantfile
+    wiki_link="https://openedx.atlassian.net/wiki/spaces/OpenOPS/pages/60227787/Running+Vagrant-based+Devstack"
+    curl -fOL# https://raw.githubusercontent.com/Stanford-Online/configuration/${OPENEDX_RELEASE}/vagrant/release/devstack/Vagrantfile
     vagrant plugin install vagrant-vbguest
 elif [[ $stack == "fullstack" ]]; then # Install fullstack
     # Warn if release chosen is not open-release (Eucalyptus and up)
