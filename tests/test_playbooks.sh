@@ -11,7 +11,21 @@ EOF
 for role_dir in $ROLE_DIRS; do
     echo "    - $(basename $role_dir)" >> travis-test.yml
 done
+cd ../stanford
+ROLE_DIRS=$(/bin/ls -d roles/*)
+cd stage
+cat <<EOF >travis-test.yml
+- name: Play to test all roles
+  hosts: all
+  roles:
+EOF
+for role_dir in $ROLE_DIRS; do
+    echo "    - $(basename $role_dir)" >> travis-test.yml
+done
+# TODO: test stanford roles
 
+cat travis-test.yml
+echo
 ansible-playbook -i localhost, --syntax-check travis-test.yml
 
 output_dir="$PWD/test_output/env-dep"
