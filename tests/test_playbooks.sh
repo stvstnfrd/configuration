@@ -12,6 +12,8 @@ for role_dir in $ROLE_DIRS; do
     echo "    - $(basename $role_dir)" >> travis-test.yml
 done
 
+cat travis-test.yml
+echo
 ansible-playbook -i localhost, --syntax-check travis-test.yml
 
 output_dir="$PWD/test_output/env-dep"
