@@ -23,6 +23,7 @@ for role_dir in $ROLE_DIRS; do
     echo "    - $(basename $role_dir)" >> travis-test.yml
 done
 # TODO: test stanford roles
+cd ../stanford/stage
 
 cat travis-test.yml
 echo
