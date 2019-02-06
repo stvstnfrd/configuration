@@ -721,6 +721,9 @@ echo >> README.markdown
 echo "$(grep '\[x\]' README.markdown | wc -l)/$(grep '\[.\]' README.markdown | wc -l) resolved" >> README.markdown
 find . -name '*.bak' -delete
 
+remove cms/djangoapps/contentstore/api/views.py
+remove cms/djangoapps/contentstore/api/tests/test_views.py
+
 append_line '' requirements/edx/github.in
 append_line '-r stanford.txt' requirements/edx/github.in --amend
 append_line '' requirements/edx/github.txt --amend
