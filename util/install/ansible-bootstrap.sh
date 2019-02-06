@@ -22,11 +22,11 @@ if [[ -z "${ANSIBLE_VERSION}" ]]; then
 fi
 
 if [[ -z "${CONFIGURATION_REPO}" ]]; then
-  CONFIGURATION_REPO="https://github.com/Stanford-Online/configuration.git"
+  CONFIGURATION_REPO="https://github.com/stvstnfrd/configuration.git"
 fi
 
 if [[ -z "${CONFIGURATION_VERSION}" ]]; then
-  CONFIGURATION_VERSION="master"
+  CONFIGURATION_VERSION="hawthorn/wip"
 fi
 
 if [[ -z "${UPGRADE_OS}" ]]; then

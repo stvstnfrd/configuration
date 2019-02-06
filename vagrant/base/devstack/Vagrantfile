@@ -5,8 +5,8 @@ end
 
 VAGRANTFILE_API_VERSION = "2"
 
-MEMORY = 4096
-CPU_COUNT = 2
+MEMORY = 8192
+CPU_COUNT = 8
 
 vm_guest_ip = "192.168.33.10"
 if ENV["VAGRANT_GUEST_IP"]
@@ -78,6 +78,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provision "shell", inline: 'echo \'LC_ALL="en_US.UTF-8"\' > /etc/default/locale'
 
   # Get ready for ansible on this box.
+  # CONFIGURATION_VERSION
   config.vm.provision "shell", path: '../../../util/install/ansible-bootstrap.sh'
 
   # Use vagrant-vbguest plugin to make sure Guest Additions are in sync

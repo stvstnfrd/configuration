@@ -40,3 +40,15 @@ EDXAPP_XQUEUE_URL: 'http://edx.devstack.xqueue:18040'
 
 EDXAPP_ENABLE_EDXNOTES: true
 EDXAPP_EDXNOTES_INTERNAL_API: 'http://edx.devstack.edx_notes_api:18120/api/v1'
+
+
+edx_platform_repo: "https://{{ COMMON_GIT_MIRROR }}/Stanford-Online/edx-platform.git"
+edx_platform_version: 'open-release/hawthorn.master'
+EDXAPP_COMPREHENSIVE_THEME_DIRS:
+  - "{{ edxapp_app_dir }}/themes/comprehensive"
+EDXAPP_COMPREHENSIVE_THEME_LOCALE_PATHS:
+  - "{{ edxapp_app_dir }}/themes/comprehensive/conf/locale"
+EDXAPP_COMPREHENSIVE_THEME_SOURCE_REPO: "https://{{ COMMON_GIT_MIRROR }}/Stanford-Online/openedx-themes.git"
+EDXAPP_COMPREHENSIVE_THEME_VERSION: 'open-release/hawthorn.master'
+EDXAPP_DEFAULT_SITE_THEME: 'lagunita'
+EDXAPP_ENABLE_COMPREHENSIVE_THEMING: true
