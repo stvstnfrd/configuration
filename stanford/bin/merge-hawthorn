@@ -365,7 +365,6 @@ take_theirs 69 97 117 lms/djangoapps/class_dashboard/dashboard_data.py --amend
 take_both 10 13 17 lms/djangoapps/class_dashboard/dashboard_data.py --amend
 delete_line 10 lms/djangoapps/class_dashboard/dashboard_data.py --amend
 
-# TODO: test_dashboard_data.py
 sed -i.bak "s/self\.item\.location\.to_deprecated_string()/text_type(self.item.location)/" lms/djangoapps/class_dashboard/tests/test_dashboard_data.py
 sed -i.bak "s/self\.sub_section\.location\.to_deprecated_string()/text_type(self.item.location)/" lms/djangoapps/class_dashboard/tests/test_dashboard_data.py
 take_ours 448 450 452 lms/djangoapps/class_dashboard/tests/test_dashboard_data.py
@@ -528,7 +527,6 @@ take_both 14 16 19 lms/envs/test_static_optimized.py
 delete_line 15 lms/envs/test_static_optimized.py --amend
 reword 'Take both: lms/envs/test_static_optimized.py'
 
-# TODO: Fix statutor mimetypes and stanford_branding
 take_theirs 16 58 61 lms/startup.py
 append_line '    from branding_stanford.api import patch as patch_stanford_branding' lms/startup.py --amend
 append_line '    patch_stanford_branding()' lms/startup.py --amend
@@ -680,7 +678,6 @@ take_theirs 26 28 29 openedx/core/lib/xblock_utils/__init__.py
 
 take_theirs 8 10 12 openedx/core/release.py
 
-# TODO: openedx/feettures/course_experience/views/course_updates.py
 take_ours 154 177 179 openedx/features/course_experience/views/course_updates.py --amend
 delete_range 166 175 openedx/features/course_experience/views/course_updates.py --amend
 take_theirs 111 140 141 openedx/features/course_experience/views/course_updates.py --amend
@@ -714,8 +711,6 @@ take_theirs 220 228 229 pavelib/tests.py --amend
 add_line 220 "    make_option('-p', '--processes', dest='processes', default=0, help='number of processes to use running tests')," pavelib/tests.py --amend
 reword 'Take both: pavelib/tests.py'
 
-# TODO: add `-r stanford.txt` to github.txt
-# development.txt or testing.txt
 take_theirs 2 13 33 requirements/edx-sandbox/base.txt
 
 take_theirs 14 17 19 scripts/all-tests.sh
