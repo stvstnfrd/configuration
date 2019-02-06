@@ -13,7 +13,9 @@ done
 : ${BRANCH_TO_CUT:=rc}
 : ${WORKSPACE:=${HOME}/workspace/cut_branch}
 : ${EMAIL_RECIPIENT:=''}
-date=$(echo "${BUILD_ID}" | head -c10)
+: ${EMAIL_SENDER:= 'no_reply@lagunita.stanford.edu'}
+: ${EMAIL_SENDER_NAME:= 'R C Cutter'}
+date=$(date +%Y%m%d)
 RELEASE_TAG="edx-west/release-$(echo ${date} | tr -d '-')"
 output_file=${WORKSPACE}/release-notes.markdown
 if [ "${BRANCH_TO_CUT}" = "rc" ]; then
@@ -87,8 +89,10 @@ update_and_or_cut_branch_for_repository() {
         if ${SHOULD_CUT_BRANCH}; then
             cut_branch "${repo}" "${BRANCH_OLD}" "${BRANCH_NEW}" "${MERGE_MESSAGE}"
             if [ -n "${EMAIL_RECIPIENT}" ]; then
-                ${WORKSPACE}/send-email.py \
+                ${WORKSPACE}/configuration/stanford/bin/send-email.py \
                     "${EMAIL_RECIPIENT}" \
+                    "${EMAIL_SENDER}" \
+                    "${EMAIL_SENDER_NAME}" \
                     "${EMAIL_SUBJECT}" \
                     "${output_file}" \
                 ;
