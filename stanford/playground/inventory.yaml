@@ -1,0 +1,14 @@
+---
+all:
+  children:
+    sandbox:
+      children:
+        master:
+          hosts:
+            master.sandbox.class.stanford.edu:
+        ginkgo:
+          hosts:
+            ginkgo.sandbox.class.stanford.edu:
+        hawthorn:
+          hosts:
+            hawthorn.sandbox.class.stanford.edu:
