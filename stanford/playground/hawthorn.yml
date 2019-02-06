@@ -2,14 +2,16 @@
 ---
 - include: ./master.yml
   vars:
-    CLUSTER_SANDBOX_NAME: ginkgo
+    CLUSTER_SANDBOX_NAME: hawthorn
     COMMON_DEPLOYMENT: playground
     CONFIGURATION_REPO: 'https://github.com/stvstnfrd/configuration.git'
     edx_ansible_source_repo: "{{ CONFIGURATION_REPO }}"
     edx_platform_repo: 'https://github.com/stvstnfrd/edx-platform.git'
-    edx_platform_version: 'ginkgo/fixes'
-    EDXAPP_COMPREHENSIVE_THEME_VERSION: 'ginkgo/wip'
-    configuration_version: 'ginkgo/wip'
-    forum_version: 'ginkgo/wip'
+    edx_platform_version: 'hawthorn/wip'
+    EDXAPP_COMPREHENSIVE_THEME_VERSION: 'hawthorn/wip'
+    configuration_version: 'hawthorn/wip'
+    forum_version: 'hawthorn/wip'
+    NOTIFIER_SOURCE_REPO: "https://github.com/stvstnfrd/notifier.git"
+    NOTIFIER_VERSION: 'hawthorn/wip'
     # Remember to enable:
     # /admin/self_paced/selfpacedconfiguration/
