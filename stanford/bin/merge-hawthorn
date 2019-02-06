@@ -1,0 +1,738 @@
+#!/bin/bash
+set -e
+function delete_line() {
+    line_number=${1}
+    filename=${2}
+    amend=${3}
+    sed -i.bak "${line_number}d" "${filename}"
+    rm "${filename}.bak"
+    git add "${filename}"
+    git commit ${amend} -m "Delete line: ${filename}"
+}
+function delete_range() {
+    line_number_start=${1}
+    line_number_end=${2}
+    filename=${3}
+    amend=${4}
+    sed -i.bak "${line_number_start},${line_number_end}d" "${filename}"
+    rm "${filename}.bak"
+    git add "${filename}"
+    git commit ${amend} -m "Delete line: ${filename}"
+}
+function reword() {
+    message=${@}
+    git commit --amend -m "${message}"
+}
+function replace() {
+    match=${1}
+    replacement=${2}
+    filename=${3}
+    amend=${4}
+    sed -i.bak 's/${match}/${replacement}/' "${filename}"
+    git add "${filename}"
+    git commit ${amend} -m "Replace text: ${filename}"
+}
+function take_upstream() {
+    filename=${1}
+    git checkout "${merge_from}" -- "${filename}"
+    git commit -m "Take theirs: ${filename}"
+    complete "${filename}"
+}
+function complete() {
+    filename=${1}
+    escaped=$(echo "${filename}" | sed 's@/@\\\/@g')
+    sed -i.bak "s@\( - \[.\] \)\(${escaped}\)@ - [x] ${filename}@" README.markdown
+}
+function remove() {
+    filename="${1}"
+    git rm "${filename}"
+    git commit -m "Delete file: ${filename}"
+    complete "${filename}"
+}
+function take_both() {
+    marker_head="${1}"
+    marker_mid="${2}"
+    marker_tail="${3}"
+    filename="${4}"
+    amend="${5}"
+    sed -i.bak "${marker_tail}d" "${filename}"
+    sed -i.bak "${marker_mid}d" "${filename}"
+    sed -i.bak "${marker_head}d" "${filename}"
+    git add "${filename}"
+    git commit ${amend} -m "Take both: ${filename}"
+    complete "${filename}"
+}
+function take_ours() {
+    marker_head="${1}"
+    marker_mid="${2}"
+    marker_tail="${3}"
+    filename="${4}"
+    amend="${5}"
+    sed -i.bak "${marker_mid},${marker_tail}d" "${filename}"
+    sed -i.bak "${marker_head}d" "${filename}"
+    git add "${filename}"
+    git commit ${amend} -m "Take ours: ${filename}"
+    complete "${filename}"
+}
+function take_theirs() {
+    marker_head="${1}"
+    marker_mid="${2}"
+    marker_tail="${3}"
+    filename="${4}"
+    amend="${5}"
+    sed -i.bak "${marker_tail}d" "${filename}"
+    sed -i.bak "${marker_head},${marker_mid}d" "${filename}"
+    git add "${filename}"
+    git commit ${amend} -m "Take theirs: ${filename}"
+    complete "${filename}"
+}
+function append_line() {
+    line_text=${1}
+    filename=${2}
+    amend=${3}
+    echo "${line_text}" >> "${filename}"
+    git add "${filename}"
+    git commit ${amend} -m "Add line: ${filename}"
+    complete "${filename}"
+}
+
+function add_line() {
+    line_number=${1}
+    line_text=${2}
+    filename=${3}
+    amend=${4}
+    tmp_file='/tmp/asdf'
+    awk -v "n=${line_number}" -v "s=${line_text}" '(NR==n) { print s } 1' "${filename}" > "${tmp_file}"
+    cp "${tmp_file}" "${filename}"
+    git add "${filename}"
+    git commit ${amend} -m "Add line: ${filename}"
+    complete "${filename}"
+}
+function take_all_branch() {
+    branch=${1}
+    filename=${2}
+    git checkout "${branch}" -- "${filename}"
+    git commit -m "Take all theirs: ${filename}"
+    complete "${filename}"
+}
+merge_from='896e66f8fcc1d2828d9c8299da0187ba96e8156e' # upstream/open-release/hawthorn.master
+merge_to='2ec69d6fb2b03eadfc788ecd735698f36d2bb724' # origin/master
+branch_prefix='hawthorn'
+branch_origin="${branch_prefix}/origin"
+branch_upstream="${branch_prefix}/upstream"
+branch_conflicts="${branch_prefix}/conflicts"
+branch_resolutions="${branch_prefix}/resolutions"
+branch_candidate="${branch_prefix}/candidate"
+branch_fixes="${branch_prefix}/fixes"
+edxapp_dir="${HOME}/src/edx/platform-hawthorn"
+
+cd "${edxapp_dir}" || {
+    git clone git@github.com:Stanford-Online/edx-platform.git "${edxapp_dir}"
+    cd "${edxapp_dir}"
+    git remote add stv git@github.com:stvstnfrd/edx-platform.git
+    git fetch --prune stv
+    git remote add upstream git@github.com:edx/edx-platform.git
+    git fetch --prune upstream
+    pwd
+}
+git checkout -B "${branch_origin}" "${merge_to}"
+git checkout -B "${branch_upstream}" "${merge_from}"
+git checkout -B "${branch_conflicts}" "${merge_to}"
+
+git merge --no-ff "${merge_from}" || true
+
+git status -s | egrep '^(.?U|AA)'
+echo '## conflicts' > README.markdown
+git status -s | egrep '^(.?U|AA)' | sed 's/^.* / - [ ] /' >> README.markdown
+deleted_files=$(git status -s | egrep '^(UD)' | awk '{print $2}')
+djangojs_files=$(git status -s | egrep '^UU.*/djangojs.js' | awk '{print $2}')
+git add -u ./
+git commit -m "Create conflicts"
+
+git checkout -B "${branch_resolutions}" "${branch_conflicts}"
+# TODO: review/port deleted file
+# echo "DELETED: ${deleted_files}"
+for deleted_file in ${deleted_files}; do
+    remove "${deleted_file}"
+done
+# TODO: review/port djangojs files
+# echo "DJANGOJS: ${djangojs_files}"
+for djangojs_file in ${djangojs_files}; do
+    take_all_branch "${branch_upstream}" "${djangojs_file}" || true
+done
+
+take_ours 77 126 127 .tx/config
+take_theirs 68 70 72 .tx/config --amend
+take_theirs 58 60 62 .tx/config --amend
+reword "Take both: .tx/config"
+
+take_both 287 289 295 AUTHORS
+
+take_theirs 1 20 35 cms/djangoapps/contentstore/api/urls.py
+
+take_theirs 433 435 437 cms/djangoapps/contentstore/tests/test_course_settings.py
+
+take_theirs 226 228 230 cms/djangoapps/contentstore/tests/tests.py
+
+take_both 1111 1115 1118 cms/djangoapps/contentstore/views/course.py
+delete_line 1113 cms/djangoapps/contentstore/views/course.py --amend
+take_both 67 70 72 cms/djangoapps/contentstore/views/course.py --amend
+take_both 29 32 34 cms/djangoapps/contentstore/views/course.py --amend
+delete_line 30 cms/djangoapps/contentstore/views/course.py --amend
+take_both 8 10 12 cms/djangoapps/contentstore/views/course.py --amend
+
+take_theirs 385 389 391 cms/djangoapps/contentstore/views/import_export.py
+
+take_theirs 62 64 72 cms/djangoapps/contentstore/views/library.py
+
+take_theirs 68 69 94 cms/djangoapps/contentstore/views/tests/test_library.py
+
+take_all_branch "${branch_upstream}" cms/djangoapps/contentstore/views/transcripts_ajax.py
+
+delete_line 12 cms/envs/acceptance.py
+take_ours 10 12 14 cms/envs/acceptance.py --amend
+
+take_theirs 112 113 125 cms/envs/aws.py
+
+take_theirs 69 70 74 cms/envs/common.py
+
+delete_line 17 cms/envs/test_static_optimized.py
+take_both 14 16 18 cms/envs/test_static_optimized.py --amend
+
+take_all_branch "${branch_upstream}" cms/startup.py
+append_line '    import mimetypes' cms/startup.py --amend
+append_line '    for extension, mimetype in settings.EXTRA_MIMETYPES.iteritems():' cms/startup.py --amend
+append_line '        mimetypes.add_type(mimetype, extension)' cms/startup.py --amend
+reword 'Take both: cms/startup.py'
+
+take_both 24 26 28 cms/static/js/spec/views/settings/main_spec.js
+
+take_theirs 2 12 21 cms/static/js/views/course_info_update.js
+add_line 8 "    'common/js/components/utils/view_utils'," cms/static/js/views/course_info_update.js --amend
+
+take_theirs 225 258 284 cms/static/js/views/settings/main.js --amend
+add_line 225 "                   pre_enrollment_email : 'pre-enrollment-email'," cms/static/js/views/settings/main.js
+add_line 226 "                   post_enrollment_email : 'post-enrollment-email'," cms/static/js/views/settings/main.js --amend
+add_line 227 "                   enable_enrollment_email: 'enable-enrollment-email'," cms/static/js/views/settings/main.js --amend
+add_line 228 "                   pre_enrollment_email_subject :'pre-enrollment-email-subject'," cms/static/js/views/settings/main.js --amend
+add_line 229 "                   post_enrollment_email_subject:'post-enrollment-email-subject'," cms/static/js/views/settings/main.js --amend
+add_line 230 "                   enable_default_enrollment_email:'enable-default-enrollment-email'," cms/static/js/views/settings/main.js --amend
+
+take_theirs 139 163 169 cms/static/js/views/settings/main.js --amend
+add_line 144 '                   this.$el.find("#" this.fieldToSelectorMap.pre_enrollment_email_subject).val(this.model.get("pre_enrollment_email_subject"));' cms/static/js/views/settings/main.js --amend
+add_line 145 '                   this.$el.find("#" this.fieldToSelectorMap.post_enrollment_email_subject).val(this.model.get("post_enrollment_email_subject"));' cms/static/js/views/settings/main.js --amend
+add_line 146 '                   this.$el.find("#" this.fieldToSelectorMap.pre_enrollment_email).val(this.model.get("pre_enrollment_email"));' cms/static/js/views/settings/main.js --amend
+add_line 147 '                   this.$el.find("#" this.fieldToSelectorMap.post_enrollment_email).val(this.model.get("post_enrollment_email"));' cms/static/js/views/settings/main.js --amend
+add_line 148 '                   this.codeMirrorize(null, $("#pre-enrollment-email")[0]);' cms/static/js/views/settings/main.js --amend
+add_line 149 '                   this.codeMirrorize(null, $("#post-enrollment-email")[0]);' cms/static/js/views/settings/main.js --amend
+add_line 150 "                   this.enable_enrollment_email_box.prop('checked', this.model.get('enable_enrollment_email'));" cms/static/js/views/settings/main.js --amend
+add_line 151 "                   if (this.enable_enrollment_email_box.prop('checked')) {" cms/static/js/views/settings/main.js --amend
+add_line 152 "                       this.enrollment_email_settings.show();" cms/static/js/views/settings/main.js --amend
+add_line 153 "                   } else {" cms/static/js/views/settings/main.js --amend
+add_line 154 "                       this.enrollment_email_settings.hide();" cms/static/js/views/settings/main.js --amend
+add_line 155 "                   }" cms/static/js/views/settings/main.js --amend
+
+take_both 21 34 36 cms/static/js/views/settings/main.js
+delete_line 31 cms/static/js/views/settings/main.js --amend
+delete_line 31 cms/static/js/views/settings/main.js --amend
+delete_line 23 cms/static/js/views/settings/main.js --amend
+delete_line 21 cms/static/js/views/settings/main.js --amend
+delete_line 21 cms/static/js/views/settings/main.js --amend
+git commit --amend -m 'Take both: cms/static/js/views/settings/main.js'
+
+delete_line 387 cms/static/sass/elements/_header.scss
+delete_line 384 cms/static/sass/elements/_header.scss --amend
+delete_line 383 cms/static/sass/elements/_header.scss --amend
+take_ours 382 385 386 cms/static/sass/elements/_header.scss --amend
+
+take_theirs 34 89 112 cms/templates/asset_index.html
+# TODO: rename in theme:
+#  'asset_index_content_pre.html'
+#    to
+#  'asset_index_content_header.html'
+
+take_theirs 369 380 393 cms/templates/settings.html
+
+add_line 51 "            utilities_url = reverse('utility_handler', kwargs={'course_key_string': unicode(course_key)})" cms/templates/widgets/header.html
+take_theirs 23 37 50 cms/templates/widgets/header.html
+
+add_line 305 "urlpatterns += [url(r'', include('openedx.stanford.cms.urls')),]" cms/urls.py
+take_theirs 300 303 314 cms/urls.py --amend
+take_theirs 100 129 193 cms/urls.py --amend
+reword 'Take both: cms/urls.py'
+
+take_theirs 23 33 38 common/djangoapps/enrollment/urls.py
+append_line "urlpatterns += [url(r'', include('openedx.stanford.common.djangoapps.enrollment.urls')),]" common/djangoapps/enrollment/urls.py --amend
+take_theirs 6 9 11 common/djangoapps/enrollment/urls.py --amend
+add_line 6 'from django.conf.urls import include' common/djangoapps/enrollment/urls.py --amend
+
+take_theirs 79 98 122 common/djangoapps/student/forms.py
+take_theirs 57 67 73 common/djangoapps/student/forms.py --amend
+
+take_theirs 28 31 47 common/djangoapps/student/helpers.py
+
+# TODO: what about on_delete=models.CASCADE
+add_line 238 "                ('nonregistered', models.BooleanField(default=False))," common/djangoapps/student/migrations/0001_initial.py
+take_theirs 232 235 237 common/djangoapps/student/migrations/0001_initial.py --amend
+reword 'Take both: common/djangoapps/student/migrations/0001_initial.py'
+
+take_both 39 41 43 common/djangoapps/student/models.py
+
+take_theirs 84 86 88 common/djangoapps/student/tests/test_helpers.py
+take_theirs 8 13 19 common/djangoapps/student/tests/test_helpers.py --amend
+
+take_both 129 154 413 common/djangoapps/student/tests/test_models.py
+add_line 153 '' common/djangoapps/student/tests/test_models.py
+
+take_theirs 210 211 213 common/djangoapps/student/tests/test_reset_password.py
+
+# TODO: Fix: common/djangoapps/student/views.py
+take_ours 457 459 461 common/djangoapps/util/views.py
+take_ours 440 442 444 common/djangoapps/util/views.py --amend
+take_ours 392 394 396 common/djangoapps/util/views.py --amend
+
+take_theirs 1708 1710 1712 common/lib/xmodule/xmodule/css/capa/display.scss
+
+take_theirs 738 746 750 common/lib/xmodule/xmodule/css/video/display.scss
+
+# TODO: COFFEESCRIPT
+# TODO: common/lib/xmodule/xmodule/js/spec/capa/display_spec.coffee
+# timed exams
+# TODO: common/lib/xmodule/xmodule/js/src/html/edit.coffee
+# keyword subs
+
+take_theirs 469 475 477 common/lib/xmodule/xmodule/tabs.py
+add_line 469 '            if is_user_sneakpeek and not tab.is_visible_to_sneak_peek:' common/lib/xmodule/xmodule/tabs.py --amend
+add_line 470 '                continue' common/lib/xmodule/xmodule/tabs.py --amend
+take_ours 450 461 463 common/lib/xmodule/xmodule/tabs.py --amend
+delete_line 457 common/lib/xmodule/xmodule/tabs.py --amend
+delete_line 456 common/lib/xmodule/xmodule/tabs.py --amend
+delete_line 455 common/lib/xmodule/xmodule/tabs.py --amend
+delete_line 454 common/lib/xmodule/xmodule/tabs.py --amend
+add_line 454 '        include_hidden=False,' common/lib/xmodule/xmodule/tabs.py --amend
+
+take_both 2 5 6 common/lib/xmodule/xmodule/tests/test_html_module.py
+delete_line 2 common/lib/xmodule/xmodule/tests/test_html_module.py --amend
+
+take_ours 97 100 103 common/lib/xmodule/xmodule/vertical_block.py
+delete_line 98 common/lib/xmodule/xmodule/vertical_block.py --amend
+add_line 98 "            'bookmark_id': u\"{},{}\".format(child_context.get('username', ''), unicode(self.location)),  # pylint: disable=no-member" common/lib/xmodule/xmodule/vertical_block.py --amend
+
+take_theirs 319 340 360 common/static/common/js/components/utils/view_utils.js
+add_line 319 '                keywordValidator: keywordValidator,' common/static/common/js/components/utils/view_utils.js --amend
+
+take_theirs 146 149 150 common/static/sass/edx-pattern-library-shims/base/_variables.scss
+
+take_theirs 354 443 444 common/test/acceptance/tests/lms/test_learner_profile.py
+
+take_ours 36 40 43 lms/djangoapps/branding/views.py
+delete_line 36 lms/djangoapps/branding/views.py --amend
+delete_line 36 lms/djangoapps/branding/views.py --amend
+add_line 36 '    """' lms/djangoapps/branding/views.py --amend
+
+take_theirs 31 73 104 lms/djangoapps/certificates/management/commands/regenerate_user.py
+add_line 61 "        parser.add_argument(" lms/djangoapps/certificates/management/commands/regenerate_user.py --amend
+add_line 62 "            '-d'," lms/djangoapps/certificates/management/commands/regenerate_user.py --amend
+add_line 63 "            '--designation'," lms/djangoapps/certificates/management/commands/regenerate_user.py --amend
+add_line 64 "            metavar='DESIGNATION'," lms/djangoapps/certificates/management/commands/regenerate_user.py --amend
+add_line 65 "            dest='designation'," lms/djangoapps/certificates/management/commands/regenerate_user.py --amend
+add_line 66 "            default=None," lms/djangoapps/certificates/management/commands/regenerate_user.py --amend
+add_line 67 "            help='Professional designation to pass to certificate generator'," lms/djangoapps/certificates/management/commands/regenerate_user.py --amend
+add_line 68 "        )" lms/djangoapps/certificates/management/commands/regenerate_user.py --amend
+delete_line 11 lms/djangoapps/certificates/management/commands/regenerate_user.py --amend
+
+take_theirs 233 239 244 lms/djangoapps/certificates/tests/test_cert_management.py
+take_theirs 198 204 209 lms/djangoapps/certificates/tests/test_cert_management.py --amend
+take_theirs 179 181 183 lms/djangoapps/certificates/tests/test_cert_management.py --amend
+take_theirs 18 22 24 lms/djangoapps/certificates/tests/test_cert_management.py --amend
+take_theirs 3 4 6 lms/djangoapps/certificates/tests/test_cert_management.py --amend
+add_line 18 'from certificates.management.commands import update_cert_status' lms/djangoapps/certificates/tests/test_cert_management.py --amend
+
+take_theirs 772 773 775 lms/djangoapps/class_dashboard/dashboard_data.py
+delete_line 776 lms/djangoapps/class_dashboard/dashboard_data.py --amend
+take_theirs 713 714 716 lms/djangoapps/class_dashboard/dashboard_data.py --amend
+delete_line 720 lms/djangoapps/class_dashboard/dashboard_data.py --amend
+take_ours 683 685 687 lms/djangoapps/class_dashboard/dashboard_data.py --amend
+take_ours 584 586 588 lms/djangoapps/class_dashboard/dashboard_data.py --amend
+take_both 399 409 462 lms/djangoapps/class_dashboard/dashboard_data.py --amend
+delete_range 400 409 lms/djangoapps/class_dashboard/dashboard_data.py --amend
+# TODO: this can't be right!
+take_theirs 234 256 265 lms/djangoapps/class_dashboard/dashboard_data.py --amend
+# TODO: this can't be right!
+take_theirs 174 202 208 lms/djangoapps/class_dashboard/dashboard_data.py --amend
+take_theirs 69 97 117 lms/djangoapps/class_dashboard/dashboard_data.py --amend
+take_both 10 13 17 lms/djangoapps/class_dashboard/dashboard_data.py --amend
+delete_line 10 lms/djangoapps/class_dashboard/dashboard_data.py --amend
+
+# TODO: test_dashboard_data.py
+sed -i.bak "s/self\.item\.location\.to_deprecated_string()/text_type(self.item.location)/" lms/djangoapps/class_dashboard/tests/test_dashboard_data.py
+sed -i.bak "s/self\.sub_section\.location\.to_deprecated_string()/text_type(self.item.location)/" lms/djangoapps/class_dashboard/tests/test_dashboard_data.py
+take_ours 448 450 452 lms/djangoapps/class_dashboard/tests/test_dashboard_data.py
+take_ours 430 432 434 lms/djangoapps/class_dashboard/tests/test_dashboard_data.py --amend
+take_ours 413 415 417 lms/djangoapps/class_dashboard/tests/test_dashboard_data.py --amend
+take_ours 389 391 393 lms/djangoapps/class_dashboard/tests/test_dashboard_data.py --amend
+take_ours 371 373 375 lms/djangoapps/class_dashboard/tests/test_dashboard_data.py --amend
+take_ours 349 351 353 lms/djangoapps/class_dashboard/tests/test_dashboard_data.py --amend
+
+sed -i.bak "s/course\.id\.to_deprecated_string()/text_type(course.id)/" lms/djangoapps/class_dashboard/tests/test_views.py
+take_ours 98 106 114 lms/djangoapps/class_dashboard/tests/test_views.py
+
+sed -i.bak "s/'class_dashboard\.views\.all_sequential_open_distrib'/class_dashboard.views.all_sequential_open_distrib/" lms/djangoapps/class_dashboard/urls.py
+sed -i.bak "s/'class_dashboard\.views\.all_problem_grade_distribution'/class_dashboard.views.all_problem_grade_distribution/" lms/djangoapps/class_dashboard/urls.py
+take_ours 14 20 26 lms/djangoapps/class_dashboard/urls.py
+
+take_both 11 14 16 lms/djangoapps/commerce/api/v0/tests/test_views.py
+delete_line 12 lms/djangoapps/commerce/api/v0/tests/test_views.py --amend
+
+take_theirs 147 219 223 lms/djangoapps/commerce/api/v0/views.py
+add_line 148 '            notify_enrollment_by_email(courses.get_course(course_key), user, request)' lms/djangoapps/commerce/api/v0/views.py --amend
+
+take_both 395 399 400 lms/djangoapps/courseware/access.py
+delete_range 396 397 lms/djangoapps/courseware/access.py --amend
+
+take_theirs 5 16 25 lms/djangoapps/courseware/admin.py
+add_line 7 'admin.site.register(models.CoursePreference)' lms/djangoapps/courseware/admin.py --amend
+
+take_both 286 293 296 lms/djangoapps/courseware/courses.py
+delete_range 286 287 lms/djangoapps/courseware/courses.py --amend
+take_both 52 55 58 lms/djangoapps/courseware/courses.py --amend
+take_theirs 9 21 24 lms/djangoapps/courseware/courses.py --amend
+add_line 10 'from branding_stanford.models import TileConfiguration' lms/djangoapps/courseware/courses.py --amend
+add_line 36 'from opaque_keys.edx.locations import SlashSeparatedCourseKey' lms/djangoapps/courseware/courses.py --amend
+
+take_both 284 289 291 lms/djangoapps/courseware/date_summary.py
+delete_line 287 lms/djangoapps/courseware/date_summary.py --amend
+take_theirs 10 14 20 lms/djangoapps/courseware/date_summary.py --amend
+
+take_both 71 74 76 lms/djangoapps/courseware/module_render.py
+delete_line 72 lms/djangoapps/courseware/module_render.py --amend
+
+take_all_branch "${branch_upstream}" lms/djangoapps/courseware/management/commands/dump_course_structure.py
+
+take_theirs 434 439 444 lms/djangoapps/courseware/tests/test_course_info.py
+
+take_both 1134 1158 1160 lms/djangoapps/courseware/tests/test_views.py
+delete_line 1156 lms/djangoapps/courseware/tests/test_views.py --amend
+take_both 69 72 74 lms/djangoapps/courseware/tests/test_views.py --amend
+delete_line 70 lms/djangoapps/courseware/tests/test_views.py --amend
+
+# TODO: remove all references to ENABLE_PROGRESS_SUMMARY
+take_both 1560 1613 1615 lms/djangoapps/courseware/views/views.py
+delete_range 1611 1612 lms/djangoapps/courseware/views/views.py --amend
+take_theirs 1047 1053 1056 lms/djangoapps/courseware/views/views.py --amend
+take_both 472 481 483 lms/djangoapps/courseware/views/views.py --amend
+delete_line 473 lms/djangoapps/courseware/views/views.py --amend
+delete_range 474 478 lms/djangoapps/courseware/views/views.py --amend
+take_both 400 413 414 lms/djangoapps/courseware/views/views.py --amend
+delete_range 400 405 lms/djangoapps/courseware/views/views.py --amend
+take_theirs 127 130 131 lms/djangoapps/courseware/views/views.py --amend
+take_theirs 89 92 95 lms/djangoapps/courseware/views/views.py --amend
+take_both 44 47 49 lms/djangoapps/courseware/views/views.py --amend
+delete_line 45 lms/djangoapps/courseware/views/views.py --amend
+take_both 22 27 29 lms/djangoapps/courseware/views/views.py --amend
+delete_range 24 25 lms/djangoapps/courseware/views/views.py --amend
+delete_line 22 lms/djangoapps/courseware/views/views.py --amend
+
+take_both 32 34 36 lms/djangoapps/dashboard/sysadmin.py
+
+take_both 16 20 22 lms/djangoapps/dashboard/sysadmin_urls.py
+delete_line 18 lms/djangoapps/dashboard/sysadmin_urls.py --amend
+
+take_theirs 14 24 32 lms/djangoapps/dashboard/tests/test_sysadmin.py
+add_line 21 'from django.contrib.auth.models import User' lms/djangoapps/dashboard/tests/test_sysadmin.py --amend
+add_line 22 'from mock import patch' lms/djangoapps/dashboard/tests/test_sysadmin.py --amend
+add_line 23 'from pymongo.errors import PyMongoError' lms/djangoapps/dashboard/tests/test_sysadmin.py --amend
+reword 'Take both: lms/djangoapps/dashboard/tests/test_sysadmin.py'
+
+add_line 57 'from student.models import UserProfile' lms/djangoapps/discussion/tests/test_views.py
+take_theirs 32 36 43 lms/djangoapps/discussion/tests/test_views.py --amend
+reword 'Take both: lms/djangoapps/discussion/tests/test_views.py'
+
+sed -i.bak "s/get_course_with_access(request.user, 'load'/get_course_with_access(request.user, 'load_forum'/" lms/djangoapps/discussion/views.py
+take_theirs 580 584 585 lms/djangoapps/discussion/views.py
+take_theirs 198 202 207 lms/djangoapps/discussion/views.py --amend
+reword 'Take both: lms/djangoapps/discussion/views.py' lms/djangoapps/discussion/views.py
+
+take_theirs 284 290 296 lms/djangoapps/grades/course_grade.py
+take_theirs 23 25 27 lms/djangoapps/grades/course_grade.py --amend
+
+take_theirs 190 193 198 lms/djangoapps/grades/course_grade_factory.py
+take_theirs 179 181 183 lms/djangoapps/grades/course_grade_factory.py --amend
+take_theirs 132 134 136 lms/djangoapps/grades/course_grade_factory.py --amend
+take_theirs 73 83 89 lms/djangoapps/grades/course_grade_factory.py --amend
+
+take_theirs 255 292 298 lms/djangoapps/grades/signals/handlers.py
+take_theirs 13 17 19 lms/djangoapps/grades/signals/handlers.py --amend
+
+take_theirs 2200 2205 2210 lms/djangoapps/instructor/views/api.py
+take_theirs 2178 2180 2182 lms/djangoapps/instructor/views/api.py --amend
+take_theirs 2148 2150 2152 lms/djangoapps/instructor/views/api.py --amend
+take_theirs 148 149 153 lms/djangoapps/instructor/views/api.py --amend
+take_theirs 81 83 85 lms/djangoapps/instructor/views/api.py --amend
+
+take_theirs 180 188 191 lms/djangoapps/instructor/views/api_urls.py
+append_line 'from django.conf.urls import include' lms/djangoapps/instructor/views/api_urls.py --amend
+append_line "urlpatterns += [url(r'', include('openedx.stanford.lms.djangoapps.instructor.urls')),]" lms/djangoapps/instructor/views/api_urls.py --amend
+delete_line 184 lms/djangoapps/instructor/views/api_urls.py --amend
+take_theirs 5 91 133 lms/djangoapps/instructor/views/api_urls.py --amend
+
+take_theirs 33 35 37 lms/djangoapps/instructor_task/models.py
+add_line 32 'from openedx.stanford.lms.djangoapps.instructor_task.models import DeleteFileMixin' lms/djangoapps/instructor_task/models.py --amend
+reword 'Take both: lms/djangoapps/instructor_task/models.py'
+
+take_theirs 685 691 703 lms/djangoapps/instructor_task/tasks_helper/grades.py
+delete_line 695 lms/djangoapps/instructor_task/tasks_helper/grades.py --amend
+add_line 695 '        header, rows = parse_student_data(student_data)' lms/djangoapps/instructor_task/tasks_helper/grades.py --amend
+reword 'Take both: lms/djangoapps/instructor_task/tasks_helper/grades.py'
+take_both 302 305 308 lms/djangoapps/instructor_task/tasks_helper/grades.py --amend
+delete_line 303 lms/djangoapps/instructor_task/tasks_helper/grades.py --amend
+delete_line 303 lms/djangoapps/instructor_task/tasks_helper/grades.py --amend
+
+take_theirs 36 41 42 lms/djangoapps/instructor_task/tasks_helper/module_state.py
+take_theirs 24 26 28 lms/djangoapps/instructor_task/tasks_helper/module_state.py --amend
+
+take_theirs 171 175 179 lms/djangoapps/instructor_task/tests/test_api.py
+
+take_theirs 387 388 408 lms/djangoapps/instructor_task/tests/test_tasks.py
+take_theirs 359 361 363 lms/djangoapps/instructor_task/tests/test_tasks.py --amend
+take_theirs 332 334 336 lms/djangoapps/instructor_task/tests/test_tasks.py --amend
+take_theirs 305 306 310 lms/djangoapps/instructor_task/tests/test_tasks.py --amend
+take_theirs 275 282 292 lms/djangoapps/instructor_task/tests/test_tasks.py --amend
+take_ours 73 76 77 lms/djangoapps/instructor_task/tests/test_tasks.py --amend
+take_ours 59 62 64 lms/djangoapps/instructor_task/tests/test_tasks.py --amend
+
+take_theirs 657 661 667 lms/djangoapps/student_account/test/test_views.py
+take_theirs 606 610 616 lms/djangoapps/student_account/test/test_views.py --amend
+
+take_theirs 245 247 249 lms/djangoapps/student_account/views.py
+take_ours 89 91 93 lms/djangoapps/student_account/views.py --amend
+take_theirs 20 24 30 lms/djangoapps/student_account/views.py --amend
+reword 'Take both: lms/djangoapps/student_account/views.py'
+
+take_ours 10 13 15 lms/envs/acceptance.py
+delete_line 11 lms/envs/acceptance.py --amend
+reword 'Take both: lms/envs/acceptance.py'
+
+take_both 25 27 30 lms/envs/aws.py
+delete_line 26 lms/envs/aws.py --amend
+reword 'Take both: lms/envs/aws.py'
+
+take_theirs 21 22 25 lms/envs/openstack.py
+
+take_both 15 17 20 lms/envs/static.py
+delete_line 16 lms/envs/static.py --amend
+reword 'Take both: lms/envs/static.py'
+
+take_both 14 16 19 lms/envs/test_static_optimized.py
+delete_line 15 lms/envs/test_static_optimized.py --amend
+reword 'Take both: lms/envs/test_static_optimized.py'
+
+# TODO: Fix statutor mimetypes and stanford_branding
+take_theirs 16 58 61 lms/startup.py
+append_line '    from branding_stanford.api import patch as patch_stanford_branding' lms/startup.py --amend
+append_line '    patch_stanford_branding()' lms/startup.py --amend
+append_line '    import mimetypes' lms/startup.py --amend
+append_line '    for extension, mimetype in settings.EXTRA_MIMETYPES.iteritems():' lms/startup.py --amend
+append_line '        mimetypes.add_type(mimetype, extension)' lms/startup.py --amend
+reword 'Take both: lms/startup.py'
+
+take_theirs 168 172 174 lms/static/js/student_account/views/RegisterView.js
+
+sed -i.bak "s/The name that is used for ID verification and that appears on your certificates./The name that appears on your Statements of Accomplishment. Other learners never see your full name./" lms/static/js/student_account/views/account_settings_factory.js
+take_theirs 145 157 159 lms/static/js/student_account/views/account_settings_factory.js
+take_both 236 269 339 lms/static/js/student_account/views/account_settings_factory.js
+
+take_theirs 784 789 793 lms/static/sass/course/courseware/_courseware.scss
+take_theirs 589 594 605 lms/static/sass/course/courseware/_courseware.scss --amend
+take_theirs 22 25 31 lms/static/sass/course/courseware/_courseware.scss --amend
+
+take_theirs 918 920 923 lms/static/sass/course/wiki/_wiki.scss
+
+take_theirs 59 65 71 lms/static/sass/discussion/views/_thread.scss
+
+take_theirs 728 731 732 lms/static/sass/multicourse/_account.scss
+take_ours 424 428 431 lms/static/sass/multicourse/_account.scss --amend
+reword 'Take both: lms/static/sass/multicourse/_account.scss'
+
+take_theirs 456 470 477 lms/static/sass/multicourse/_course_about.scss
+take_theirs 188 194 197 lms/static/sass/multicourse/_course_about.scss --amend
+add_line 191 '          span.sneakpeek {' lms/static/sass/multicourse/_course_about.scss --amend
+add_line 192 '            margin-right: 0;' lms/static/sass/multicourse/_course_about.scss --amend
+add_line 193 '          }' lms/static/sass/multicourse/_course_about.scss --amend
+take_theirs 126 130 132 lms/static/sass/multicourse/_course_about.scss --amend
+reword 'Take both: lms/static/sass/multicourse/_course_about.scss'
+
+take_theirs 174 182 187 lms/static/sass/shared-v2/_header.scss
+add_line 176 '    .nav-global {' lms/static/sass/shared-v2/_header.scss --amend
+add_line 177 '        display: none;' lms/static/sass/shared-v2/_header.scss --amend
+add_line 178 '    }' lms/static/sass/shared-v2/_header.scss --amend
+take_both 120 164 170 lms/static/sass/shared-v2/_header.scss --amend
+reword 'Take both: lms/static/sass/shared-v2/_header.scss'
+
+take_theirs 169 177 178 lms/static/sass/shared/_course_object.scss
+take_theirs 151 164 166 lms/static/sass/shared/_course_object.scss --amend
+
+take_ours 356 372 373 lms/static/sass/shared/_modal.scss
+take_both 319 322 326 lms/static/sass/shared/_modal.scss --amend
+delete_line 320 lms/static/sass/shared/_modal.scss --amend
+reword 'Take both: lms/static/sass/shared/_modal.scss'
+
+take_theirs 99 120 127 lms/static/sass/views/_account-settings.scss
+add_line 99 '      #orders-tab {' lms/static/sass/views/_account-settings.scss --amend
+add_line 100 '        display: none;' lms/static/sass/views/_account-settings.scss --amend
+add_line 101 '      }' lms/static/sass/views/_account-settings.scss --amend
+reword 'Take both: lms/static/sass/views/_account-settings.scss'
+
+take_theirs 164 175 195 lms/static/sass/views/_login-register.scss
+
+take_ours 824 829 935 lms/static/sass/views/_shoppingcart.scss
+take_ours 629 631 634 lms/static/sass/views/_shoppingcart.scss
+take_ours 579 581 582 lms/static/sass/views/_shoppingcart.scss
+take_ours 160 162 166 lms/static/sass/views/_shoppingcart.scss
+
+sed -i.bak 's/course_id\=course_id\.to_deprecated_string(/course_id=text_type\(course_id/g' lms/templates/class_dashboard/all_section_metrics.js
+take_ours 61 63 65 lms/templates/class_dashboard/all_section_metrics.js
+take_ours 10 12 14 lms/templates/class_dashboard/all_section_metrics.js --amend
+
+take_theirs 372 378 386 lms/templates/courseware/course_about.html
+take_theirs 277 279 281 lms/templates/courseware/course_about.html --amend
+take_both 252 257 260 lms/templates/courseware/course_about.html --amend
+delete_line 255 lms/templates/courseware/course_about.html --amend
+take_ours 146 148 150 lms/templates/courseware/course_about.html --amend
+reword 'Take both: lms/templates/courseware/course_about.html'
+
+take_both 67 71 72 lms/templates/courseware/progress.html
+delete_line 69 lms/templates/courseware/progress.html --amend
+reword 'Take both: lms/templates/courseware/progress.html'
+
+# TODO:set TWITTER_BRAND='@edxonline'
+# TODO:set FACEBOOK_BRAND='edX.org'
+take_all_branch "${branch_upstream}" lms/templates/dashboard/_dashboard_course_listing.html
+
+take_all_branch "${branch_upstream}" lms/templates/help_modal.html
+
+take_theirs 37 38 40 lms/templates/index.html
+
+take_theirs 1 2 5 lms/templates/index_overlay.html
+
+take_theirs 1 2 5 lms/templates/index_promo_video.html
+
+take_theirs 187 189 195 lms/templates/main.html
+
+sed -i.bak 's/Explore courses/Courses/' lms/templates/navigation/navbar-authenticated.html
+take_theirs 16 18 20 lms/templates/navigation/navbar-authenticated.html
+reword 'Take both: lms/templates/navigation/navbar-authenticated.html'
+
+take_ours 80 82 84 lms/templates/navigation/navigation.html
+take_ours 64 66 68 lms/templates/navigation/navigation.html --amend
+take_both 47 51 54 lms/templates/navigation/navigation.html --amend
+delete_line 50 lms/templates/navigation/navigation.html --amend
+delete_line 49 lms/templates/navigation/navigation.html --amend
+delete_line 47 lms/templates/navigation/navigation.html --amend
+reword 'Take both: lms/templates/navigation/navigation.html'
+
+take_theirs 10 12 14 lms/templates/problem_ajax.html
+
+take_theirs 99 103 104 lms/templates/staff_problem_info.html
+take_theirs 72 79 86 lms/templates/staff_problem_info.html --amend
+
+take_theirs 56 59 73 lms/templates/student_account/register.underscore
+add_line 65 '    <div id="register-extra"></div>' lms/templates/student_account/register.underscore --amend
+reword 'Take both: lms/templates/student_account/register.underscore'
+
+take_theirs 1082 1085 1100 lms/urls.py
+add_line 1095 "urlpatterns += (url(r'', include('openedx.stanford.lms.urls')),)" lms/urls.py --amend
+take_theirs 57 60 61 lms/urls.py --amend
+reword 'Take both: lms/urls.py'
+
+take_ours 87 90 93 manage.py
+add_line 88 "        default_settings='openedx.stanford.cms.envs.devstack_docker'," manage.py --amend
+delete_line 89 manage.py --amend
+take_ours 59 62 65 manage.py --amend
+add_line 60 "        default_settings='openedx.stanford.lms.envs.devstack_docker'," manage.py --amend
+delete_line 61 manage.py --amend
+reword 'Take both: manage.py'
+
+# TODO: nuke SHIB_REDIRECT_DOMAIN_WHITELIST?
+take_all_branch "${branch_upstream}" openedx/core/djangoapps/external_auth/views.py
+
+take_both 64 70 72 openedx/core/djangoapps/models/course_details.py
+delete_line 64 openedx/core/djangoapps/models/course_details.py --amend
+take_ours 32 37 38 openedx/core/djangoapps/models/course_details.py --amend
+reword 'Take both: openedx/core/djangoapps/models/course_details.py'
+
+take_theirs 440 442 445 openedx/core/djangoapps/user_api/accounts/api.py
+take_theirs 406 408 410 openedx/core/djangoapps/user_api/accounts/api.py --amend
+
+take_theirs 470 472 479 openedx/core/djangoapps/user_api/accounts/tests/test_api.py
+take_theirs 435 438 446 openedx/core/djangoapps/user_api/accounts/tests/test_api.py --amend
+
+take_theirs 811 812 906 openedx/core/djangoapps/user_api/tests/test_views.py
+take_theirs 784 786 788 openedx/core/djangoapps/user_api/tests/test_views.py --amend
+
+take_theirs 193 774 779 openedx/core/djangoapps/user_api/views.py
+take_theirs 166 172 174 openedx/core/djangoapps/user_api/views.py --amend
+take_theirs 40 44 46 openedx/core/djangoapps/user_api/views.py --amend
+take_theirs 11 13 15 openedx/core/djangoapps/user_api/views.py --amend
+
+take_theirs 26 28 29 openedx/core/lib/xblock_utils/__init__.py
+
+take_theirs 8 10 12 openedx/core/release.py
+
+# TODO: openedx/feettures/course_experience/views/course_updates.py
+take_ours 154 177 179 openedx/features/course_experience/views/course_updates.py --amend
+delete_range 166 175 openedx/features/course_experience/views/course_updates.py --amend
+take_theirs 111 140 141 openedx/features/course_experience/views/course_updates.py --amend
+add_line 42 "        update['content'] = info_block.system.substitute_keywords_with_data(update['content'], keyword_context)" openedx/features/course_experience/views/course_updates.py
+add_line 40 "    keyword_context = {" openedx/features/course_experience/views/course_updates.py
+add_line 41 "        'username': request.user.username," openedx/features/course_experience/views/course_updates.py --amend
+add_line 42 "        'user_id': request.user.id," openedx/features/course_experience/views/course_updates.py --amend
+add_line 43 "        'name': request.user.profile.name," openedx/features/course_experience/views/course_updates.py --amend
+add_line 44 "        'course_title': course.display_name," openedx/features/course_experience/views/course_updates.py --amend
+add_line 45 "        'course_id': course.id," openedx/features/course_experience/views/course_updates.py --amend
+add_line 46 "        'course_start_date': get_default_time_display(course.start)," openedx/features/course_experience/views/course_updates.py --amend
+add_line 47 "        'course_end_date': get_default_time_display(course.end)," openedx/features/course_experience/views/course_updates.py --amend
+add_line 48 "    }" openedx/features/course_experience/views/course_updates.py --amend
+reword 'Take both: openedx/features/course_experience/views/course_updates.py'
+
+sed -i.bak 's/edx-pattern-library": "0.18.1",/edx_pattern_library": "git:\/\/github.com\/Stanford-Online\/ux-pattern-library.git\#v0.18.2-stanford.3",/' package.json
+take_theirs 93 111 129 package.json
+take_theirs 43 54 80 package.json --amend
+take_theirs 5 15 36 package.json --amend
+reword 'Take both: package.json'
+
+take_both 4 7 12 pavelib/__init__.py
+delete_line 4 pavelib/__init__.py --amend
+reword 'Take both: pavelib/__init__.py'
+
+take_theirs 24 34 39 pavelib/prereqs.py
+
+take_theirs 258 265 266 pavelib/tests.py
+add_line 258 "    make_option('-p', '--processes', dest='processes', default=0, help='number of processes to use running tests')," pavelib/tests.py --amend
+take_theirs 220 228 229 pavelib/tests.py --amend
+add_line 220 "    make_option('-p', '--processes', dest='processes', default=0, help='number of processes to use running tests')," pavelib/tests.py --amend
+reword 'Take both: pavelib/tests.py'
+
+# TODO: add `-r stanford.txt` to github.txt
+# development.txt or testing.txt
+take_theirs 2 13 33 requirements/edx-sandbox/base.txt
+
+take_theirs 14 17 19 scripts/all-tests.sh
+
+take_theirs 8 10 12 scripts/jenkins-common.sh
+
+echo >> README.markdown
+echo "$(grep '\[x\]' README.markdown | wc -l)/$(grep '\[.\]' README.markdown | wc -l) resolved" >> README.markdown
+find . -name '*.bak' -delete
+
+append_line '' requirements/edx/github.in
+append_line '-r stanford.txt' requirements/edx/github.in --amend
+append_line '' requirements/edx/github.txt --amend
+append_line '-r stanford.txt' requirements/edx/github.txt --amend
+reword 'Include stanford.txt with github requirements'
+# git push -f -u stv "${branch_origin}"
+# git push -f -u stv "${branch_upstream}"
+# git push -f -u stv "${branch_conflicts}"
+# git push -f -u stv "${branch_resolutions}"
+# git push -f -u stv "${branch_candidate}"
+# git push -f -u stv "${branch_fixes}"
