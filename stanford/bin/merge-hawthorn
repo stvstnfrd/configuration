@@ -735,3 +735,12 @@ reword 'Include stanford.txt with github requirements'
 # git push -f -u stv "${branch_resolutions}"
 # git push -f -u stv "${branch_candidate}"
 # git push -f -u stv "${branch_fixes}"
+echo
+echo ficus
+git diff --stat upstream/open-release/ficus.master..origin/ficus/master | tail -n1
+echo
+echo ginkgo
+git diff --stat upstream/open-release/ginkgo.master..origin/master | tail -n1
+echo
+echo hawthorn
+git diff --stat upstream/open-release/hawthorn.master..head | tail -n1
