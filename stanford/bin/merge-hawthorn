@@ -729,6 +729,55 @@ append_line '-r stanford.txt' requirements/edx/github.in --amend
 append_line '' requirements/edx/github.txt --amend
 append_line '-r stanford.txt' requirements/edx/github.txt --amend
 reword 'Include stanford.txt with github requirements'
+
+sed -i.bak "s/MAKO_TEMPLATES\['main'\]/MAKO_TEMPLATE_DIRS_BASE/" openedx/stanford/lms/envs/common.py
+sed -i.bak "s/MAKO_TEMPLATES\['main'\]/MAKO_TEMPLATE_DIRS_BASE/" openedx/stanford/cms/envs/common.py
+ openedx/stanford/lms/envs/common.py
+git add openedx/stanford/cms/envs/common.py
+git commit -m 'Fix stanford mako template paths'
+
+add_line 633 "TEMPLATES[0]['DIRS'] += glob(STANFORD_ROOT / 'djangoapps/*/templates')" lms/envs/common.py
+add_line 634 "TEMPLATES[0]['DIRS'] += glob(STANFORD_ROOT / 'common/djangoapps/*/templates')" lms/envs/common.py --amend
+add_line 635 "TEMPLATES[0]['DIRS'] += glob(STANFORD_ROOT / 'lms/djangoapps/*/templates')" lms/envs/common.py --amend
+add_line 636 "TEMPLATES[0]['OPTIONS']['context_processors'] += [" lms/envs/common.py --amend
+add_line 637 "    # Include TEMPLATE_VISIBLE_SETTINGS in templates" lms/envs/common.py --amend
+add_line 638 "    'settings_context_processor.context_processors.settings'," lms/envs/common.py --amend
+add_line 639 "]" lms/envs/common.py --amend
+add_line 634 "STANFORD_ROOT = REPO_ROOT / 'openedx/stanford'" lms/envs/common.py --amend
+add_line 641 "MAKO_TEMPLATE_DIRS_BASE += glob(STANFORD_ROOT / 'djangoapps/*/templates')" lms/envs/common.py --amend
+add_line 642 "MAKO_TEMPLATE_DIRS_BASE += glob(STANFORD_ROOT / 'common/djangoapps/*/templates')" lms/envs/common.py --amend
+add_line 643 "MAKO_TEMPLATE_DIRS_BASE += glob(STANFORD_ROOT / 'cms/djangoapps/*/templates')" lms/envs/common.py --amend
+add_line 33 "from glob import glob" lms/envs/common.py --amend
+delete_range 142 148 openedx/stanford/lms/envs/common.py --amend
+delete_range 68 70 openedx/stanford/cms/envs/common.py --amend
+
+git cherry-pick fbc59231fcb67c4a4b9c8f1a4b17be78aad8cd59
+delete_line 31 common/djangoapps/enrollment/views.py
+take_theirs 12 14 17 common/djangoapps/enrollment/views.py --amend
+delete_line 20 common/djangoapps/third_party_auth/api/views.py --amend
+take_theirs 7 8 10 common/djangoapps/third_party_auth/api/views.py --amend
+delete_line 18 lms/djangoapps/badges/api/views.py --amend
+take_theirs 4 5 7 lms/djangoapps/badges/api/views.py --amend
+delete_line 19 lms/djangoapps/certificates/apis/v0/views.py --amend
+take_theirs 8 10 13 lms/djangoapps/certificates/apis/v0/views.py --amend
+delete_line 17 lms/djangoapps/experiments/views.py --amend
+take_theirs 4 6 9 lms/djangoapps/experiments/views.py --amend
+delete_line 24 lms/djangoapps/grades/api/v1/views.py --amend
+take_theirs 11 13 16 lms/djangoapps/grades/api/v1/views.py --amend
+
+
+# git cherry-pick a1f2c2cdde8f568ef0125319aa922e4f9a62ebe3
+# take_ours 38 39 42 lms/djangoapps/instructor/views/api.py
+# take_ours 18 19 23 openedx/core/djangoapps/course_groups/views.py
+
+grep -l -r 'edx_rest_framework_extensions\.authentication' | xargs \
+    sed -i.bak "s/edx_rest_framework_extensions\.authentication/edx_rest_framework_extensions.auth.jwt.authentication/"
+grep -l -r 'edx_rest_framework_extensions\.utils\.jwt_decode_handler' | xargs \
+    sed -i.bak 's/edx_rest_framework_extensions\.utils\.jwt_decode_handler//g'
+grep -l -r 'edx_rest_framework_extensions' | xargs \
+    git add
+git commit -m 'Update DRF extensions'
+# gy 166b539f2a
 # git push -f -u stv "${branch_origin}"
 # git push -f -u stv "${branch_upstream}"
 # git push -f -u stv "${branch_conflicts}"
