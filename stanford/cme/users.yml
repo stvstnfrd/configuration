@@ -2,5 +2,5 @@
 ---
 - include: ../playbooks/users.yml
   vars:
-    env: cme
-    machine: '(app|certificates|forum|jumpbox|notifier|util|xqueue)[0-9]*'
+    CLUSTER_NAME: jump
+    COMMON_DEPLOYMENT: cme
