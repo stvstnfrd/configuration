@@ -2,5 +2,4 @@
 ---
 - include: ../playbooks/users.yml
   vars:
-    env: lagunita
-    machine: '(app|certificates|forum|jumpbox|notifier|util|xqueue)[0-9]*'
+    COMMON_DEPLOYMENT: lagunita
