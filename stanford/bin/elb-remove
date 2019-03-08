@@ -1,0 +1,17 @@
+#!/bin/sh
+elb=${2:-DEFAULT_ELB}
+instance_name=${1:-DEFAULT_INSTANCE}
+instances=$( \
+    aws ec2 describe-instances \
+    --output=text \
+    --filters "Name=tag:Name,Values=${instance_name}" \
+    --query 'Reservations[].Instances[].[InstanceId]' \
+)
+
+aws \
+    --output table \
+    --region us-west-1 \
+    elb deregister-instances-from-load-balancer \
+    --load-balancer-name "${elb}" \
+    --instances ${instances} \
+;
