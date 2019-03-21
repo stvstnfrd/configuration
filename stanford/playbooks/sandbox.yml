@@ -45,7 +45,6 @@
       - cms
       - lms
       - forum
-      - xqueue
       nginx_default_sites:
       - lms
     - role: edxlocal
@@ -80,18 +79,13 @@
       when: SANDBOX_ENABLE_DISCOVERY
     - role: journals
       when: JOURNALS_ENABLED
-    - role: notifier
-      NOTIFIER_DIGEST_TASK_INTERVAL: 5
-    - role: xqueue
-      update_users: True
-    # - certs
     - edx_ansible
-    - role: datadog
-      when: COMMON_ENABLE_DATADOG
-    - role: splunkforwarder
-      when: COMMON_ENABLE_SPLUNKFORWARDER
-    - role: postfix_queue
-      when: POSTFIX_QUEUE_EXTERNAL_SMTP_HOST != ''
-    - neo4j
-    - role: datadog-uninstall
-      when: not COMMON_ENABLE_DATADOG
+#     - role: datadog
+#       when: COMMON_ENABLE_DATADOG
+#     - role: splunkforwarder
+#       when: COMMON_ENABLE_SPLUNKFORWARDER
+#     - role: postfix_queue
+#       when: POSTFIX_QUEUE_EXTERNAL_SMTP_HOST != ''
+#     - neo4j
+#     - role: datadog-uninstall
+#       when: not COMMON_ENABLE_DATADOG
