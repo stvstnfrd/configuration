@@ -14,7 +14,7 @@
 - name: Configure instance(s)
   hosts:
     - 'cluster_group_launched'
-    - "tag_Name_{{ COMMON_DEPLOYMENT }}-box-sandbox-{{ CLUSTER_SANDBOX_NAME }}"
+    - "{{ CLUSTER_SANDBOX_NAME }}"
   become: True
   gather_facts: True
   vars_files:
