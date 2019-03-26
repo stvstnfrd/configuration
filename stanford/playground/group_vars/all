@@ -9,6 +9,7 @@ COMMON_DEPLOYMENT: playground
 COMMON_DEPLOYMENT_DIR: "{{ secure_dir }}/vars/{{ COMMON_DEPLOYMENT }}"
 COMMON_ENABLE_BASIC_AUTH: True
 COMMON_HOSTNAME: "{{ CLUSTER_SANDBOX_NAME }}.{{ COMMON_DEPLOYMENT }}.vpc"
+COMMON_REGION: "{{ region }}"
 DEPLOYMENT_CIDR_BASE: '10.4'
 # We don't need NAT gateways since everything here is public
 DEPLOYMENT_NAT_GATEWAYS: [ None, None]
