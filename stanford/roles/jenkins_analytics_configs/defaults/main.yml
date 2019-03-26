@@ -1,0 +1,12 @@
+---
+jenkins_analytics_templates:
+  - jenkins_env
+  - analytics_override.cfg
+  - emr-vars.yml
+  - edxanalytics_creds
+  - edxapp_creds
+  - boto
+
+jenkins_group: "jenkins"
+jenkins_home: /home/jenkins
+jenkins_user: "jenkins"

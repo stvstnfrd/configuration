@@ -1,0 +1,9 @@
+---
+- name: Create additional configuration files
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ jenkins_home }}/{{ item }}"
+    owner: "{{ jenkins_user }}"
+    group: "{{ jenkins_group }}"
+    mode: "0400"
+  with_items: "{{ jenkins_analytics_templates }}"

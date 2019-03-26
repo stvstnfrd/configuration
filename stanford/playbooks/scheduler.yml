@@ -19,8 +19,11 @@
   vars_files:
     - "{{ COMMON_DEPLOYMENT_DIR }}/common.yaml"
     - "{{ COMMON_DEPLOYMENT_DIR }}/{{ CLUSTER_NAME }}.yml"
+    - "{{ COMMON_DEPLOYMENT_DIR }}/db.yml"
   roles:
     - role: jenkins_analytics
       tags: jenkins_analytics
+      role: jenkins_analytics_configs
+      tags: jenkins_analytics_configs
 - include: ../playbooks/ami.yml
   when: redeploy | default(False) | bool
