@@ -84,12 +84,12 @@ EDXAPP_FOOTER_EXTERNAL_COURSES_LINK:
   url: 'https://online.stanford.edu'
 EDXAPP_FORCED_TPA_PROVIDER_ID: ''
 EDXAPP_FORUM_MONGO_PARAMS:
-  database: "{{ FORUM_MONGO_DATABASE }}"
+  database: "{{ FORUM_MONGO_DATABASE|default('cs_comments_service') }}"
   hosts:
     - host: 'localhost'
-      port: "{{ FORUM_MONGO_PORT }}"
-  password: "{{ FORUM_MONGO_PASSWORD }}"
-  user: "{{ FORUM_MONGO_USER }}"
+      port: "{{ FORUM_MONGO_PORT|default('27017') }}"
+  password: "{{ FORUM_MONGO_PASSWORD|default('password') }}"
+  user: "{{ FORUM_MONGO_USER|default('cs_comments_service') }}"
 EDXAPP_MONGODB_LOG:
   host: "{{ EDXAPP_MONGO_HOSTS[0] }}"
   db: "{{ EDXAPP_MONGO_DB_NAME }}"
