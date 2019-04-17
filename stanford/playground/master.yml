@@ -13,4 +13,7 @@
       base_url: "{{ EDXAPP_LMS_ROOT_URL }}/media/grades"
     forum_version: 'master'
     # Remember to enable:
-    # /admin/self_paced/selfpacedconfiguration/
+    ##  /admin/self_paced/selfpacedconfiguration/
+    # Fix mysql timezones
+    ##  mysql_tzinfo_to_sql /usr/share/zoneinfo/ | mysql -u root mysql
+    ##  sudo service mysql restart
