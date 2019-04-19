@@ -89,3 +89,5 @@
 #     - neo4j
 #     - role: datadog-uninstall
 #       when: not COMMON_ENABLE_DATADOG
+  post_tasks:
+    - shell: 'mysql_tzinfo_to_sql /usr/share/zoneinfo/ | mysql -u root mysql; sudo service mysql restart'
