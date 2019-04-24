@@ -1,8 +1,8 @@
 [Credentials]
-aws_access_key_id = {{ AWS_ACCESS_KEY_ID }}
-aws_secret_access_key = {{ AWS_SECRET_ACCESS_KEY }}
+aws_access_key_id = {{ JENKINS_ANALYTICS_CONFIG_AWS_ACCESS_KEY_ID }}
+aws_secret_access_key = {{ JENKINS_ANALYTICS_CONFIG_AWS_SECRET_ACCESS_KEY }}
 
 [Boto]
 debug = 1
-ec2_region_name = us-west-1
-ec2_region_endpoint = ec2.us-west-1.amazonaws.com
+ec2_region_name = {{ DEPLOYMENT_REGION }}
+ec2_region_endpoint = ec2.{{ DEPLOYMENT_REGION }}.amazonaws.com

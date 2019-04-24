@@ -20,14 +20,14 @@ instance_groups:
     type: m4.large
     market: ON_DEMAND
 role: emr #EMR_EC2_DefaultRole
-keypair_name: '{{ KEYPAIR_NAME }}'  # your analytics instance key pair name
+keypair_name: '{{ JENKINS_ANALYTICS_CONFIG_KEYPAIR_NAME }}'  # your analytics instance key pair name
 vpc_subnet_id: '{{ DEPLOYMENT_SUBNET_PUBLIC_IDS | first }}'  # public subnet of the VPC
-log_uri: '{{ EVENT_LOGS_SOURCE }}'
+log_uri: '{{ JENKINS_ANALYTICS_CONFIG_EVENT_LOGS_SOURCE }}'
 release_label: 'emr-4.7.2'
 additional_master_security_groups:
-  - {{ ADDITIONAL_MASTER_SECURITY_GROUPS }}
+  - {{ JENKINS_ANALYTICS_CONFIG_ADDITIONAL_MASTER_SECURITY_GROUPS }}
 additional_slave_security_groups:
-  - {{ ADDITIONAL_SLAVE_SECURITY_GROUPS }}
+  - {{ JENKINS_ANALYTICS_CONFIG_ADDITIONAL_SLAVE_SECURITY_GROUPS }}
 
 applications:
   - name: Hadoop
@@ -55,5 +55,5 @@ steps:
   - type: hive_install
   - type: script
     name: "Install Sqoop"
-    step_args: [ {{ INSTALL_SQOOP_STEP_ARGS }} ]
+    step_args: [ {{ JENKINS_ANALYTICS_CONFIG_INSTALL_SQOOP_STEP_ARGS }} ]
     action_on_failure: TERMINATE_JOB_FLOW  # Set to CANCEL_AND_WAIT when debugging step failures.

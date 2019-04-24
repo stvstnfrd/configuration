@@ -1,32 +1,32 @@
 [database-export]
 database = reports
-credentials = {{ DATABASE_EXPORT_CREDENTIALS }}
+credentials = {{ JENKINS_ANALYTICS_CONFIG_DATABASE_EXPORT_CREDENTIALS }}
 
 [database-import]
 database = edxstage
-destination = {{ DATABASE_IMPORT_DESTINATION }}
-credentials = {{ DATABASE_IMPORT_CREDENTIALS }}
+destination = {{ JENKINS_ANALYTICS_CONFIG_DATABASE_IMPORT_DESTINATION }}
+credentials = {{ JENKINS_ANALYTICS_CONFIG_DATABASE_IMPORT_CREDENTIALS }}
 
 [event-logs]
 expand_interval = 30 days
 pattern = [".*tracking.log-(?P<date>[0-9]+).*"]
-source = ["{{ EVENT_LOGS_SOURCE }}"]
+source = ["{{ JENKINS_ANALYTICS_CONFIG_EVENT_LOGS_SOURCE }}"]
 
 [hive]
-warehouse_path = {{ HIVE_WAREHOUSE_PATH }}
+warehouse_path = {{ JENKINS_ANALYTICS_CONFIG_HIVE_WAREHOUSE_PATH }}
 
 [manifest]
-path = {{ MANIFEST_PATH }}
-lib_jar = {{ MANIFEST_LIB_JAR }}
+path = {{ JENKINS_ANALYTICS_CONFIG_MANIFEST_PATH }}
+lib_jar = {{ JENKINS_ANALYTICS_CONFIG_MANIFEST_LIB_JAR }}
 input_format = org.edx.hadoop.input.ManifestTextInputFormat
 
 [map-reduce]
-marker = {{ MAP_REDUCE_MARKER }}
+marker = {{ JENKINS_ANALYTICS_CONFIG_MAP_REDUCE_MARKER }}
 
 [enrollments]
 interval_start = 2015-01-01
 blacklist_date = 2001-01-01
-blacklist_path = {{ ENROLLMENTS_BLACKLIST_PATH }} # this file is empty
+blacklist_path = {{ JENKINS_ANALYTICS_CONFIG_ENROLLMENTS_BLACKLIST_PATH }} # this file is empty
 overwrite_n_days = 3
 
 [location-per-course]
@@ -37,7 +37,7 @@ overwrite_n_days = 3
 valid_response_types = customresponse,choiceresponse,optionresponse,multiplechoiceresponse,numericalresponse,stringresponse,formularesponse
 
 [geolocation]
-geolocation_data = {{ GEOLOCATION_GEOLOCATION_DATA }}
+geolocation_data = {{ JENKINS_ANALYTICS_CONFIG_GEOLOCATION_DATA }}
 
 [calendar]
 interval = 2014-01-01-2030-01-01
@@ -47,7 +47,7 @@ dropoff_threshold = 0.05
 overwrite_n_days = 3
 
 [elasticsearch]
-host = ["{{ ELASTICSEARCH_HOST }}"]
+host = ["{{ JENKINS_ANALYTICS_CONFIG_ELASTICSEARCH_HOST }}"]
 connection_type = aws
 
 [module-engagement]
