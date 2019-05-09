@@ -3,7 +3,7 @@ database = reports
 credentials = {{ JENKINS_ANALYTICS_CONFIG_DATABASE_EXPORT_CREDENTIALS }}
 
 [database-import]
-database = edxstage
+database = {{ COMMON_EDXAPP_MYSQL_DB_NAME }}
 destination = {{ JENKINS_ANALYTICS_CONFIG_DATABASE_IMPORT_DESTINATION }}
 credentials = {{ JENKINS_ANALYTICS_CONFIG_DATABASE_IMPORT_CREDENTIALS }}
 
