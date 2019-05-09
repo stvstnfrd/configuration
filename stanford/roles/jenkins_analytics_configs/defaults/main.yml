@@ -12,5 +12,7 @@ jenkins_analytics_configs_home: /home/jenkins
 jenkins_analytics_configs_user: "jenkins"
 jenkins_analytics_configs_venvs: "{{ jenkins_analytics_configs_home }}/venvs"
 JENKINS_ANALYTICS_CONFIG_EMR_INSTANCE_TYPE: 'm4.large'
+JENKINS_ANALYTICS_CONFIG_EMR_RELEASE_LABEL: 'emr-4.7.2'
+JENKINS_ANALYTICS_CONFIG_EMR_ROLE: emr
 JENKINS_ANALYTICS_CONFIG_PIPELINE_REPO: 'https://github.com/Stanford-Online/edx-analytics-pipeline.git'
 JENKINS_ANALYTICS_CONFIG_PIPELINE_VERSION: rc
