@@ -20,10 +20,10 @@ instance_groups:
     type: "{{ JENKINS_ANALYTICS_CONFIG_EMR_INSTANCE_TYPE }}"
     market: ON_DEMAND
 role: emr #EMR_EC2_DefaultRole
-keypair_name: '{{ JENKINS_ANALYTICS_CONFIG_KEYPAIR_NAME }}'  # your analytics instance key pair name
-vpc_subnet_id: '{{ DEPLOYMENT_SUBNET_PUBLIC_IDS | first }}'  # public subnet of the VPC
-log_uri: '{{ JENKINS_ANALYTICS_CONFIG_EVENT_LOGS_SOURCE }}'
 release_label: 'emr-4.7.2'
+keypair_name: "{{ JENKINS_ANALYTICS_CONFIG_KEYPAIR_NAME }}"  # your analytics instance key pair name
+vpc_subnet_id: "{{ DEPLOYMENT_SUBNET_PUBLIC_IDS | first }}"  # public subnet of the VPC
+log_uri: "{{ JENKINS_ANALYTICS_CONFIG_EVENT_LOGS_SOURCE }}"
 additional_master_security_groups:
   - {{ JENKINS_ANALYTICS_CONFIG_ADDITIONAL_MASTER_SECURITY_GROUPS }}
 additional_slave_security_groups:
