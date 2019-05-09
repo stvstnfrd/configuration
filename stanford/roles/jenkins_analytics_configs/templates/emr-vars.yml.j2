@@ -7,17 +7,17 @@ region: "{{ DEPLOYMENT_REGION }}"
 instance_groups:
   master:
     num_instances: 1
-    type: m4.large
+    type: "{{ JENKINS_ANALYTICS_CONFIG_EMR_INSTANCE_TYPE }}"
     market: ON_DEMAND
   core:
     num_instances: 1
-    type: m4.large
+    type: "{{ JENKINS_ANALYTICS_CONFIG_EMR_INSTANCE_TYPE }}"
     market: ON_DEMAND{% raw %}
     volume_size: "{{ lookup('env', 'VOLUME_SIZE') }}"
   task:
     num_instances: "{{ lookup('env', 'NUM_TASK_INSTANCES') }}"
 {% endraw %}
-    type: m4.large
+    type: "{{ JENKINS_ANALYTICS_CONFIG_EMR_INSTANCE_TYPE }}"
     market: ON_DEMAND
 role: emr #EMR_EC2_DefaultRole
 keypair_name: '{{ JENKINS_ANALYTICS_CONFIG_KEYPAIR_NAME }}'  # your analytics instance key pair name
