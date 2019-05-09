@@ -7,3 +7,9 @@
     group: "{{ jenkins_analytics_configs_group }}"
     mode: "0640"
   with_items: "{{ jenkins_analytics_configs_templates }}"
+- name: Remember to copy files to the appropriate S3 bucket
+  debug:
+    msg: "{{ item }} -> e.g. s://your-credential-bucket/{{ item }}"
+  with_items:
+    - edxapp_creds
+    - edxanalytics_creds
