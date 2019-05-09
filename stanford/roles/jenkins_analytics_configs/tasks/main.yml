@@ -5,5 +5,5 @@
     dest: "{{ jenkins_analytics_configs_home }}/{{ item }}"
     owner: "{{ jenkins_analytics_configs_user }}"
     group: "{{ jenkins_analytics_configs_group }}"
-    mode: "0440"
+    mode: "0640"
   with_items: "{{ jenkins_analytics_configs_templates }}"
