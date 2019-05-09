@@ -1,4 +1,4 @@
-export AWS_REGION={{ DEPLOYMENT_REGION }}
+export AWS_REGION={{ COMMON_REGION }}
 export BOTO_CONFIG=/edx/var/jenkins/.boto
 export EDXAPP_S3_BUCKET="s3://client-name-edxapp"  # bucket for StudentEngagementCsvFileTask reports
 export EXTRA_VARS="@{{ jenkins_analytics_configs_home }}/emr-vars.yml"

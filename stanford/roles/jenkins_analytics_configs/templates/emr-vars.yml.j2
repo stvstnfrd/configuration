@@ -3,7 +3,7 @@
 name: "{{ lookup('env', 'CLUSTER_NAME') }}"
 {% endraw %}
 COMMON_DEPLOYMENT: '{{ COMMON_DEPLOYMENT }}'
-region: "{{ DEPLOYMENT_REGION }}"
+region: "{{ COMMON_REGION }}"
 instance_groups:
   master:
     num_instances: 1

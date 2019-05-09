@@ -20,7 +20,6 @@
     - "{{ COMMON_DEPLOYMENT_DIR }}/common.yaml"
     - "{{ COMMON_DEPLOYMENT_DIR }}/{{ CLUSTER_NAME }}.yml"
     - "{{ COMMON_DEPLOYMENT_DIR }}/edxapp.yml"
-    - ../roles/deployment/defaults/main.yml
   roles:
     - role: jenkins_analytics
       tags: jenkins_analytics
