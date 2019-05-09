@@ -6,7 +6,6 @@ jenkins_analytics_configs_templates:
   - edxanalytics_creds
   - edxapp_creds
   - boto
-
 jenkins_analytics_configs_group: "jenkins"
 jenkins_analytics_configs_home: /home/jenkins
 jenkins_analytics_configs_user: "jenkins"
