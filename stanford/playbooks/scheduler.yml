@@ -20,7 +20,6 @@
     - "{{ COMMON_DEPLOYMENT_DIR }}/analytics-api.yml"
     - "{{ COMMON_DEPLOYMENT_DIR }}/common.yaml"
     - "{{ COMMON_DEPLOYMENT_DIR }}/{{ CLUSTER_NAME }}.yml"
-    - "{{ COMMON_DEPLOYMENT_DIR }}/db.yml"
     - "{{ COMMON_DEPLOYMENT_DIR }}/edxapp.yml"
     - ../roles/deployment/defaults/main.yml
   roles:
