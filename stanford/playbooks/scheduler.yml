@@ -17,7 +17,6 @@
     CLUSTER_NAME: scheduler
     CLUSTER_NUMBER: 1
   vars_files:
-    - "{{ COMMON_DEPLOYMENT_DIR }}/analytics-api.yml"
     - "{{ COMMON_DEPLOYMENT_DIR }}/common.yaml"
     - "{{ COMMON_DEPLOYMENT_DIR }}/{{ CLUSTER_NAME }}.yml"
     - "{{ COMMON_DEPLOYMENT_DIR }}/edxapp.yml"
