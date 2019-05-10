@@ -1,6 +1,6 @@
 {
-  "host": "{{ EDXAPP_MYSQL_HOST }}",
-  "port": "3306",
-  "username": "{{ JENKINS_ANALYTICS_CONFIG_EDXAPP_MYSQL_USERNAME }}",
+  "host": "{{ EDXAPP_MYSQL_REPLICA_HOST }}",
+  "port": "{{ EDXAPP_MYSQL_REPLICA_PORT }}",
+  "username": "{{ EDXAPP_MYSQL_REPLICA_USER }}",
   "password": "{{ JENKINS_ANALYTICS_CONFIG_EDXAPP_MYSQL_PASSWORD }}"
 }
