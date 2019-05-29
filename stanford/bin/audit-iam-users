@@ -49,8 +49,7 @@ def audit_users_never_logged_in(all_users):
     print('')
 
 
-def get_user_data():
-    client = boto3.client('iam')
+def get_user_data(client):
     response = client.generate_credential_report()
     if response.get('State') != 'COMPLETE':
         print('response.State', response.get('State'))
@@ -144,10 +143,46 @@ def print_items(users):
         print('- ' + user['user'])
 
 
+def audit_groups_empty(client, users):
+    print('## empty groups')
+    print('### TODO: delete group')
+    groups = get_groups_empty(client, users)
+    groups = sorted(groups)
+    for group in groups:
+        print('- ' + group)
+    print('')
+
+
+def get_groups_empty(client, users):
+    groups = get_all_groups(client)
+    for user in users:
+        username = user['user']
+        user_groups = get_all_groups(client, username)
+        groups = groups - user_groups
+    return groups
+
+
+def get_all_groups(client, username=None):
+    if username:
+        try:
+            groups = client.list_groups_for_user(UserName=username)
+        except client.exceptions.NoSuchEntityException:
+            return set()
+    else:
+        groups = client.list_groups()
+    groups = groups.get('Groups', {})
+    groups = {
+        group['GroupName']
+        for group in groups
+    }
+    return groups
+
+
 def main():
     print('# User credential report')
     print('')
-    data = get_user_data()
+    client = boto3.client('iam')
+    data = get_user_data(client)
     users = [
         row
         for row in data
@@ -157,6 +192,7 @@ def main():
     audit_unused_keys(users)
     audit_users_never_logged_in(users)
     audit_users_cant_log_in(users)
+    audit_groups_empty(client, users)
 
 
 if __name__ == '__main__':
