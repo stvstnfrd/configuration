@@ -123,6 +123,7 @@ EDXAPP_LANGUAGES:
   - ['ru', 'Русский']
   - ['vi', 'Tiếng Việt']
   - ['zh-cn', '中文 (简体)']
+EDXAPP_MAX_ENROLLEES_FOR_METRICS_USING_DB: 100
 EDXAPP_PASSWORD_COMPLEXITY:
   UPPER: 1
   LOWER: 1
