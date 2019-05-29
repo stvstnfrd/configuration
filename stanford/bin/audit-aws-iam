@@ -179,7 +179,7 @@ def get_all_groups(client, username=None):
 
 
 def main():
-    print('# User credential report')
+    print('# AWS IAM Audit')
     print('')
     client = boto3.client('iam')
     data = get_user_data(client)
