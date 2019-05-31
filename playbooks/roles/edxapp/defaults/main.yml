@@ -864,6 +864,8 @@ EDXAPP_SOCIAL_SHARING_SETTINGS:
   CUSTOM_COURSE_URLS: false
   DASHBOARD_FACEBOOK: true
   DASHBOARD_TWITTER: true
+  FACEBOOK_BRAND: 'StanfordOnline'
+  TWITTER_BRAND: '@StanfordOnline'
 
 #To use AWS S3 as your backend, you need different kwargs:
 # EDXAPP_PROFILE_IMAGE_BACKEND_CONFIG:
