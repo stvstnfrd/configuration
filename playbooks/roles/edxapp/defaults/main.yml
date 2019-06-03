@@ -89,12 +89,12 @@ EDXAPP_FOOTER_EXTERNAL_COURSES_LINK:
   url: 'https://online.stanford.edu'
 EDXAPP_FORCED_TPA_PROVIDER_ID: ''
 EDXAPP_FORUM_MONGO_PARAMS:
-  database: "{{ FORUM_MONGO_DATABASE }}"
+  database: "{{ FORUM_MONGO_DATABASE|default('cs_comments_service') }}"
   hosts:
     - host: 'localhost'
-      port: "{{ FORUM_MONGO_PORT }}"
-  password: "{{ FORUM_MONGO_PASSWORD }}"
-  user: "{{ FORUM_MONGO_USER }}"
+      port: "{{ FORUM_MONGO_PORT|default('27017') }}"
+  password: "{{ FORUM_MONGO_PASSWORD|default('password') }}"
+  user: "{{ FORUM_MONGO_USER|default('cs_comments_service') }}"
 EDXAPP_MONGODB_LOG:
   host: "{{ EDXAPP_MONGO_HOSTS[0] }}"
   db: "{{ EDXAPP_MONGO_DB_NAME }}"
@@ -123,6 +123,7 @@ EDXAPP_LANGUAGES:
   - ['ru', 'Русский']
   - ['vi', 'Tiếng Việt']
   - ['zh-cn', '中文 (简体)']
+EDXAPP_MAX_ENROLLEES_FOR_METRICS_USING_DB: 100
 EDXAPP_PASSWORD_COMPLEXITY:
   UPPER: 1
   LOWER: 1
@@ -406,6 +407,7 @@ EDXAPP_FEATURES: &edxapp_features
   ENTRANCE_EXAMS: true
   FOOTER_DISCLAIMER_TEXT: "{{ EDXAPP_FOOTER_DISCLAIMER_TEXT }}"
   INDIVIDUAL_DUE_DATES: true
+  MAX_ENROLLEES_FOR_METRICS_USING_DB: "{{ EDXAPP_MAX_ENROLLEES_FOR_METRICS_USING_DB }}"
   MAX_ENROLLMENT_INSTR_BUTTONS: 1000
   MILESTONES_APP: true
   REQUIRE_COURSE_EMAIL_AUTH: false
