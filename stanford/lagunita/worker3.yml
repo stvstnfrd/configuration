@@ -1,0 +1,10 @@
+#!/usr/bin/env ansible-playbook
+---
+- include: worker1.yml
+  vars:
+    CLUSTER_NUMBER: 3
+    EDXAPP_CELERY_WORKERS:
+      - queue: grades_backfill
+        service_variant: lms
+        concurrency: 1
+        monitor: True
