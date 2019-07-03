@@ -5,6 +5,7 @@
     CLUSTER_EBS_SIZE: 32
     CLUSTER_INSTANCE_TYPE: 'm4.xlarge'
     COMMON_DEPLOYMENT: suclass
+    EDXAPP_FEATURES_ALLOW_COURSE_RERUNS: false
     nginx_sites:
       - lms
       - cms
