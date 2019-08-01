@@ -18,6 +18,7 @@
 # Stanford Forked Values: Start
 EDXAPP_ADDL_INSTALLED_APPS:
   - class_dashboard
+  - 'openedx.stanford.djangoapps.auth_lagunita'
 EDXAPP_ADVANCED_COMPONENT_TYPES:
   - 'annotatable'
   - 'textannotation'  # module for annotating text (with annotation table)
@@ -65,6 +66,7 @@ EDXAPP_EXTRA_MIMETYPES:
   # StatTutor XBlock
 EDXAPP_FEATURES_COURSES_ARE_BROWSABLE: true
 EDXAPP_FEATURES_DISABLE_COURSE_CREATION: true
+EDXAPP_FEATURES_ALLOW_COURSE_RERUNS: true
 EDXAPP_FEATURES_ENABLE_COSMETIC_DISPLAY_PRICE: true
 EDXAPP_FEATURES_ENABLE_COURSE_DISCOVERY: false
 EDXAPP_FEATURES_ENABLE_COURSEWARE_INDEX: false
@@ -130,7 +132,7 @@ EDXAPP_PASSWORD_COMPLEXITY:
   DIGITS: 1
 EDXAPP_PASSWORD_MIN_LENGTH: 8
 EDXAPP_PAYMENT_CONFIRM_EMAIL: 'noreply@example.com'
-EDXAPP_REGISTRATION_EXTENSION_FORM: ''
+EDXAPP_REGISTRATION_EXTENSION_FORM: 'openedx.stanford.djangoapps.auth_lagunita.forms.InfoForm'
 EDXAPP_SHIB_ONLY: false
 EDXAPP_TRACKING_BACKENDS: {}
 EDXAPP_XBLOCKS_ALWAYS_IN_STUDIO:
@@ -703,7 +705,7 @@ EDXAPP_CELERY_WORKERS:
     monitor: True
   - queue: high_mem
     service_variant: lms
-    concurrency: 1
+    concurrency: 2
     monitor: False
     max_tasks_per_child: 1
     use_codejail_proxy: 1
@@ -1431,6 +1433,7 @@ cms_env_config:
   ADVANCED_COMPONENT_TYPES: "{{ EDXAPP_ADVANCED_COMPONENT_TYPES }}"
   FEATURES:
     <<: *edxapp_features
+    ALLOW_COURSE_RERUNS: "{{ EDXAPP_FEATURES_ALLOW_COURSE_RERUNS }}"
     ENABLE_COURSEWARE_INDEX: "{{ EDXAPP_FEATURES_ENABLE_COURSEWARE_INDEX }}"
     LICENSING: false
   LOGGING_ENV: "{{ EDXAPP_LOGGING_ENV_CMS }}"
