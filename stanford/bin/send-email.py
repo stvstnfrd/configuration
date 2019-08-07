@@ -10,10 +10,9 @@ def send(recipient, sender, sender_name, subject, body):
                 line = line.replace('{RECIPIENT}', recipient).replace('{SENDER}', sender).replace('{SENDER_NAME}', sender_name).replace('{SUBJECT}', subject).replace('{BODY}', body)
                 fout.write(line)
 
-    fout = open('email.txt')
     cmd = ['openssl', 's_client', '-crlf', '-quiet', '-connect', 'email-smtp.us-east-1.amazonaws.com:465']
-    call(cmd, stdin=fout)
-    fout.close()
+    with open('email.txt') as fout:
+        call(cmd, stdin=fout)
     call(['rm', 'email.txt'])
 
 if __name__ == '__main__':
