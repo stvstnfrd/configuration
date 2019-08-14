@@ -1,0 +1,71 @@
+---
+- name: 'Create buildbot_master group'
+  group:
+    name: "{{ buildbot_master_group }}"
+    state: 'present'
+
+- name: 'Add the buildbot_master user to the group'
+  user:
+    name: "{{ buildbot_master_user }}"
+    append: yes
+    groups: "{{ buildbot_master_group }}"
+
+- name: 'Make buildbot_master directory'
+  file:
+    path: "{{ buildbot_master_dir }}"
+    state: 'directory'
+    owner: "{{ buildbot_master_user }}"
+    group: "{{ buildbot_master_group }}"
+    mode: 0755
+
+- name: 'Create virtualenv for buildbot_master'
+  command: "virtualenv --clear {{ buildbot_master_venv }}"
+  become: yes
+  become_user: "{{ buildbot_master_user }}"
+
+# txrequests allows Buildbot to communicate with GitHub
+- name: 'Install txrequests'
+  pip:
+    name: 'txrequests'
+    virtualenv: "{{ buildbot_master_venv }}"
+  become: yes
+  become_user: "{{ buildbot_master_user }}"
+
+- name: 'Install buildbot'
+  pip:
+    name: 'buildbot[bundle]'
+    virtualenv: "{{ buildbot_master_venv }}"
+  become: yes
+  become_user: "{{ buildbot_master_user }}"
+
+- name: 'Create master'
+  command: "{{ buildbot_master_venv_bin }}/buildbot create-master {{ buildbot_master_masterdir }}"
+  become: yes
+  become_user: "{{ buildbot_master_user }}"
+
+- name: 'Create openedx_buildbot directory for config files'
+  file:
+    path: "{{ buildbot_master_masterdir }}/openedx_buildbot"
+    state: 'directory'
+    owner: "{{ buildbot_master_user }}"
+    group: "{{ buildbot_master_group }}"
+    mode: 0755
+
+- name: 'Generate config files'
+  template:
+    src: "{{ buildbot_master_templates }}/{{ item }}.j2"
+    dest: "{{ buildbot_master_masterdir }}/{{ item }}"
+    owner: "{{ buildbot_master_user }}"
+    group: "{{ buildbot_master_group }}"
+    mode: 0644
+  with_items: "{{ buildbot_master_config_files }}"
+
+- name: 'Delete sample config file'
+  command: "rm {{ buildbot_master_masterdir }}/master.cfg.sample"
+  become: yes
+  become_user: "{{ buildbot_master_user }}"
+
+- name: 'Start master'
+  command: "{{ buildbot_master_venv_bin }}/buildbot start {{ buildbot_master_masterdir }}"
+  become: yes
+  become_user: "{{ buildbot_master_user }}"
