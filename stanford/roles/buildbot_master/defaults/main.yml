@@ -1,0 +1,47 @@
+---
+buildbot_master_group: 'buildbot_master'
+buildbot_master_user: 'buildbot_master'
+
+buildbot_master_dir: "{{ COMMON_APP_DIR }}/buildbot_master"
+buildbot_master_venv: "{{ buildbot_master_dir }}/venv"
+buildbot_master_venv_bin: "{{ buildbot_master_venv }}/bin"
+buildbot_master_masterdir: "{{ buildbot_master_dir }}/master"
+buildbot_master_templates: "{{ role_path }}/templates"
+buildbot_master_config_files:
+  - 'master.cfg'
+  - 'openedx_buildbot/configuration.py'
+  - 'openedx_buildbot/edxapp.py'
+  - 'openedx_buildbot/__init__.py'
+
+# TODO: Add support for js-unit, commonlib-js-unit, lms-acceptance,
+# cms-acceptance, and bok-choy tests.
+BUILDBOT_MASTER_EDX_PLATFORM_TESTS:
+  - 'quality'
+  - 'lms-unit'
+  - 'cms-unit'
+  - 'js-unit'
+  - 'commonlib-unit'
+
+BUILDBOT_MASTER_PB_PORT: 9989
+BUILDBOT_MASTER_PROJECT_TITLE: 'Lagunita'
+BUILDBOT_MASTER_PROJECT_URL: 'https://lagunita.stanford.edu'
+BUILDBOT_MASTER_BUILDBOT_PROTOCOL: 'http'
+BUILDBOT_MASTER_BUILDBOT_DOMAIN: 'localhost'
+BUILDBOT_MASTER_BUILDBOT_PORT: 8010
+BUILDBOT_MASTER_BUILDBOT_URL: "{{ BUILDBOT_MASTER_BUILDBOT_PROTOCOL }}://{{ BUILDBOT_MASTER_BUILDBOT_DOMAIN }}:{{ BUILDBOT_MASTER_BUILDBOT_PORT }}/"
+BUILDBOT_MASTER_DB_URL: 'sqlite:///state.sqlite'
+BUILDBOT_MASTER_X11_DISPLAY: ':1'
+
+BUILDBOT_MASTER_CONFIGURATION_OWNER: 'Stanford-Online'
+BUILDBOT_MASTER_CONFIGURATION_URL: "https://github.com/{{ BUILDBOT_MASTER_CONFIGURATION_OWNER}}/configuration.git"
+BUILDBOT_MASTER_EDX_PLATFORM_OWNER: 'Stanford-Online'
+BUILDBOT_MASTER_EDX_PLATFORM_URL: "https://github.com/{{ BUILDBOT_MASTER_EDX_PLATFORM_OWNER }}/edx-platform.git"
+
+BUILDBOT_MASTER_GITHUB_AUTH: False
+BUILDBOT_MASTER_GITHUB_API_TOKEN: 'githubAPIToken'
+BUILDBOT_MASTER_GITHUB_CLIENTID: 'githubClientID'
+BUILDBOT_MASTER_GITHUB_CLIENTSECRET: 'githubClientSecret'
+BUILDBOT_MASTER_GITHUB_GROUP: 'Stanford-Online'
+BUILDBOT_MASTER_USERS:
+  - name: 'edxuser'
+    password: 'edxpassword'

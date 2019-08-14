@@ -1,0 +1,135 @@
+"""
+Contains definitions for configuration repo builds
+"""
+
+from buildbot.plugins import changes, schedulers, steps, util
+
+VENV_DIR = util.Interpolate('%(prop:builddir)s/venv')
+VENV_PYTHON = util.Interpolate('%s/bin/python', VENV_DIR)
+VENV_ACTIVATE = util.Interpolate('%s/bin/activate', VENV_DIR)
+
+def get_github_pr_poller():
+    """
+    Returns a change source that polls GitHub for pull requests
+    """
+    return changes.GitHubPullrequestPoller(
+        owner='{{ BUILDBOT_MASTER_CONFIGURATION_OWNER }}',
+        repo='configuration',
+        branches=[
+            'master',
+        ],
+        pollAtLaunch=True,
+        token='{{ BUILDBOT_MASTER_GITHUB_API_TOKEN }}'
+    )
+
+def get_git_poller():
+    """
+    Returns a change source tha poll GitHub for changes
+    """
+    return changes.GitPoller(
+        repourl='{{ BUILDBOT_MASTER_CONFIGURATION_URL }}',
+        branches=[
+            'master',
+        ],
+        pollAtLaunch=True,
+    )
+
+def get_test_force_scheduler():
+    """
+    Returns a scheduler to start a build manually
+    """
+    return schedulers.ForceScheduler(
+        name='configuration-runtests-force',
+        builderNames=[
+            'configuration-runtests',
+        ],
+        codebases=[
+            util.CodebaseParameter(
+                codebase='',
+                name='Repository',
+                repository=util.StringParameter(
+                    name='repository',
+                    label='repository:',
+                    default='{{ BUILDBOT_MASTER_CONFIGURATION_URL }}',
+                    required=False,
+                ),
+                branch=util.StringParameter(
+                    name='branch',
+                    label='branch:',
+                    default='master',
+                    required=False,
+                ),
+                project='',
+            ),
+        ],
+    )
+
+def get_test_any_branch_scheduler():
+    """
+    Returns a scheduler that responds to changes
+    """
+    return schedulers.AnyBranchScheduler(
+        name='configuration-runtests-automatic',
+        treeStableTimer=60,
+        change_filter=util.ChangeFilter(
+            repository='{{ BUILDBOT_MASTER_CONFIGURATION_URL }}',
+        ),
+        builderNames=[
+            'configuration-runtests',
+        ],
+    )
+
+def get_test_factory():
+    """
+    Returns a build factory that runs tests
+    """
+    factory = util.BuildFactory()
+    factory.addStep(steps.GitHub(
+        name='Clone git repo',
+        repourl=util.Property('repository'),
+        mode='full',
+        haltOnFailure=True,
+    ))
+    factory.addStep(steps.ShellSequence(
+        name='Install requirements',
+        commands=[
+            util.ShellArg(
+                logfile='Create virtualenv',
+                command=['virtualenv', '--clear', VENV_DIR],
+                haltOnFailure=True,
+            ),
+            util.ShellArg(
+                logfile='Install requirements',
+                command=[VENV_PYTHON, '-m', 'pip', 'install',
+                         '--allow-all-external', '-r', 'requirements.txt'],
+                haltOnFailure=True,
+            ),
+            util.ShellArg(
+                logfile='Install demjson',
+                command=[VENV_PYTHON, '-m', 'pip', 'install',
+                         '--allow-all-external', 'demjson'],
+                haltOnFailure=True,
+            ),
+        ],
+        haltOnFailure=True,
+    ))
+    factory.addStep(steps.ShellCommand(
+        name='Run tests',
+        command=util.Interpolate('. "%s" && make test', VENV_ACTIVATE),
+        haltOnFailure=True,
+    ))
+    return factory
+
+def get_test_builder():
+    """
+    Returns a builder that runs tests
+    """
+    return util.BuilderConfig(
+        name='configuration-runtests',
+        workernames=[
+        {% for worker in buildbot_common_configuration_workers %}
+            '{{ worker.name }}',
+        {% endfor %}
+        ],
+        factory=get_test_factory(),
+    )

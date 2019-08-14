@@ -1,0 +1,21 @@
+---
+buildbot_common_configuration_workers:
+  - name: 'configuration_worker1'
+    password: 'somesupersecurepassword'
+    host: 'localhost'
+
+buildbot_common_edx_platform_workers:
+  - name: 'edx_platform_worker1'
+    password: 'anothersupersecurepassword'
+    host: 'localhost'
+  - name: 'edx_platform_worker2'
+    password: 'anothersupersecurepassword'
+    host: 'localhost'
+  - name: 'edx_platform_worker3'
+    password: 'anothersupersecurepassword'
+    host: 'localhost'
+  - name: 'edx_platform_worker4'
+    password: 'anothersupersecurepassword'
+    host: 'localhost'
+
+buildbot_common_all_workers: "{{ buildbot_common_configuration_workers + buildbot_common_edx_platform_workers }}"

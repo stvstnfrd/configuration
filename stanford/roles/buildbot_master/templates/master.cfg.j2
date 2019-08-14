@@ -1,0 +1,125 @@
+# -*- python -*-
+# vim: set filetype=python :
+
+# CHANGESOURCES listen for changes (in this case, on git repos), and then
+# communicate these changes to SCHEDULERS, which filter out changes
+# irrelevant to them and possibly schedule builds. Some SCHEDULERS do not
+# react to changes, but other events, like manual button presses or other
+# builds finishing. When a SCHEDULER kicks off a build, it puts the build
+# in the queue of some BUILDER. The BUILDER runs the build on a particular
+# WORKER, with steps specified by a BUILD FACTORY. A BUILDER may have a choice
+# of WORKERS to perform the build on, and multiple different builds can run on
+# the same worker at the same time.
+
+from buildbot.plugins import reporters, util, worker
+from openedx_buildbot import configuration, edxapp
+
+c = BuildmasterConfig = {}
+
+####### WORKERS
+
+c['workers'] = [
+{% for worker in buildbot_common_all_workers %}
+    worker.Worker(
+        '{{ worker.name }}',
+        '{{ worker.password }}',
+    ),
+{% endfor %}
+]
+
+c['protocols'] = {
+    'pb': {
+        'port': {{ BUILDBOT_MASTER_PB_PORT }},
+    },
+}
+
+####### CHANGESOURCES
+
+c['change_source'] = [
+    configuration.get_github_pr_poller(),
+    configuration.get_git_poller(),
+    edxapp.get_github_pr_poller(),
+    edxapp.get_git_poller(),
+]
+
+####### SCHEDULERS
+
+c['schedulers'] = [
+    configuration.get_test_force_scheduler(),
+    configuration.get_test_any_branch_scheduler(),
+    edxapp.get_test_force_scheduler(),
+    edxapp.get_test_any_branch_scheduler(),
+]
+
+####### BUILDERS
+
+c['builders'] = [
+    configuration.get_test_builder(),
+    edxapp.get_test_builder(),
+]
+
+####### BUILDBOT SERVICES
+
+c['services'] = [
+    reporters.GitHubStatusPush(
+        token='{{ BUILDBOT_MASTER_GITHUB_API_TOKEN }}',
+        startDescription='Testing started.',
+        endDescription='Testing done.',
+    ),
+]
+
+####### PROJECT IDENTITY
+
+c['title'] = '{{ BUILDBOT_MASTER_PROJECT_TITLE }}'
+c['titleURL'] = '{{ BUILDBOT_MASTER_PROJECT_URL }}'
+c['buildbotURL'] = '{{ BUILDBOT_MASTER_BUILDBOT_URL }}'
+c['www'] = {
+    'port': {{ BUILDBOT_MASTER_BUILDBOT_PORT }},
+    'plugins': {
+        'waterfall_view': {},
+        'console_view': {},
+    },
+{% if BUILDBOT_MASTER_GITHUB_AUTH %}
+    'auth': util.GitHubAuth(
+        '{{ BUILDBOT_MASTER_GITHUB_CLIENTID }}',
+        '{{ BUILDBOT_MASTER_GITHUB_CLIENTSECRET }}',
+    ),
+    'authz': util.Authz(
+        allowRules=[
+            util.AnyEndpointMatcher(role='{{ BUILDBOT_MASTER_GITHUB_GROUP }}'),
+        ],
+        roleMatchers=[
+            util.RolesFromGroups(groupPrefix=''),
+        ],
+    )
+{% else %}
+    'auth': util.UserPasswordAuth({
+    {% for user in BUILDBOT_MASTER_USERS %}
+        '{{ user.name }}': '{{ user.password }}',
+    {% endfor %}
+    }),
+    'authz': util.Authz(
+        allowRules=[
+            util.AnyEndpointMatcher(role='contributors'),
+        ],
+        roleMatchers=[
+            util.RolesFromUsername(
+                roles=[
+                    'contributors',
+                ],
+                usernames=[
+                {% for user in BUILDBOT_MASTER_USERS %}
+                    '{{ user.name }}',
+                {% endfor %}
+                ],
+            ),
+        ],
+    ),
+{% endif %}
+}
+
+####### DB URL
+
+c['db'] = {
+    'db_url': '{{ BUILDBOT_MASTER_DB_URL }}',
+}
