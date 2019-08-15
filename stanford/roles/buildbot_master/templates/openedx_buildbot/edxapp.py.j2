@@ -1,0 +1,252 @@
+"""
+Contains definitions for edx-platform repo builds
+"""
+
+from buildbot.plugins import changes, schedulers, steps, util
+
+VENV_DIR = util.Interpolate('%(prop:builddir)s/venv')
+VENV_PYTHON = util.Interpolate('%s/bin/python', VENV_DIR)
+VENV_ACTIVATE = util.Interpolate('%s/bin/activate', VENV_DIR)
+GEM_HOME = util.Interpolate('%(prop:builddir)s/.gem')
+GEM_BIN = util.Interpolate('%s/bin', GEM_HOME)
+NODE_BIN = util.Interpolate('%(prop:builddir)s/build/node_modules/.bin')
+ENV = {
+    # From scripts/all-tests.sh in edx-platform
+    'PYLINT_THRESHOLD': '4900',
+    'JSHINT_THRESHOLD': '9080',
+    'DISPLAY': '{{ BUILDBOT_MASTER_X11_DISPLAY }}',
+    'GEM_HOME': GEM_HOME,
+    'PATH': [
+        GEM_BIN,
+        # From scripts/jenkins-common.sh in edx-platform
+        NODE_BIN,
+        '${PATH}',
+    ],
+}
+system_req_lock = util.MasterLock('system-req')
+
+def get_github_pr_poller():
+    """
+    Returns a change source that polls GitHub for pull requests
+    """
+    return changes.GitHubPullrequestPoller(
+        owner='{{ BUILDBOT_MASTER_EDX_PLATFORM_OWNER }}',
+        repo='edx-platform',
+        branches=[
+            'master',
+        ],
+        pollAtLaunch=True,
+        token='{{ BUILDBOT_MASTER_GITHUB_API_TOKEN }}',
+    )
+
+def get_git_poller():
+    """
+    Returns a change source that polls GitHub for changes
+    """
+    return changes.GitPoller(
+        repourl='{{ BUILDBOT_MASTER_EDX_PLATFORM_URL }}',
+        branches=[
+            'master',
+        ],
+        pollAtLaunch=True,
+    )
+
+def get_test_force_scheduler():
+    """
+    Returns a scheduler to start a build manually
+    """
+    return schedulers.ForceScheduler(
+        name='edx-platform-runtests-force',
+        builderNames=[
+            'edx-platform-runtests',
+        ],
+        codebases=[
+            util.CodebaseParameter(
+                codebase='',
+                name='Repository',
+                repository=util.StringParameter(
+                    name='repository',
+                    label='repository:',
+                    default='{{ BUILDBOT_MASTER_EDX_PLATFORM_URL }}',
+                    required=False,
+                ),
+                branch=util.StringParameter(
+                    name='branch',
+                    label='branch:',
+                    default='master',
+                    required=False,
+                ),
+                project='',
+            ),
+        ],
+    )
+
+def get_test_any_branch_scheduler():
+    """
+    Returns a scheduler that reponds to changes
+    """
+    return schedulers.AnyBranchScheduler(
+        name='edx-platform-runtests-automatic',
+        treeStableTimer=60,
+        change_filter=util.ChangeFilter(
+            repository='{{ BUILDBOT_MASTER_EDX_PLATFORM_URL }}',
+        ),
+        builderNames=[
+            'edx-platform-runtests',
+        ],
+    )
+
+def get_test_factory():
+    """
+    Returns a build factory that runs tests
+    """
+    factory = util.BuildFactory()
+    factory.addStep(steps.GitHub(
+        name='Clone git repo',
+        repourl=util.Property('repository'),
+        mode='full',
+        haltOnFailure=True,
+    ))
+    factory.addStep(steps.ShellCommand(
+        name='Install system requirements',
+        env=ENV,
+        command=['scripts/install-system-req.sh'],
+        locks=[
+            system_req_lock.access('exclusive'),
+        ],
+        haltOnFailure=True,
+    ))
+    factory.addStep(steps.ShellSequence(
+        name='Install python, npm, and ruby requirements',
+        env=ENV,
+        timeout=3600,
+        commands=[
+            util.ShellArg(
+                logfile='Create virtualenv',
+                command=['virtualenv', '--clear', VENV_DIR],
+                haltOnFailure=True,
+            ),
+            util.ShellArg(
+                logfile='Make .gem directory',
+                command=['mkdir', '-p', GEM_HOME],
+                haltOnFailure=True,
+            ),
+            util.ShellArg(
+                logfile='Install npm packages',
+                command=['npm', 'install'],
+                haltOnFailure=True,
+            ),
+            util.ShellArg(
+                logfile='Install bundler packages',
+                command=['bundle', 'install'],
+                haltOnFailure=True,
+            ),
+            util.ShellArg(
+                logfile='Remove stray gems',
+                command=['bundle', 'clean', '--force'],
+                haltOnFailure=False,
+            ),
+            util.ShellArg(
+                logfile='Install pre requirements',
+                command=[VENV_PYTHON, '-m', 'pip', 'install',
+                         '--exists-action', 'w', '-r',
+                         'requirements/edx/pre.txt'],
+                haltOnFailure=True,
+            ),
+            util.ShellArg(
+                logfile='Install github requirements',
+                command=[VENV_PYTHON, '-m', 'pip', 'install',
+                         '--exists-action', 'w', '-r',
+                         'requirements/edx/github.txt'],
+                haltOnFailure=True,
+            ),
+            util.ShellArg(
+                logfile='Install stanford requirements',
+                command=[VENV_PYTHON, '-m', 'pip', 'install',
+                         '--exists-action', 'w', '-r',
+                         'requirements/edx/stanford.txt'],
+                haltOnFailure=True,
+            ),
+            util.ShellArg(
+                logfile='Install local requirements',
+                command=[VENV_PYTHON, '-m', 'pip', 'install',
+                         '--exists-action', 'w', '-r',
+                         'requirements/edx/local.txt'],
+                haltOnFailure=True,
+            ),
+            util.ShellArg(
+                logfile='Install base requirements',
+                command=[VENV_PYTHON, '-m', 'pip', 'install',
+                         '--exists-action', 'w', '-r',
+                         'requirements/edx/base.txt'],
+                haltOnFailure=True,
+            ),
+            util.ShellArg(
+                logfile='Install paver requirements',
+                command=[VENV_PYTHON, '-m', 'pip', 'install',
+                         '--exists-action', 'w', '-r',
+                         'requirements/edx/paver.txt'],
+                haltOnFailure=True,
+            ),
+            util.ShellArg(
+                logfile='Install post requirements',
+                command=util.Interpolate(
+                    (
+                        'if [ -e requirements/edx/post.txt ]; then '
+                        '. "%s" ; '
+                        'pip install --exists-action w -r '
+                        'requirements/edx/post.txt ; '
+                        'fi'
+                    ),
+                    VENV_ACTIVATE,
+                ),
+                haltOnFailure=True,
+            ),
+            util.ShellArg(
+                logfile='Install coveralls',
+                command=[VENV_PYTHON, '-m', 'pip', 'install',
+                         'coveralls==1.0'],
+                haltOnFailure=True,
+            ),
+            util.ShellArg(
+                logfile='List pip packages',
+                command=[VENV_PYTHON, '-m', 'pip', 'freeze'],
+                haltOnFailure=True,
+            ),
+        ],
+        haltOnFailure=True,
+    ))
+    factory.addStep(steps.ShellSequence(
+        name='Run tests',
+        env=ENV,
+        timeout=3600,
+        commands=[
+        {% for test in BUILDBOT_MASTER_EDX_PLATFORM_TESTS %}
+            util.ShellArg(
+                logfile='Run {{ test }} tests',
+                command=util.Interpolate(
+                    '. "%s" && TEST_SUITE="%s" ./scripts/generic-ci-tests.sh',
+                    VENV_ACTIVATE,
+                    '{{ test }}',
+                ),
+                haltOnFailure=False,
+            ),
+        {% endfor %}
+        ],
+        haltOnFailure=False,
+    ))
+    return factory
+
+def get_test_builder():
+    """
+    Returns a builder that runs tests
+    """
+    return util.BuilderConfig(
+        name='edx-platform-runtests',
+        workernames=[
+        {% for worker in buildbot_common_edx_platform_workers %}
+            '{{ worker.name }}',
+        {% endfor %}
+        ],
+        factory=get_test_factory(),
+    )

@@ -1,0 +1,6 @@
+- name: 'Configure instance(s)'
+  hosts: 'all'
+  sudo: True
+  roles:
+    - 'buildbot_master'
+    - 'buildbot_worker'

@@ -1,0 +1,78 @@
+---
+- name: 'Create buildbot_worker group'
+  group:
+    name: "{{ buildbot_worker_group }}"
+    state: 'present'
+
+- name: 'Allow buildbot_worker group to have passwordless sudo'
+  lineinfile:
+    dest: '/etc/sudoers'
+    state: 'present'
+    regexp: "^%{{ buildbot_worker_group }}"
+    line: "%{{ buildbot_worker_group }} ALL=(ALL) NOPASSWD: ALL"
+
+- name: 'Add the buildbot_worker user to the group'
+  user:
+    name: "{{ buildbot_worker_user }}"
+    append: yes
+    groups: "{{ buildbot_worker_group }}"
+
+- name: 'Make buildbot_worker directory'
+  file:
+    path: "{{ buildbot_worker_dir }}"
+    state: 'directory'
+    mode: 0755
+    owner: "{{ buildbot_worker_user }}"
+    group: "{{ buildbot_worker_group }}"
+
+- name: 'Create virtualenv for buildbot_worker'
+  command: "virtualenv --clear {{ buildbot_worker_venv }}"
+  become: yes
+  become_user: "{{ buildbot_worker_user }}"
+
+- name: 'Install buildbot-worker'
+  pip:
+    name: 'buildbot-worker'
+    virtualenv: "{{ buildbot_worker_venv }}"
+  become: yes
+  become_user: "{{ buildbot_worker_user }}"
+
+- name: 'Create workers'
+  command: "{{ buildbot_worker_venv_bin }}/buildbot-worker create-worker \
+    {{ buildbot_worker_dir }}/{{ item.name }} {{ item.host }} \
+    {{ item.name }} {{ item.password }}"
+  with_items: "{{ buildbot_common_all_workers }}"
+  become: yes
+  become_user: "{{ buildbot_worker_user }}"
+
+- name: 'Start configuration workers'
+  command: "{{ buildbot_worker_venv_bin }}/buildbot-worker start \
+    {{ buildbot_worker_dir }}/{{ item.name }}"
+  with_items: "{{ buildbot_common_configuration_workers }}"
+  become: yes
+  become_user: "{{ buildbot_worker_user }}"
+
+# The -l flag is necessary to get npm to work properly. It can be added more
+# elegantly in Ansible 2.2 by using 'become_flags' (which should also allow
+# the use of the use of 'evironment' for setting the JSCOVER_JAR variable).
+- name: 'Start edx-platform workers'
+  command: "su {{ buildbot_worker_user }} -l -c \
+    \"JSCOVER_JAR=\\\"/usr/local/bin/JSCover-all-{{ jscover_version }}.jar\\\" \
+    {{ buildbot_worker_venv_bin }}/buildbot-worker start \
+    {{ buildbot_worker_dir }}/{{ item.name }}\""
+  with_items: "{{ buildbot_common_edx_platform_workers }}"
+  become: yes
+
+- name: 'Install configuration requirements'
+  apt:
+    name: "{{ item }}"
+    update_cache: yes
+  with_items: "{{ buildbot_worker_configuration_requirements }}"
+  become: yes
+
+- name: 'Install edx-platform requirements'
+  apt:
+    name: "{{ item }}"
+    update_cache: yes
+  with_items: "{{ buildbot_worker_edx_platform_requirements }}"
+  become: yes
