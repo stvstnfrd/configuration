@@ -1,5 +1,0 @@
-#!/usr/bin/env ansible-playbook
----
-- include: jump1.yml
-  vars:
-    CLUSTER_NUMBER: 2
