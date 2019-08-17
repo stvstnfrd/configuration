@@ -79,14 +79,8 @@
     - role: journals
       when: JOURNALS_ENABLED
     - edx_ansible
-#     - role: datadog
-#       when: COMMON_ENABLE_DATADOG
-#     - role: splunkforwarder
-#       when: COMMON_ENABLE_SPLUNKFORWARDER
-#     - role: postfix_queue
-#       when: POSTFIX_QUEUE_EXTERNAL_SMTP_HOST != ''
-#     - neo4j
-#     - role: datadog-uninstall
-#       when: not COMMON_ENABLE_DATADOG
+    - role: postfix_queue
+      when: POSTFIX_QUEUE_EXTERNAL_SMTP_HOST != ''
+    - neo4j
   post_tasks:
     - shell: 'mysql_tzinfo_to_sql /usr/share/zoneinfo/ | mysql -u root mysql; sudo service mysql restart'
