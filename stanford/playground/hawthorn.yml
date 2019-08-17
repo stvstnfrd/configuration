@@ -4,11 +4,10 @@
   vars:
     CLUSTER_SANDBOX_NAME: hawthorn
     COMMON_DEPLOYMENT: playground
-    CONFIGURATION_REPO: 'https://github.com/stvstnfrd/configuration.git'
+    configuration_version: 'open-release/hawthorn.master'
     edx_ansible_source_repo: "{{ CONFIGURATION_REPO }}"
     edx_platform_version: 'open-release/hawthorn.master'
     EDXAPP_COMPREHENSIVE_THEME_VERSION: 'open-release/hawthorn.master'
-    configuration_version: 'hawthorn/wip'
     NOTIFIER_VERSION: 'hawthorn/wip'
     forum_version: 'hawthorn/wip'
     # Remember to enable:
