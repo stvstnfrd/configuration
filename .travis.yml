@@ -8,6 +8,7 @@ branches:
   - master
   - rc
   - release
+  - /^open-release.*$/
 
 services:
   - docker
