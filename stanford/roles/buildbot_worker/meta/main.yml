@@ -3,5 +3,4 @@ dependencies:
   - 'common'
   - 'jscover'
   - 'browsers'
-  - 'browsermob-proxy'
   - 'buildbot_common'
