@@ -11,7 +11,7 @@ EOF
 for role_dir in $ROLE_DIRS; do
     echo "    - $(basename $role_dir)" >> travis-test.yml
 done
-cd ../stanford
+pushd ../stanford
 ROLE_DIRS=$(/bin/ls -d roles/*)
 cd stage
 cat <<EOF >travis-test.yml
@@ -22,7 +22,7 @@ EOF
 for role_dir in $ROLE_DIRS; do
     echo "    - $(basename $role_dir)" >> travis-test.yml
 done
-# TODO: test stanford roles
+popd
 
 cat travis-test.yml
 echo
