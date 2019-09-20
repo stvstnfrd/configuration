@@ -101,7 +101,7 @@ EDXAPP_MARKETO_CLIENT_ID: ''
 EDXAPP_MARKETO_CLIENT_SECRET: ''
 EDXAPP_MARKETO_LIST_ID: 0
 EDXAPP_MONGODB_LOG:
-  host: "{{ EDXAPP_MONGO_HOSTS[0] }}"
+  host: "{{ EDXAPP_MONGO_HOSTS|join(',') }}"
   db: "{{ EDXAPP_MONGO_DB_NAME }}"
   user: "{{ EDXAPP_MONGO_USER }}"
   password: "{{ EDXAPP_MONGO_PASSWORD }}"
@@ -206,7 +206,8 @@ EDXAPP_XQUEUE_DJANGO_AUTH:
 EDXAPP_XQUEUE_URL: 'http://localhost:18040'
 
 # Comma-separated list of hosts/ips
-EDXAPP_MONGO_HOSTS: 'localhost'
+EDXAPP_MONGO_HOSTS:
+  - 'localhost'
 EDXAPP_MONGO_PASSWORD: 'password'
 EDXAPP_MONGO_PORT: 27017
 EDXAPP_MONGO_USER: 'edxapp'
