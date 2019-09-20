@@ -106,13 +106,6 @@ EDXAPP_MONGODB_LOG:
   user: "{{ EDXAPP_MONGO_USER }}"
   password: "{{ EDXAPP_MONGO_PASSWORD }}"
   port: "{{ EDXAPP_MONGO_PORT }}"
-edxapp_generic_default_docstring:
-  db: "{{ EDXAPP_MONGO_DB_NAME }}"
-  host: "{{ EDXAPP_MONGO_HOSTS }}"
-  password: "{{ EDXAPP_MONGO_PASSWORD }}"
-  port: "{{ EDXAPP_MONGO_PORT }}"
-  user: "{{ EDXAPP_MONGO_USER }}"
-  collection:  'modulestore'
 EDXAPP_HELP_MODAL_LINKS:
   - 'url': 'https://stanfordonline.zendesk.com/hc/en-us/articles/202275024-How-do-I-create-an-account-'
     'text': 'How to register an account'
