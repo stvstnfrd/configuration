@@ -1,6 +1,0 @@
-#!/usr/bin/env ansible-playbook
----
-- include: edxapp1.yml
-  vars:
-    CLUSTER_INSTANCE_TYPE: 't2.medium'
-    CLUSTER_NUMBER: 0

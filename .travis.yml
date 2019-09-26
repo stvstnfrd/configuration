@@ -6,6 +6,8 @@ python:
 branches:
   only:
   - master
+  - rc
+  - release
 
 services:
   - docker
