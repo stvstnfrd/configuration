@@ -1,0 +1,59 @@
+[database-export]
+database = reports
+credentials = {{ JENKINS_ANALYTICS_CONFIG_DATABASE_EXPORT_CREDENTIALS }}
+
+[database-import]
+database = {{ EDXAPP_MYSQL_DB_NAME }}
+destination = {{ JENKINS_ANALYTICS_CONFIG_DATABASE_IMPORT_DESTINATION }}
+credentials = {{ JENKINS_ANALYTICS_CONFIG_DATABASE_IMPORT_CREDENTIALS }}
+
+[event-logs]
+expand_interval = 30 days
+pattern = [".*tracking.log-(?P<date>[0-9]+).*"]
+source = ["{{ JENKINS_ANALYTICS_CONFIG_EVENT_LOGS_SOURCE }}"]
+
+[hive]
+warehouse_path = {{ JENKINS_ANALYTICS_CONFIG_HIVE_WAREHOUSE_PATH }}
+
+[manifest]
+path = {{ JENKINS_ANALYTICS_CONFIG_MANIFEST_PATH }}
+lib_jar = {{ JENKINS_ANALYTICS_CONFIG_MANIFEST_LIB_JAR }}
+input_format = org.edx.hadoop.input.ManifestTextInputFormat
+
+[map-reduce]
+marker = {{ JENKINS_ANALYTICS_CONFIG_MAP_REDUCE_MARKER }}
+
+[enrollments]
+interval_start = 2015-01-01
+blacklist_date = 2001-01-01
+blacklist_path = {{ JENKINS_ANALYTICS_CONFIG_ENROLLMENTS_BLACKLIST_PATH }} # this file is empty
+overwrite_n_days = 3
+
+[location-per-course]
+interval_start = 2015-01-01
+overwrite_n_days = 3
+
+[answer-distribution]
+valid_response_types = customresponse,choiceresponse,optionresponse,multiplechoiceresponse,numericalresponse,stringresponse,formularesponse
+
+[geolocation]
+geolocation_data = {{ JENKINS_ANALYTICS_CONFIG_GEOLOCATION_DATA }}
+
+[calendar]
+interval = 2014-01-01-2030-01-01
+
+[videos]
+dropoff_threshold = 0.05
+overwrite_n_days = 3
+
+[elasticsearch]
+host = ["{{ JENKINS_ANALYTICS_CONFIG_ELASTICSEARCH_HOST }}"]
+connection_type = aws
+
+[module-engagement]
+alias = roster_1_2
+number_of_shards = 5
+allow_empty_insert = true
+
+[user-activity]
+overwrite_n_days = 10
