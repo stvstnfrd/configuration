@@ -1,0 +1,59 @@
+---
+# Load the cluster name from the environment so that it matches the variable used to lookup the provisioned cluster.{% raw %}
+name: "{{ lookup('env', 'CLUSTER_NAME') }}"
+{% endraw %}
+COMMON_DEPLOYMENT: '{{ COMMON_DEPLOYMENT }}'
+region: "{{ COMMON_REGION }}"
+instance_groups:
+  master:
+    num_instances: 1
+    type: "{{ JENKINS_ANALYTICS_CONFIG_EMR_INSTANCE_TYPE }}"
+    market: ON_DEMAND
+  core:
+    num_instances: 1
+    type: "{{ JENKINS_ANALYTICS_CONFIG_EMR_INSTANCE_TYPE }}"
+    market: ON_DEMAND{% raw %}
+    volume_size: "{{ lookup('env', 'VOLUME_SIZE') }}"
+  task:
+    num_instances: "{{ lookup('env', 'NUM_TASK_INSTANCES') }}"
+{% endraw %}
+    type: "{{ JENKINS_ANALYTICS_CONFIG_EMR_INSTANCE_TYPE }}"
+    market: ON_DEMAND
+role: "{{ JENKINS_ANALYTICS_CONFIG_EMR_ROLE }}"  #EMR_EC2_DefaultRole
+release_label: "{{ JENKINS_ANALYTICS_CONFIG_EMR_RELEASE_LABEL }}"
+keypair_name: "{{ JENKINS_ANALYTICS_CONFIG_KEYPAIR_NAME }}"  # your analytics instance key pair name
+vpc_subnet_id: "{{ DEPLOYMENT_SUBNET_PUBLIC_IDS | first }}"  # public subnet of the VPC
+log_uri: "{{ JENKINS_ANALYTICS_CONFIG_EVENT_LOGS_SOURCE }}"
+additional_master_security_groups:
+  - {{ JENKINS_ANALYTICS_CONFIG_ADDITIONAL_MASTER_SECURITY_GROUPS }}
+additional_slave_security_groups:
+  - {{ JENKINS_ANALYTICS_CONFIG_ADDITIONAL_SLAVE_SECURITY_GROUPS }}
+
+applications:
+  - name: Hadoop
+  - name: Hive
+  - name: Sqoop-Sandbox
+  - name: Ganglia
+
+configurations:
+  - classification: mapred-site
+    properties:
+      mapreduce.framework.name: 'yarn'
+      mapreduce.jobtracker.retiredjobs.cache.size: '50'
+      mapreduce.reduce.shuffle.input.buffer.percent: '0.20'
+  - classification: yarn-site
+    properties:
+      yarn.resourcemanager.max-completed-applications: '5'
+# In EMR 4.7, cross-region S3 access does not work correctly without this
+# property. Should be fixed in EMR 5.
+# See http://stackoverflow.com/questions/38710637/running-emr-example-getting-301-error
+  - classification: core-site
+    properties:
+      fs.s3n.endpoint: "s3.amazonaws.com"
+
+steps:
+  - type: hive_install
+  - type: script
+    name: "Install Sqoop"
+    step_args: [ {{ JENKINS_ANALYTICS_CONFIG_INSTALL_SQOOP_STEP_ARGS }} ]
+    action_on_failure: TERMINATE_JOB_FLOW  # Set to CANCEL_AND_WAIT when debugging step failures.
