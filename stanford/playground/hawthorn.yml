@@ -3,6 +3,7 @@
 - include: ./master.yml
   vars:
     CLUSTER_SANDBOX_NAME: hawthorn
+    CONFIGURATION_REPO: 'https://github.com/Stanford-Online/configuration.git'
     COMMON_DEPLOYMENT: playground
     configuration_version: 'open-release/hawthorn.master'
     edx_ansible_source_repo: "{{ CONFIGURATION_REPO }}"
