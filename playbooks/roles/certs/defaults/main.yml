@@ -64,6 +64,9 @@ CERTS_LABEL_PLURAL: "certificates"
 CERTS_QUEUE_NAME: "certificates"
 CERTS_SITE_DISCLAIMER_TEXT: ""
 
+# This is how long in seconds the cert agent will sleep before polling the queue again.
+CERTS_QUEUE_POLL_FREQUENCY: 5
+
 ########## Internal role vars below
 
 certs_debian_pkgs:
@@ -88,6 +91,7 @@ certs_env_config:
   CERT_DATA: {}
   QUEUE_NAME: "{{ CERTS_QUEUE_NAME }}"
   QUEUE_URL: "{{ CERTS_QUEUE_URL }}"
+  QUEUE_POLL_FREQUENCY: "{{ CERTS_QUEUE_POLL_FREQUENCY }}"
   CERT_BUCKET: "{{ CERTS_BUCKET }}"
   # gnupg signing key
   CERT_KEY_ID: "{{ CERTS_KEY_ID }}"

@@ -65,6 +65,7 @@ INSIGHTS_DATABASE_HOST: 127.0.0.1
 INSIGHTS_DATABASE_PORT: 3306
 INSIGHTS_MYSQL_OPTIONS:
   connect_timeout: 10
+  init_command: "SET sql_mode='STRICT_TRANS_TABLES'"
 
 INSIGHTS_DATABASES:
   # rw user
@@ -128,7 +129,6 @@ INSIGHTS_CONFIG:
   # static file config
   STATICFILES_DIRS: ["{{ insights_static_path }}"]
   STATIC_ROOT: "{{ COMMON_DATA_DIR }}/{{ insights_service_name }}/staticfiles"
-  THEME_SCSS: '{{ INSIGHTS_THEME_SCSS }}'
   RESEARCH_URL: '{{ INSIGHTS_RESEARCH_URL }}'
   OPEN_SOURCE_URL: '{{ INSIGHTS_OPEN_SOURCE_URL }}'
   # db config
@@ -147,6 +147,7 @@ INSIGHTS_CONFIG:
   LEARNER_API_LIST_DOWNLOAD_FIELDS: "{{ INSIGHTS_LEARNER_API_LIST_DOWNLOAD_FIELDS }}"
   # CDN url to serve assets from
   CDN_DOMAIN: "{{ INSIGHTS_CDN_DOMAIN }}"
+  CSRF_COOKIE_SECURE: "{{ INSIGHTS_CSRF_COOKIE_SECURE }}"
 
 INSIGHTS_NEWRELIC_APPNAME: "{{ COMMON_ENVIRONMENT }}-{{ COMMON_DEPLOYMENT }}-analytics-api"
 INSIGHTS_PIP_EXTRA_ARGS: "-i {{ COMMON_PYPI_MIRROR_URL }}"
@@ -170,6 +171,7 @@ INSIGHTS_REPOS:
     DESTINATION: "{{ insights_code_dir }}"
     SSH_KEY: "{{ INSIGHTS_GIT_IDENTITY }}"
 
+INSIGHTS_CSRF_COOKIE_SECURE: false
 #
 # vars are namespace with the module name.
 #
@@ -177,6 +179,7 @@ insights_environment:
   DJANGO_SETTINGS_MODULE: "analytics_dashboard.settings.production"
   ANALYTICS_DASHBOARD_CFG: "{{ COMMON_CFG_DIR  }}/{{ insights_service_name }}.yml"
   PATH: "{{ insights_nodeenv_bin }}:{{ insights_venv_dir }}/bin:{{ ansible_env.PATH }}"
+  THEME_SCSS: '{{ INSIGHTS_THEME_SCSS }}'
 
 
 insights_service_name: insights
@@ -218,7 +221,5 @@ insights_debian_pkgs:
   - gettext
 
 insights_release_specific_debian_pkgs:
-  precise:
-    - openjdk-7-jdk
   xenial:
     - openjdk-8-jdk

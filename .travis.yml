@@ -8,6 +8,7 @@ branches:
   - master
   - rc
   - release
+  - /^open-release.*$/
 
 services:
   - docker
@@ -23,12 +24,12 @@ before_install:
   - sudo apt-get -y install -o Dpkg::Options::="--force-confold" docker-ce
 
 install:
-  - "pip install --allow-all-external -r requirements.txt"
-  - "pip install --allow-all-external demjson"
+  - "pip install -r requirements.txt"
+  - "pip install demjson"
 
 env:
   - MAKE_TARGET=test.syntax SHARD=0 SHARDS=1
-  - MAKE_TARGET=test.edx_east_roles SHARD=0 SHARDS=1
+  - MAKE_TARGET=test.playbooks SHARD=0 SHARDS=1
   - MAKE_TARGET=docker.test.shard SHARD=0 SHARDS=3
   - MAKE_TARGET=docker.test.shard SHARD=1 SHARDS=3
   - MAKE_TARGET=docker.test.shard SHARD=2 SHARDS=3
