@@ -2,16 +2,11 @@
 dependencies:
   - common
   - jscover
-  - newrelic
   - role: oraclejdk
 
   # dependencies for edx-app jenkins worker:
   - role: edxapp_common
     when: platform_worker is defined
-
-  # dependencies for sitespeed worker
-  - role: sitespeedio
-    when: sitespeed_worker is defined
 
   # dependencies for android worker
   - role: android_sdk

@@ -110,7 +110,7 @@
     mode: "{{ item.mode }}"
   with_items:
     - { src: 'etc/nginx/nginx.conf.j2', dest: '/etc/nginx/nginx.conf', group: '{{ common_web_user }}', mode: "0644" }
-    - { src: 'edx/app/nginx/sites-available/edx-release.j2', dest: '{{ nginx_sites_available_dir }}/edx-release', group: 'root', mode: "0600" }
+    - { src: 'edx/app/nginx/sites-available/maps.j2', dest: '{{ nginx_sites_available_dir }}/maps', group: 'root', mode: "0600" }
   notify: restart nginx
   tags:
     - install
@@ -131,12 +131,14 @@
 
 - name: Creating link for common nginx configuration
   file:
-    src: "{{ nginx_sites_available_dir }}/edx-release"
-    dest: "{{ nginx_sites_enabled_dir }}/edx-release"
+    src: "{{ nginx_sites_available_dir }}/{{ item }}"
+    dest: "{{ nginx_sites_enabled_dir }}/{{ item }}"
     state: link
     owner: root
     group: root
   notify: reload nginx
+  with_items:
+    - "maps"
   tags:
     - install
     - install:configuration
@@ -162,6 +164,7 @@
     owner: root
     group: root
   with_items: "{{ nginx_sites }}"
+  when: not nginx_skip_enable_sites
   notify: reload nginx
   tags:
     - install
@@ -237,7 +240,7 @@
 
 - name: Create NGINX server templates
   template:
-    src: "edx/var/nginx/server-static/server-template.j2"
+    src: "{{ NGINX_SERVER_HTML_FILES_TEMPLATE }}"
     dest: "{{ nginx_server_static_dir }}/{{ item.file }}"
     owner: root
     group: "{{ common_web_user }}"
@@ -255,6 +258,18 @@
     group={{ common_web_user }}
     mode=0640
   when: "'maint' in nginx_sites"
+
+- name: Copy static files
+  copy:
+    src: "{{ item }}"
+    dest: "{{ nginx_server_static_dir }}"
+    owner: "{{ common_web_user }}"
+    group: "{{ common_web_user }}"
+    mode: "0640"
+  with_items: "{{ NGINX_SERVER_STATIC_FILES }}"
+  tags:
+     - install
+     - install:configuration
 
 - name: Write out htpasswd file
   htpasswd:
@@ -347,7 +362,7 @@
     - install
     - install:configuration
 
-- name: Set up nginx access log rotation
+- name: Set up nginx error log rotation
   template:
     src: "etc/logrotate.d/edx_logrotate_nginx_error.j2"
     dest: "/etc/logrotate.d/nginx-error"

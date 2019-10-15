@@ -37,14 +37,14 @@ jenkins_tools_plugins:
   - { name: "workflow-scm-step", version: "1.14.2" }
   - { name: "workflow-step-api", version: "1.14.2" }
   - { name: "ghprb", version: "1.35.0" }
-  - { name: "github-api", version: "1.82" }
+  - { name: "github-api", version: "1.90" }
   - { name: "git-client", version: "1.21.0"}
   - { name: "git", version: "2.5.3"}
   - { name: "github", version: "1.21.1" }
   - { name: "plain-credentials", version: "1.2" }
   - { name: "github-oauth", version: "0.24" }
   - { name: "gradle", version: "1.25" }
-  - { name: "credentials-binding", version: "1.9" }
+  - { name: "credentials-binding", version: "1.10" }
   - { name: "envinject", version: "1.92.1" }
   - { name: "email-ext", version: "2.57.2" }
   - { name: "text-finder", version: "1.10"}
@@ -77,3 +77,4 @@ jenkins_tools_debian_pkgs:
     - python-pycurl
     - psmisc
     - mysql-client-core-5.6
+    - ruby-sass

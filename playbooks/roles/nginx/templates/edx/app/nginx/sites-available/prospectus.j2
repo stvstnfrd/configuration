@@ -1,0 +1,34 @@
+{%- if "prospectus" in nginx_default_sites -%}
+  {%- set default_site = "default_server" -%}
+{%- else -%}
+  {%- set default_site = "" -%}
+{%- endif -%}
+
+server {
+  # Prospectus configuration file for nginx, templated by ansible
+
+  {% if NGINX_PROSPECTUS_PROXY_INTERCEPT_ERRORS %}
+  proxy_intercept_errors on;
+  {% endif %}
+
+  listen {{ PROSPECTUS_NGINX_PORT }} {{ default_site }};
+
+  root {{ PROSPECTUS_DATA_DIR }};
+
+  # Ignore the rollout group headers for the health check endpoint.
+  location /HealthCheck {
+    try_files $uri $uri/index.html @backend;
+  }
+
+  location / {
+    if ($http_x_rollout_group !~ "test") {
+      proxy_pass {{ PROSPECTUS_PROXY_PASS }};
+    }
+    try_files $uri $uri/index.html @backend;
+  }
+
+  location @backend {
+      proxy_pass {{ PROSPECTUS_PROXY_PASS }};
+  }
+
+}

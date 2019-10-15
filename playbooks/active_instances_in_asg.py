@@ -27,6 +27,7 @@ import sys
 from collections import defaultdict
 from os import environ
 from itertools import chain
+import random
 
 class ActiveInventory():
 
@@ -41,8 +42,14 @@ class ActiveInventory():
         asg = session.create_client('autoscaling',self.region)
         ec2 = session.create_client('ec2',self.region)
 
-        groups = asg.describe_auto_scaling_groups()
-        matching_groups = [g for g in groups['AutoScalingGroups'] for t in g['Tags'] if t['Key'] == 'Name' and t['Value'] == asg_name]
+        asg_paginator = asg.get_paginator('describe_auto_scaling_groups')
+        asg_iterator = asg_paginator.paginate()
+        matching_groups = []
+        for groups in asg_iterator:
+            for g in groups['AutoScalingGroups']:
+                for t in g['Tags']:
+                    if t['Key'] == 'Name' and t['Value'] == asg_name:
+                        matching_groups.append(g)
 
         groups_to_instances = {group['AutoScalingGroupName']: [instance['InstanceId'] for instance in group['Instances']] for group in matching_groups}
         instances_to_groups = {instance['InstanceId']: group['AutoScalingGroupName'] for group in matching_groups for instance in group['Instances'] }
@@ -79,7 +86,7 @@ class ActiveInventory():
 
         for group in active_groups.keys():
             for group_instance in groups_to_instances[group]:
-                instance = ec2.describe_instances(InstanceIds=[group_instance])['Reservations'][0]['Instances'][0]
+                instance = random.choice(ec2.describe_instances(InstanceIds=[group_instance])['Reservations'][0]['Instances'])
                 if 'PrivateIpAddress' in instance:
                     print("{},".format(instance['PrivateIpAddress']))
                     return # We only want a single IP
