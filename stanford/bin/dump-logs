@@ -26,12 +26,11 @@ for deployment in ${deployments}; do
             fi
         done
     done
-    cd "${destination_root}"
-    find "${deployment}/" -name '*.gz' -print0 | xargs -0 gunzip --keep --force
-    archive_file="${deployment}-logs-$(date +%Y-%m-%d-%s).tar.gz"
+    find "${destination_root}/${deployment}/" -name '*.gz' -print0 | xargs -0 gunzip --keep --force
+    archive_file="${destination_root}/${deployment}-logs-$(date +%Y-%m-%d-%s).tar.gz"
     tar czvf "${archive_file}" \
         --exclude='*.gz' \
         --options='compression-level=9' \
-        "${deployment}/" \
+        "${destination_root}/${deployment}/" \
     ;
 done
