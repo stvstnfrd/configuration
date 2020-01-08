@@ -1,0 +1,37 @@
+#!/bin/sh
+rsync_sudo() {
+    rsync --rsync-path='sudo rsync' -avh --progress ${@}
+}
+rsync_logs() {
+    machine=${1}
+    destination=${2}
+    shift; shift;
+    rsync_sudo ${@} "${machine}:/var/log/" "${destination}"
+    rsync_sudo ${@} "${machine}:/edx/var/log/" "${destination}/edx"
+}
+destination_root=/edx/var/log
+deployments="cme"
+clusters="analytics-api build certs coursegraph deploy director edxapp esforum forum insights jump maintenance nat notifier rabbitmq scheduler worker xqueue"
+for deployment in ${deployments}; do
+    for cluster in ${clusters}; do
+        for number in {0..4}; do
+            box="${cluster}${number}"
+            machine=${box}.${deployment}.vpc
+            if ssh -q -o ConnectTimeout=1 "${machine}" 'exit' 2>/dev/null; then
+                echo "Dumping logs from: ${machine}"
+                destination_box=${destination_root}/${deployment}/${box}
+                mkdir -p "${destination_box}"
+                rsync_logs "${machine}" "${destination_box}" --delete
+                echo; echo
+            fi
+        done
+    done
+    cd "${destination_root}"
+    find "${deployment}/" -name '*.gz' -print0 | xargs -0 gunzip --keep --force
+    archive_file="${deployment}-logs-$(date +%Y-%m-%d-%s).tar.gz"
+    tar czvf "${archive_file}" \
+        --exclude='*.gz' \
+        --options='compression-level=9' \
+        "${deployment}/" \
+    ;
+done
