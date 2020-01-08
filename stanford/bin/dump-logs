@@ -1,4 +1,8 @@
 #!/bin/sh
+# Usage: dump-logs [/edx/var|<output_directory>]
+# ENV VARS:
+# - DUMP_LOGS_DEPLOYMENTS: a list of deployments to dump
+# - DUMP_LOGS_CLUSTERS: a list of clusters to dump
 rsync_sudo() {
     rsync --rsync-path='sudo rsync' -avh --progress ${@}
 }
@@ -9,9 +13,10 @@ rsync_logs() {
     rsync_sudo ${@} "${machine}:/var/log/" "${destination}"
     rsync_sudo ${@} "${machine}:/edx/var/log/" "${destination}/edx"
 }
-destination_root=/edx/var/log
-deployments="cme"
-clusters="analytics-api build certs coursegraph deploy director edxapp esforum forum insights jump maintenance nat notifier rabbitmq scheduler worker xqueue"
+destination_root_base=${1:-/edx/var}
+destination_root=${destination_root_base}/log
+deployments="${DUMP_LOGS_DEPLOYMENTS:-cme}"
+clusters="${DUMP_LOGS_CLUSTERS:-analytics-api build certs coursegraph deploy director edxapp esforum forum insights jump maintenance nat notifier rabbitmq scheduler worker xqueue}"
 for deployment in ${deployments}; do
     for cluster in ${clusters}; do
         for number in {0..4}; do
@@ -27,10 +32,11 @@ for deployment in ${deployments}; do
         done
     done
     find "${destination_root}/${deployment}/" -name '*.gz' -print0 | xargs -0 gunzip --keep --force
-    archive_file="${destination_root}/${deployment}-logs-$(date +%Y-%m-%d-%s).tar.gz"
+    archive_file="${destination_root_base}/${deployment}-log-$(date +%Y-%m-%d-%s).tar.gz"
     tar czvf "${archive_file}" \
+        -C "${destination_root_base}" \
         --exclude='*.gz' \
         --options='compression-level=9' \
-        "${destination_root}/${deployment}/" \
+        "log/${deployment}/" \
     ;
 done
